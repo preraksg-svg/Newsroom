@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZAPWAY LIVE TERMINAL</title>
+    <!-- Premium Fonts: Syne for futuristic headers, DM Sans / Inter for UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@300;400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="/static/styles.css?v=4">
+</head>
+<body>
+    <!-- Advanced Glow Elements -->
+    <div class="bg-glow-orb orb-1"></div>
+    <div class="bg-glow-orb orb-2"></div>
+    <div class="bg-glow-orb orb-3"></div>
+
+    <div class="terminal-layout glass-panel">
+
+        <!-- GLOBAL HEADER (Extremely thin) -->
+        <header class="sys-header">
+            <div class="sys-left">
+                <span class="sys-logo">ZAPWAY<span class="neon-blue">_TERMINAL</span></span>
+                <span class="sys-ver">v2.1.4_prod</span>
+            </div>
+            
+            <div class="sys-ticker-wrapper">
+                <div class="ticker-label">LIVE FEED</div>
+                <div class="header-ticker">
+                    <div class="marquee-content" id="header-marquee">
+                        <span>● INGEST ENGINE STABLE</span>
+                        <span>● CONNECTION: SECURE</span>
+                        <span>● WAITING FOR RSS PACKETS...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sys-right">
+                <div class="sys-metric"><span class="lbl">LATENCY</span><span class="val cyan">14ms</span></div>
+                <div class="sys-metric"><span class="lbl">NET</span><span class="val green">UP</span></div>
+                <div class="sys-clock">
+                    <span id="live-time" class="time-digit">00:00:00</span>
+                    <button class="tz" id="tz-toggle" onclick="toggleTimezone()">IST</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- COMMAND BAR -->
+        <div class="command-bar">
+            <div class="search-block">
+                <span class="prompt-arrow">&gt;</span>
+                <input type="text" placeholder="QUERY_AI_DATABASE..." class="terminal-input">
+            </div>
+            <div class="cmd-actions">
+                <button id="btn-fetch" class="cmd-btn">
+                    [&nbsp;RUN_GLOBAL_WEDGE&nbsp;]
+                </button>
+                <button id="btn-publish" class="cmd-btn highlight">
+                    [&nbsp;FORCE_DEPLOY_QUEUE&nbsp;]
+                </button>
+            </div>
+        </div>
+
+        <!-- MAIN 3-COLUMN DATA MATRIX -->
+        <div class="data-matrix">
+            
+            <!-- COL 1: INTELLIGENCE PIPELINE (DRAFTS) -->
+            <div class="matrix-col col-drafts">
+                <div class="col-head blink-border">
+                    <div class="ch-left">
+                        <span class="pulse-red"></span>
+                        <h2>RAW INTELLIGENCE // AI DRAFTS</h2>
+                    </div>
+                    <div style="display:flex; align-items:center; gap: 15px;">
+                        <span style="font-family: var(--font-data); font-size: 0.7rem; color: var(--text-muted); font-style: italic;" id="last-updated">Last updated 0s ago</span>
+                        <span class="ch-count" id="draft-count">WAITING...</span>
+                    </div>
+                </div>
+                <!-- Highly dense table structure -->
+                <div class="feed-container" id="list-drafts">
+                    <div class="sys-loader">NO_DATA_FOUND...</div>
+                </div>
+            </div>
+
+            <!-- COL 2: EDITORIAL CONTROL CALENDAR -->
+            <div class="matrix-col col-calendar">
+                <div class="col-head border-cyan">
+                    <h2>EDITORIAL STAGING AREA</h2>
+                    <div class="sub-nav">
+                        <span class="active">T-0 (TODAY)</span>
+                        <span>T-7</span>
+                        <span>ALL</span>
+                    </div>
+                </div>
+                
+                <div class="calendar-layout">
+                    
+                    <div class="panel-section">
+                        <h3 class="sect-header green">■ APPROVED FOR SYNC</h3>
+                        <div class="dense-list" id="list-approved">
+                            <span class="dim">[ EMPTY_QUEUE ]</span>
+                        </div>
+                    </div>
+
+                    <div class="panel-section">
+                        <h3 class="sect-header blue">■ LIVE ON NETWORK (WP)</h3>
+                        <div class="dense-list" id="list-published">
+                            <span class="dim">[ EMPTY_QUEUE ]</span>
+                        </div>
+                    </div>
+
+                    <div class="panel-section">
+                        <h3 class="sect-header red">■ RECYCLE BIN (FAILED/HALTED)</h3>
+                        <div class="dense-list" id="list-rejected">
+                            <span class="dim">[ EMPTY_QUEUE ]</span>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- COL 3: SYSTEM METRICS & MEDIA ENGINE -->
+            <div class="matrix-col col-metrics">
+                <div class="col-head border-magenta">
+                    <h2>ZAPWAY AI DIAGNOSTICS</h2>
+                </div>
+                
+                <div class="widget-stack">
+                    
+                    <!-- ALERT BOX -->
+                    <div class="alert-box">
+                        <div class="alert-head">! SEC_OVERRIDE_ALERT</div>
+                        <h3 id="top-headline" class="alert-body">Awaiting latest high-priority system inject.</h3>
+                    </div>
+
+                    <!-- AI SENTIMENT -->
+                    <div class="diag-panel">
+                        <div class="dp-header">GLOBAL EV SENTIMENT</div>
+                        <div class="sentiment-bar">
+                            <div class="s-pos" style="width: 62%;"></div>
+                            <div class="s-neu" style="width: 25%;"></div>
+                            <div class="s-neg" style="width: 13%;"></div>
+                        </div>
+                        <div class="s-legend">
+                            <span><b class="c-pos">62</b> POS</span>
+                            <span><b class="c-neu">25</b> NEU</span>
+                            <span><b class="c-neg">13</b> NEG</span>
+                        </div>
+                    </div>
+
+                    <!-- MARKET DATA -->
+                    <div class="diag-panel">
+                        <div class="dp-header">MARKET_TICKERS</div>
+                        <table class="data-table">
+                            <tr><td>TSLA</td><td class="pos">+2.41%</td><td class="mono">281.04</td></tr>
+                            <tr><td>BYDDY</td><td class="neg">-0.82%</td><td class="mono">54.12</td></tr>
+                            <tr><td>TATA MOTORS</td><td class="pos">+1.10%</td><td class="mono">1050.2</td></tr>
+                            <tr><td>LIVENT</td><td class="pos">+0.30%</td><td class="mono">14.80</td></tr>
+                        </table>
+                    </div>
+
+                    <!-- AUDIO SPECTROGRAM -->
+                    <div class="diag-panel">
+                        <div class="dp-header">VOICE_SYNTH_ENGINE</div>
+                        <div class="spectro">
+                            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                        </div>
+                        <button class="sys-btn mt">GENERATE_AUDIO_REPORT</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- GLOBAL SOCIAL EXPORT PANEL (Missing Requirement Fix) -->
+        <div class="bottom-action-panel">
+            <div class="bap-left">
+                <span class="bap-label">OAUTH CHANNELS:</span>
+                <span class="bap-status active">X / Twitter</span>
+                <span class="bap-status active">LinkedIn Network</span>
+                <span class="bap-status inactive">Meta Threads (Pending)</span>
+            </div>
+            <div class="bap-right">
+                <button class="sys-btn green" style="width: auto; margin-top:0; padding: 5px 20px;" onclick="alert('Select an approved article to batch-distribute.')">BATCH DISTRIBUTE</button>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- RAW DATA EDITOR MODAL -->
+    <div id="article-modal" class="terminal-modal hidden">
+        <div class="tm-overlay" onclick="closeModal()"></div>
+        <div class="tm-window">
+            
+            <div class="tm-header">
+                <span class="tm-title">OBJ_INSPECTION_ROUTINE</span>
+                <span class="tm-id mono">ID: <span id="modal-id-display">N/A</span></span>
+                <button class="tm-close" onclick="closeModal()">[X]</button>
+            </div>
+
+            <div class="tm-body">
+                
+                <div class="tm-col border-right">
+                    <div class="tm-panel-head">RAW_SOURCE_DATAGRAM</div>
+                    <h2 id="modal-title" class="raw-title">_</h2>
+                    <div class="raw-content" id="modal-original">
+                        [NO_DATA]
+                    </div>
+                </div>
+
+                <div class="tm-col">
+                    <div class="tm-panel-head flex-between">
+                        <span>AI_REFINED_OUTPUT</span>
+                        <div style="display:flex; gap:10px;">
+                            <button id="modal-social-btn" class="sm-btn hl-cyan" onclick="generateSocialFromModal()">[ GEN_SOCIAL_POST ]</button>
+                            <button id="modal-edit-toggle-btn" class="sm-btn" onclick="toggleEditMode()">[ EDIT_MATRIX ]</button>
+                            <button id="modal-approve-btn" class="sm-btn hl-green" style="display:none;">[ DEPLOY_TO_WP ]</button>
+                        </div>
+                    </div>
+
+                    <!-- VIEW MODE -->
+                    <div class="ai-view-container" id="modal-ai-view">
+                        <div class="seo-data matrix-box">
+                            <div class="m-row"><span class="m-lbl">META_TITLE</span><span class="m-val" id="modal-meta-title"></span></div>
+                            <div class="m-row"><span class="m-lbl">META_DESC</span><span class="m-val" id="modal-meta-desc"></span></div>
+                            <div class="m-row"><span class="m-lbl">TARGET_KEYS</span><span class="m-val hl-cyan" id="modal-meta-keywords"></span></div>
+                        </div>
+                        <div class="ai-html-output" id="modal-ai"></div>
+                    </div>
+
+                    <!-- EDIT MODE -->
+                    <div class="ai-edit-container hidden" id="modal-ai-edit">
+                        
+                        <div class="e-group">
+                            <label>SEO_HEADLINE <button class="ai-wand" onclick="promptAiEdit('SEO Headline')">AI_OPT✨</button></label>
+                            <input type="text" id="edit-headline" class="term-input-full">
+                        </div>
+
+                        <div class="e-group">
+                            <label>SHORT_SUMMARY <button class="ai-wand" onclick="promptAiEdit('Short Summary')">AI_OPT✨</button></label>
+                            <textarea id="edit-summary" rows="3" class="term-input-full"></textarea>
+                        </div>
+
+                        <div class="e-group split-group">
+                            <div class="split">
+                                <label>META_TITLE <button class="ai-wand" onclick="promptAiEdit('Meta Title')">AI_OPT✨</button></label>
+                                <input type="text" id="edit-meta-title" class="term-input-full">
+                            </div>
+                            <div class="split">
+                                <label>SEO_KEYWORDS <button class="ai-wand" onclick="promptAiEdit('SEO Keywords')">AI_OPT✨</button></label>
+                                <input type="text" id="edit-keywords" class="term-input-full">
+                            </div>
+                        </div>
+
+                        <div class="e-group">
+                            <label>META_DESCRIPTION <button class="ai-wand" onclick="promptAiEdit('Meta Description')">AI_OPT✨</button></label>
+                            <textarea id="edit-meta-desc" rows="2" class="term-input-full"></textarea>
+                        </div>
+
+                        <div class="e-group matrix-box img-regen-box">
+                            <label class="Magenta">AI_IMAGE_PROMPT_PARAMETERS</label>
+                            <textarea id="edit-image-prompt" rows="2" class="term-input-full"></textarea>
+                            <button class="sm-btn full mt-1" onclick="regenerateImageFromPrompt()">[ EXEC_REGEN_IMAGE ]</button>
+                        </div>
+
+                        <div class="e-group">
+                            <label>HTML_PAYLOAD <button class="ai-wand" onclick="promptAiEdit('AI Article HTML')">AI_OPT✨</button></label>
+                            <textarea id="edit-html-body" rows="12" class="term-input-full html-code"></textarea>
+                        </div>
+
+                        <div class="e-actions">
+                            <button class="sys-btn green" onclick="saveEdits()">[ COMMIT_DB_CHANGES ]</button>
+                            <button class="sys-btn red outline" onclick="rollbackDraft()">[ PURGE_EDITS_ROLLBACK ]</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SOCIAL MEDIA MODAL OVERLAY -->
+    <div id="social-modal" class="terminal-modal hidden" style="width: 50%; height: auto; top: 25%; left: 25%; z-index: 1005;">
+        <div class="tm-header">
+            <span class="tm-title">SOCIAL_MEDIA_GENERATOR</span>
+            <button class="tm-close" onclick="closeSocialModal()">[X]</button>
+        </div>
+        <div class="tm-body" style="flex-direction: column; padding: 25px;">
+            <p style="font-family: var(--font-data); font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">AI generated viral caption based on specific SEO constraints. Optimized for Twitter / LinkedIn.</p>
+            <textarea id="social-post-content" rows="6" class="term-input-full html-code" style="margin-bottom: 15px; font-size: 1rem;">[ GENERATING_OAUTH_PAYLOAD... ]</textarea>
+            <div style="display:flex; gap: 15px;">
+                <button class="sys-btn green" onclick="copySocialPost()">[ COPY_TO_CLIPBOARD ]</button>
+                <button class="sys-btn cyan hl-cyan" onclick="alert('OAUTH Integration pending setup.')">[ AUTO_POST_TO_X ]</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js?v=4"></script>
+</body>
+</html>
