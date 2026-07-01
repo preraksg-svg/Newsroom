@@ -46,7 +46,7 @@ function ArticleCard({ item, onClick, onReject, onRestore, onAction, isRecycleBi
       </span>
 
       <div style={{ marginBottom: '16px', fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-data)', letterSpacing: '1px' }}>
-        {publisher.toUpperCase()} // {new Date(createdTime).toLocaleTimeString()}
+        {publisher.toUpperCase()} // {new Date(createdTime).toLocaleString()}
       </div>
 
       <h3 className="card-title">{title}</h3>
