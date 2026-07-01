@@ -37,7 +37,20 @@ async def main():
     print("[INIT] Initializing Cleanup task...")
     cleanup_task = asyncio.create_task(cleanup_loop())
     
-    tasks = [ingestion_task, ai_task, media_task, cleanup_task]
+    print("[INIT] Initializing Diagnostics task...")
+    async def diagnostics_loop():
+        from scripts.verify_sources import main as verify_sources_main
+        while True:
+            try:
+                logger.info("[DIAGNOSTICS] Triggering sources verification loop...")
+                await verify_sources_main()
+            except Exception as e:
+                logger.error(f"[DIAGNOSTICS] Error in verify_sources loop: {e}")
+            await asyncio.sleep(1800) # Run every 30 minutes
+            
+    diagnostics_task = asyncio.create_task(diagnostics_loop())
+    
+    tasks = [ingestion_task, ai_task, media_task, cleanup_task, diagnostics_task]
     
     print("[INIT] All tasks created. Entering gather loop...")
     
