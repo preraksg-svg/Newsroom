@@ -12,11 +12,26 @@ from thumbnail_ab_testing import initialize_thumbnail_ab_testing
 
 # Initialize database schema before importing route modules that depend on services.
 init_db()
+
+# Auto-seed sources if registry is empty
+try:
+    from backend.db.queries import get_db
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT count(*) FROM sources")
+        if cur.fetchone()[0] == 0:
+            print("[BACKEND] Sources table is empty! Seeding reliable sources...")
+            from seed_reliable_sources import seed
+            seed()
+except Exception as se:
+    print(f"[BACKEND] Auto-seeding failed or skipped: {se}")
+
 initialize_headline_engine()
 initialize_thumbnail_engine()
 initialize_bandit_engine()
 initialize_ab_testing()
 initialize_thumbnail_ab_testing()
+
 
 from backend.routes.api_routes import router
 

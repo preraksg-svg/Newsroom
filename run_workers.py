@@ -19,6 +19,20 @@ async def main():
     print("[INIT] Starting ZAPWAY Production-Grade Worker Engine...")
 
     init_db()
+    
+    # Auto-seed sources if registry is empty
+    try:
+        from backend.db.queries import get_db
+        with get_db() as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT count(*) FROM sources")
+            if cur.fetchone()[0] == 0:
+                print("[WORKERS] Sources table is empty! Seeding reliable sources...")
+                from seed_reliable_sources import seed
+                seed()
+    except Exception as se:
+        print(f"[WORKERS] Auto-seeding failed or skipped: {se}")
+
     initialize_learning_engine()
     initialize_training_engine()
     initialize_bandit_engine()
