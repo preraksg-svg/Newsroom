@@ -296,3 +296,62 @@ def get_ingestion_status():
             "traceback": traceback.format_exc()
         }
 
+@router.get("/v1/diagnostics/sources-health")
+def get_sources_health():
+    try:
+        import json
+        import os
+        from email_utils import send_alert_email
+        
+        health_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../static/sources_health.json"))
+        if not os.path.exists(health_file):
+            return {
+                "success": False, 
+                "error": "No health telemetry available yet. Run scripts/verify_sources.py first."
+            }
+            
+        with open(health_file, "r") as f:
+            telemetry = json.load(f)
+            
+        offline_tier1 = []
+        for src in telemetry.get("sources", []):
+            if src.get("tier") in ("Tier 1", "tier_1") and src.get("status") == "Offline":
+                offline_tier1.append(src["name"])
+                
+        if offline_tier1:
+            fail_state_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../static/consecutive_failures.json"))
+            fail_state = {}
+            if os.path.exists(fail_state_file):
+                try:
+                    with open(fail_state_file, "r") as f:
+                        fail_state = json.load(f)
+                except:
+                    pass
+            
+            alerts_triggered = []
+            for name in offline_tier1:
+                fail_state[name] = fail_state.get(name, 0) + 1
+                if fail_state[name] >= 3:
+                    alerts_triggered.append(name)
+            
+            # Reset counters for healthy nodes
+            for src in telemetry.get("sources", []):
+                if src.get("status") == "Healthy" and src["name"] in fail_state:
+                    fail_state.pop(src["name"], None)
+            
+            with open(fail_state_file, "w") as f:
+                json.dump(fail_state, f)
+                
+            if alerts_triggered:
+                subject = "CRITICAL: Tier 1 EV Sources Offline Alerts"
+                body = "The following Tier 1 sources have been offline for 3+ consecutive sweeps:\n" + "\n".join(f"- {name}" for name in alerts_triggered)
+                try:
+                    send_alert_email(subject, body)
+                except Exception as ex:
+                    print(f"Failed to send alert email: {ex}")
+                    
+        return {"success": True, "data": telemetry}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
