@@ -80,6 +80,17 @@ async def trigger_orchestrate(background_tasks: BackgroundTasks):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+@router.get("/orchestrate")
+async def trigger_orchestrate_get(background_tasks: BackgroundTasks):
+    try:
+        from system_orchestrator import NewsroomOrchestrator
+        orchestrator = NewsroomOrchestrator()
+        background_tasks.add_task(orchestrator.run_full_pipeline)
+        return {"success": True, "data": "Orchestration started in background via GET"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 @router.get("/raw-source/{id}")
 def get_raw_source(id: str):
     try:
