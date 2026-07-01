@@ -5,7 +5,15 @@ import json
 from contextlib import contextmanager
 from datetime import datetime, timezone
 
-DB_PATH = os.path.join(os.path.dirname(__file__), '../../newsroom.db')
+# Dynamic database path routing to leverage persistent cloud storage
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL and DATABASE_URL.startswith("sqlite:///"):
+    DB_PATH = DATABASE_URL.replace("sqlite:///", "")
+elif os.path.exists("/app/db"):
+    DB_PATH = "/app/db/newsroom.db"
+else:
+    DB_PATH = os.path.join(os.path.dirname(__file__), '../../newsroom.db')
+
 
 @contextmanager
 def get_db():
