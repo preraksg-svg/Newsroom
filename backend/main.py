@@ -40,8 +40,8 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if os.getenv("ZAPWAY_AUTO_START_WORKERS", "").lower() not in {"1", "true", "yes"}:
-        print("[BACKEND] Worker auto-start disabled. Run 'python run_workers.py' separately.")
+    if os.getenv("ZAPWAY_AUTO_START_WORKERS", "true").lower() in {"0", "false", "no"}:
+        print("[BACKEND] Worker auto-start explicitly disabled. Run 'python run_workers.py' separately.")
         yield
         return
 
