@@ -123,11 +123,21 @@ async def scrape_website(url: str):
                     if base_domain in href and href not in [l[0] for l in links]:
                         links.append((href, title))
                 
-                for link, title in links[:5]:
+                fetched_count = 0
+                for link, title in links[:40]:
+                    if fetched_count >= 5:
+                        break
                     if last_web_memory.get(url) == link:
                         break
                     
+                    # Pre-filter by EV title keywords to avoid loading non-EV pages
+                    title_lower = title.lower()
+                    ev_title_keywords = ['ev', 'electric', 'hybrid', 'battery', 'charging', 'sierra', 'punch', 'ola', 'ather', 'tata', 'mahindra', 'byd', 'scooter', 'windsor', 'curvv', 'volt']
+                    if not any(kw in title_lower for kw in ev_title_keywords):
+                        continue
+                        
                     try:
+                        fetched_count += 1
                         article_req = await loop.run_in_executor(None, lambda: requests.get(link, timeout=5, headers=headers))
                         if article_req.status_code == 200:
                             a_soup = BeautifulSoup(article_req.text, 'html.parser')
