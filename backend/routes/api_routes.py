@@ -379,10 +379,10 @@ def get_debug_db():
             cur.execute("SELECT count(*) as count, clustered FROM scraped_raw GROUP BY clustered")
             scraped_raw = [dict(r) for r in cur.fetchall()]
             
-            cur.execute("SELECT count(*) as count, source_id FROM scraped_raw GROUP BY source_id")
+            cur.execute("SELECT id, title, source_id, timestamp, clustered, length(content) as content_len FROM scraped_raw WHERE title LIKE '%sierra%'")
             recent_raw = [dict(r) for r in cur.fetchall()]
             
-            cur.execute("SELECT * FROM tasks ORDER BY created_at DESC LIMIT 5")
+            cur.execute("SELECT count(*) as count FROM stories")
             recent_tasks = [dict(r) for r in cur.fetchall()]
             
             return {
