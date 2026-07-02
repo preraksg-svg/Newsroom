@@ -146,8 +146,12 @@ class NewsroomOrchestrator:
                         log_source_fetch(source_id, 'empty', 0)
                     print(f"[PIPELINE] Source {source_id}: Saved {saved_count} new raw signals.")
 
-            print(f"[PIPELINE] Scraping {len(sources_to_scrape)} sources in parallel...")
-            await asyncio.gather(*(scrape_source_safe(s) for s in sources_to_scrape), return_exceptions=True)
+            print(f"[PIPELINE] Scraping {len(sources_to_scrape)} sources with concurrency limit 2...")
+            sem = asyncio.Semaphore(2)
+            async def scrape_sem(s):
+                async with sem:
+                    return await scrape_source_safe(s)
+            await asyncio.gather(*(scrape_sem(s) for s in sources_to_scrape), return_exceptions=True)
             
             # 5-7: Normalization, Dedup, Clustering
             print("[STEP 5-7] Normalizing and Clustering Raw Signals...")

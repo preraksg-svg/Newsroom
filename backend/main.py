@@ -45,17 +45,20 @@ async def lifespan(app: FastAPI):
         yield
         return
 
-    worker_process = None
     try:
-        print("[BACKEND] Starting background worker engines...")
-        import subprocess
+        print("[BACKEND] Starting background worker engines directly inside FastAPI event loop...")
         import sys
-        worker_process = subprocess.Popen([sys.executable, "run_workers.py"], cwd=PROJECT_ROOT)
-        print("[BACKEND] Background worker engines successfully spawned in separate process.")
+        import asyncio
+        if PROJECT_ROOT not in sys.path:
+            sys.path.append(PROJECT_ROOT)
+        import run_workers
+        asyncio.create_task(run_workers.main())
+        print("[BACKEND] Background worker engines successfully initialized within the same process.")
         yield
-    finally:
-        if worker_process and worker_process.poll() is None:
-            worker_process.terminate()
+    except Exception as e:
+        print(f"[BACKEND] Failed to start workers inline: {e}")
+        yield
+
 
 
 app = FastAPI(title="Zapway Production API", lifespan=lifespan)
