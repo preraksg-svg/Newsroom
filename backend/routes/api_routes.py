@@ -366,3 +366,36 @@ def get_sources_health():
         return {"success": False, "error": str(e)}
 
 
+@router.get("/debug-db")
+def get_debug_db():
+    try:
+        from backend.db.queries import get_db
+        with get_db() as conn:
+            cur = conn.cursor()
+            
+            cur.execute("SELECT count(*) as count, status FROM stories GROUP BY status")
+            stories = [dict(r) for r in cur.fetchall()]
+            
+            cur.execute("SELECT count(*) as count, clustered FROM scraped_raw GROUP BY clustered")
+            scraped_raw = [dict(r) for r in cur.fetchall()]
+            
+            cur.execute("SELECT id, title, source_id, timestamp, clustered FROM scraped_raw ORDER BY timestamp DESC LIMIT 10")
+            recent_raw = [dict(r) for r in cur.fetchall()]
+            
+            cur.execute("SELECT * FROM tasks ORDER BY created_at DESC LIMIT 5")
+            recent_tasks = [dict(r) for r in cur.fetchall()]
+            
+            return {
+                "success": True,
+                "data": {
+                    "stories_by_status": stories,
+                    "scraped_raw_by_clustered": scraped_raw,
+                    "recent_raw_signals": recent_raw,
+                    "recent_tasks": recent_tasks
+                }
+            }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+
