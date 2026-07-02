@@ -196,16 +196,18 @@ RELIABLE_SOURCES = [
     {"name": "TSRTC EV Bus Telangana", "url": "https://www.tsrtc.telangana.gov.in", "type": "Gov/Transit", "category": "Public_Transit", "tier": "Tier 1", "score_authority": 0.85, "access_method": "Playwright", "country": "IN"},
     
     # User-Requested Sources
-    {"name": "Evo India EV", "url": "https://www.evoindia.com/ev", "type": "Media", "category": "PV_Reviews", "tier": "Tier 1", "score_authority": 0.85, "access_method": "Playwright", "country": "IN"},
-    {"name": "Carandbike EV", "url": "https://www.carandbike.com/news/electric-vehicles", "type": "Media", "category": "PV_Reviews", "tier": "Tier 1", "score_authority": 0.85, "access_method": "Playwright", "country": "IN"},
+    {"name": "Evo India EV", "url": "https://www.evoindia.com/news", "type": "Media", "category": "PV_Reviews", "tier": "Tier 1", "score_authority": 0.85, "access_method": "Playwright", "country": "IN"},
+    {"name": "Carandbike EV", "url": "https://www.carandbike.com/news", "type": "Media", "category": "PV_Reviews", "tier": "Tier 1", "score_authority": 0.85, "access_method": "Playwright", "country": "IN"},
     {"name": "Thrustzone EV", "url": "https://www.thrustzone.com/category/electric-vehicles/", "type": "Media", "category": "Spy_Shots_Scoops", "tier": "Tier 2", "score_authority": 0.78, "access_method": "Playwright", "country": "IN"},
     {"name": "Topgear India EV", "url": "https://www.topgearindia.com", "type": "Media", "category": "PV_Reviews", "tier": "Tier 1", "score_authority": 0.85, "access_method": "Playwright", "country": "IN"},
     {"name": "Gaadikey EV", "url": "https://www.gaadikey.com/blog/category/electric-vehicles/", "type": "Media", "category": "PV_Reviews", "tier": "Tier 2", "score_authority": 0.78, "access_method": "Playwright", "country": "IN"},
     {"name": "Ackodrive EV", "url": "https://ackodrive.com/news/electric-vehicles/", "type": "Media", "category": "PV_Reviews", "tier": "Tier 1", "score_authority": 0.85, "access_method": "Playwright", "country": "IN"},
-    {"name": "Autobics EV", "url": "https://www.autobics.com/category/electric-vehicles/", "type": "Media", "category": "PV_Reviews", "tier": "Tier 2", "score_authority": 0.78, "access_method": "Playwright", "country": "IN"},
+    {"name": "Autobics EV", "url": "https://www.autobics.com/news/", "type": "Media", "category": "PV_Reviews", "tier": "Tier 2", "score_authority": 0.78, "access_method": "Playwright", "country": "IN"},
     {"name": "Indianautosblog EV", "url": "https://indianautosblog.com/electric-vehicles", "type": "Media", "category": "Spy_Shots_Scoops", "tier": "Tier 1", "score_authority": 0.85, "access_method": "Playwright", "country": "IN"},
     {"name": "Flywheel Auto EV", "url": "https://flywheel.co.in", "type": "Media", "category": "PV_Reviews", "tier": "Tier 2", "score_authority": 0.78, "access_method": "Playwright", "country": "IN"},
     {"name": "Carblogindia EV", "url": "https://www.carblogindia.com", "type": "Media", "category": "PV_Reviews", "tier": "Tier 2", "score_authority": 0.78, "access_method": "Playwright", "country": "IN"},
+    {"name": "Autocar India Website", "url": "https://www.autocarindia.com/electric-vehicles", "type": "Media", "category": "EV_News", "tier": "Tier 1", "score_authority": 0.92, "access_method": "Playwright", "country": "IN"},
+    {"name": "Overdrive India Website", "url": "https://www.overdrive.in/news/", "type": "Media", "category": "EV_News", "tier": "Tier 1", "score_authority": 0.88, "access_method": "Playwright", "country": "IN"},
     {"name": "Gaadicabs Electric", "url": "https://gaadicabs.com", "type": "Fleet_Operator", "category": "Corporate_PV", "tier": "Tier 2", "score_authority": 0.78, "access_method": "Playwright", "country": "IN"},
     {"name": "Snap E Cabs Fleet", "url": "https://www.snapecabs.com", "type": "Fleet_Operator", "category": "Passenger_PV", "tier": "Tier 1", "score_authority": 0.85, "access_method": "Playwright", "country": "IN"},
     {"name": "Seahawk Corporate EV", "url": "https://www.seahawktravels.in/electric-fleet-for-corporates", "type": "Fleet_Operator", "category": "Corporate_PV", "tier": "Tier 1", "score_authority": 0.85, "access_method": "Playwright", "country": "IN"},
@@ -272,9 +274,9 @@ def seed():
  
         # Populate fresh registry
         for s in RELIABLE_SOURCES:
-            source_id = s["name"].lower().replace(" ", "_")
+            source_id = s["name"].lower().replace(" ", "_").replace("/", "_").replace("-", "_")
             cur.execute('''
-                INSERT INTO sources (
+                INSERT OR REPLACE INTO sources (
                     source_id, name, domain, type, category, tier, 
                     score_authority, activity_status, country, access_method
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)
@@ -286,7 +288,7 @@ def seed():
             # Also populate source_scores for trace continuity/backward compatibility
             try:
                 cur.execute('''
-                    INSERT INTO source_scores (
+                    INSERT OR REPLACE INTO source_scores (
                         source_id, name, domain, type, category, tier, 
                         score_authority, activity_status, country, access_method
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)

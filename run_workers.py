@@ -20,18 +20,15 @@ async def main():
 
     init_db()
     
-    # Auto-seed sources if registry is empty
+    # Upsert/Sync sources on start to update domains and sync registry changes
     try:
         from backend.db.queries import get_db
         with get_db() as conn:
-            cur = conn.cursor()
-            cur.execute("SELECT count(*) FROM sources")
-            if cur.fetchone()[0] == 0:
-                print("[WORKERS] Sources table is empty! Seeding reliable sources...")
-                from seed_reliable_sources import seed
-                seed()
+            print("[WORKERS] Syncing/Upserting reliable sources registry...")
+            from seed_reliable_sources import seed
+            seed()
     except Exception as se:
-        print(f"[WORKERS] Auto-seeding failed or skipped: {se}")
+        print(f"[WORKERS] Syncing sources failed or skipped: {se}")
 
     initialize_learning_engine()
     initialize_training_engine()
