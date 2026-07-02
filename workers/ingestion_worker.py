@@ -32,7 +32,6 @@ def get_redis_client():
     try:
         import redis
         r = redis.Redis(host='localhost', port=6379, db=0, socket_timeout=2)
-        r.ping()
         return r
     except Exception:
         # Mock Redis client when local Redis server is not installed/running
