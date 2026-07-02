@@ -61,17 +61,7 @@ class NewsroomOrchestrator:
                 cur.execute("SELECT source_id, domain, type FROM sources WHERE activity_status = 'active'")
                 all_sources = [dict(row) for row in cur.fetchall()]
             
-            fast_sources = []
-            other_sources = []
-            for src in all_sources:
-                domain_lower = src['domain'].lower()
-                if any(x in domain_lower for x in ['feed', 'rss', 'xml']) or not any(x in domain_lower for x in ['twitter.com', 'youtube.com', 'youtu.be', 'reddit.com', 'instagram.com', 'facebook.com']):
-                    fast_sources.append(src)
-                else:
-                    other_sources.append(src)
-            
-            selected_other = random.sample(other_sources, min(len(other_sources), 10))
-            sources_to_scrape = fast_sources + selected_other
+            sources_to_scrape = all_sources
             
             sem = asyncio.Semaphore(5)
             
