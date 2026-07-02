@@ -172,7 +172,8 @@ async def scrape_website(url: str):
                 client = Groq(api_key=api_key)
                 prompt = f"""
                 Generate a realistic, factual, recent news article update from the EV media/OEM website {domain_name}.
-                The news must be about real recent EV developments in India, such as the launch of the Tata Sierra EV, Tata Punch EV, Mahindra XUV400, Ola Electric updates, battery technology, charging networks, or government subsidies.
+                The news must be about the major recent Indian EV launch: the Tata Sierra EV.
+                The article should cover key launch details, such as the estimated range of 500 km, design aesthetics, battery pack options, and its position in the premium SUV segment.
                 The article must be professional and factual.
                 Return strictly JSON:
                 {{
