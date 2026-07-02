@@ -81,7 +81,7 @@ def get_news(
     global LAST_FAST_SCRAPE_TIME
     try:
         current_time = time.time()
-        if current_time - LAST_FAST_SCRAPE_TIME > 300.0:
+        if current_time - LAST_FAST_SCRAPE_TIME > 21600.0:
             LAST_FAST_SCRAPE_TIME = current_time
             background_tasks.add_task(run_fast_scrape_background)
             

@@ -269,10 +269,9 @@ async def ingestion_loop():
             # Reset loops retry parameters on successful execution cycle
             attempt = 0
             
-            # Randomized jittered cooling block before next scheduling iteration
-            # Formula: min(T_max, T_base * 2^attempt) +/- jitter
-            jitter = random.uniform(-2.0, 2.0)
-            sleep_sec = max(5.0, 15.0 + jitter)
+            # Sleep for 6 hours (21600 seconds) before the next cycle
+            jitter = random.uniform(-60.0, 60.0)
+            sleep_sec = 21600.0 + jitter
             logger.info(f"[CYCLE-END] Completed ingestion pass. Sleeping for {sleep_sec:.2f}s...")
             await asyncio.sleep(sleep_sec)
             
