@@ -32,6 +32,11 @@ def get_db():
 def init_db():
     """Initializes the SQLite schema for the entire system."""
     with get_db() as conn:
+        try:
+            conn.execute("PRAGMA journal_mode=WAL;")
+            conn.execute("PRAGMA synchronous=NORMAL;")
+        except Exception:
+            pass
         cur = conn.cursor()
         
         # Core Tables
