@@ -4,14 +4,87 @@ from backend.services.news_service import NewsService, AnalyticsService, Intelli
 
 router = APIRouter(prefix="/api")
 
+import time
+
+LAST_FAST_SCRAPE_TIME = 0.0
+
+async def run_fast_scrape_background():
+    try:
+        from workers.website_worker import scrape_website
+        from system_orchestrator import NewsroomOrchestrator
+        from backend.db.queries import get_db
+        
+        targets = [
+            ("evo_india_ev", "https://www.evoindia.com/news"),
+            ("autocar_india_website", "https://www.autocarindia.com/car-news"),
+            ("overdrive_india_website", "https://www.overdrive.in/news-cars"),
+            ("electrek", "https://electrek.co"),
+            ("cleantechnica", "https://cleantechnica.com")
+        ]
+        
+        print("[FAST-SCRAPE] Starting fast-path background scrape...")
+        orchestrator = NewsroomOrchestrator()
+        
+        for source_id, url in targets:
+            try:
+                results = await scrape_website(url)
+                if results:
+                    saved_count = 0
+                    for r in results:
+                        import hashlib
+                        import json
+                        url_hash = hashlib.md5(r['url'].encode()).hexdigest()
+                        rid = f"raw_{url_hash}"
+                        
+                        is_duplicate = False
+                        with get_db() as conn:
+                            cur = conn.cursor()
+                            cur.execute("SELECT id FROM scraped_raw WHERE id=?", (rid,))
+                            if cur.fetchone():
+                                is_duplicate = True
+                        
+                        if not is_duplicate:
+                            engagement_json = json.dumps(r.get("engagement", {}))
+                            with get_db() as conn:
+                                cur = conn.cursor()
+                                cur.execute('''
+                                    INSERT OR IGNORE INTO scraped_raw 
+                                    (id, title, content, url, source_id, source_type, author, timestamp, engagement_data, clustered)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+                                ''', (rid, r['title'], r['content_raw'], r['url'],
+                                      source_id, r['source_type'], r.get("author", "Unknown"),
+                                      r['timestamp'], engagement_json))
+                                conn.commit()
+                            saved_count += 1
+                    print(f"[FAST-SCRAPE] Source {source_id}: saved {saved_count} new raw signals.")
+            except Exception as e:
+                print(f"[FAST-SCRAPE] Error scraping {source_id}: {e}")
+                
+        signals = orchestrator.get_latest_raw_signals(limit=5)
+        for sig in signals:
+            try:
+                await orchestrator.process_signal(sig)
+            except Exception as e:
+                print(f"[FAST-SCRAPE] Error processing signal {sig.get('id')}: {e}")
+                
+    except Exception as global_err:
+        print(f"[FAST-SCRAPE] Error in fast scrape background task: {global_err}")
+
 @router.get("/news")
 def get_news(
+    background_tasks: BackgroundTasks,
     status: Optional[str] = None, 
     search: Optional[str] = None, 
     limit: int = 100,
     page: int = 1
 ):
+    global LAST_FAST_SCRAPE_TIME
     try:
+        current_time = time.time()
+        if current_time - LAST_FAST_SCRAPE_TIME > 300.0:
+            LAST_FAST_SCRAPE_TIME = current_time
+            background_tasks.add_task(run_fast_scrape_background)
+            
         data = NewsService.get_news(status, search, limit, page)
         return {"success": True, "data": data}
     except Exception as e:
