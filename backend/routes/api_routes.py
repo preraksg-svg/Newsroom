@@ -370,6 +370,37 @@ def get_sources_health():
 def get_debug_db():
     try:
         from backend.db.queries import get_db
+        import io
+        import sys
+        import traceback
+        from system_orchestrator import NewsroomOrchestrator
+        
+        # Capture stdout
+        old_stdout = sys.stdout
+        sys.stdout = buffer = io.StringIO()
+        
+        orchestrator_log = ""
+        error_msg = ""
+        try:
+            with get_db() as conn:
+                cur = conn.cursor()
+                cur.execute("SELECT * FROM scraped_raw WHERE title LIKE '%sierra%' AND source_id = 'evo_india_ev'")
+                row = cur.fetchone()
+                if row:
+                    signal = dict(row)
+                    import asyncio
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    loop.run_until_complete(NewsroomOrchestrator().process_signal(signal))
+                    loop.close()
+                else:
+                    error_msg = "No Sierra signal found from evo_india_ev"
+        except Exception as run_err:
+            error_msg = f"Orchestrator Error: {run_err}\n{traceback.format_exc()}"
+        finally:
+            sys.stdout = old_stdout
+            orchestrator_log = buffer.getvalue()
+
         with get_db() as conn:
             cur = conn.cursor()
             
@@ -382,20 +413,18 @@ def get_debug_db():
             cur.execute("SELECT id, title, source_id, timestamp, clustered, length(content) as content_len FROM scraped_raw WHERE title LIKE '%sierra%'")
             recent_raw = [dict(r) for r in cur.fetchall()]
             
-            cur.execute("SELECT count(*) as count FROM stories")
-            recent_tasks = [dict(r) for r in cur.fetchall()]
-            
             return {
                 "success": True,
                 "data": {
                     "stories_by_status": stories,
                     "scraped_raw_by_clustered": scraped_raw,
                     "recent_raw_signals": recent_raw,
-                    "recent_tasks": recent_tasks
+                    "orchestrator_log": orchestrator_log,
+                    "orchestrator_error": error_msg
                 }
             }
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        return {"success": False, "error": str(e), "traceback": traceback.format_exc()}
 
 
 
