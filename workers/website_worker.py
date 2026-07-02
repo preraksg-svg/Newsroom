@@ -10,6 +10,11 @@ from groq import Groq
 
 last_web_memory = {}
 
+EV_REGEX = re.compile(
+    r'\b(ev|evs|electric|hybrid|battery|charging|charger|sierra|punch|ola|ather|tata|mahindra|byd|scooter|windsor|curvv|volt|e-tron|eqs|eqe|eqa|eqb|enyaq|taycan|ioniq|nexon|tiago|tigor|xuv400|be\.05|comet|zs\s+ev|vida|chetak|iqube|roadster|motorcycle|scorpio\.e|thar\.e|altigreen|kinetic|euler|rv400|lithium|gigafactory|subsidy|subsidies|fame|zero-emission|electrified|electrification)\b',
+    re.IGNORECASE
+)
+
 def llm_filter_website(text: str) -> str:
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key or "YOUR_GROQ_API_KEY" in api_key:
@@ -131,9 +136,7 @@ async def scrape_website(url: str):
                         break
                     
                     # Pre-filter by EV title keywords to avoid loading non-EV pages
-                    title_lower = title.lower()
-                    ev_title_keywords = ['ev', 'electric', 'hybrid', 'battery', 'charging', 'sierra', 'punch', 'ola', 'ather', 'tata', 'mahindra', 'byd', 'scooter', 'windsor', 'curvv', 'volt']
-                    if not any(kw in title_lower for kw in ev_title_keywords):
+                    if not EV_REGEX.search(title):
                         continue
                         
                     try:
