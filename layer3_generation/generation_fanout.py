@@ -245,8 +245,9 @@ JSON Structure to return:
     try:
         start_time = time.time()
         print(f"[TRACE:{traceparent}] Dispatching Micro-Task A generation with {model_name}...")
+        loop = asyncio.get_event_loop()
         try:
-            response = call_with_backoff(
+            response = await loop.run_in_executor(None, lambda: call_with_backoff(
                 model=model_name,
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -254,11 +255,11 @@ JSON Structure to return:
                 ],
                 temp=0.3,
                 response_format={"type": "json_object"}
-            )
+            ))
         except Exception as primary_err:
             print(f"[TRACE:{traceparent}] Primary model {model_name} failed: {primary_err}. Trying secondary model llama-3.1-8b-instant...")
             model_name = "llama-3.1-8b-instant"
-            response = call_with_backoff(
+            response = await loop.run_in_executor(None, lambda: call_with_backoff(
                 model=model_name,
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -266,7 +267,7 @@ JSON Structure to return:
                 ],
                 temp=0.3,
                 response_format={"type": "json_object"}
-            )
+            ))
             
         if hasattr(response, 'usage') and response.usage:
             log_groq_usage(response.usage.total_tokens)
@@ -316,7 +317,7 @@ Output the entire, corrected JSON object."""
             print(f"[TRACE:{traceparent}] Sending failed payload back for self-correction attempt {attempt} with {model_name}...")
             correction_start = time.time()
             try:
-                response_retry = call_with_backoff(
+                response_retry = await loop.run_in_executor(None, lambda: call_with_backoff(
                     model=model_name,
                     messages=[
                         {"role": "system", "content": system_prompt},
@@ -326,12 +327,12 @@ Output the entire, corrected JSON object."""
                     ],
                     temp=0.2,
                     response_format={"type": "json_object"}
-                )
+                ))
             except Exception as retry_err:
                 if model_name != "llama-3.1-8b-instant":
                     print(f"[TRACE:{traceparent}] Self-correction failed with {model_name}: {retry_err}. Retrying with llama-3.1-8b-instant...")
                     model_name = "llama-3.1-8b-instant"
-                    response_retry = call_with_backoff(
+                    response_retry = await loop.run_in_executor(None, lambda: call_with_backoff(
                         model=model_name,
                         messages=[
                             {"role": "system", "content": system_prompt},
@@ -341,7 +342,7 @@ Output the entire, corrected JSON object."""
                         ],
                         temp=0.2,
                         response_format={"type": "json_object"}
-                    )
+                    ))
                 else:
                     raise retry_err
             
