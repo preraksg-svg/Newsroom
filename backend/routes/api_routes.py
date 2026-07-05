@@ -1,5 +1,8 @@
 from fastapi import APIRouter, HTTPException, Query, Body, BackgroundTasks
+from fastapi.responses import Response
 from typing import Optional, Dict, Any
+import aiohttp
+import re
 from backend.services.news_service import NewsService, AnalyticsService, IntelligenceService
 
 router = APIRouter(prefix="/api")
@@ -171,6 +174,28 @@ def get_raw_source(id: str):
         return {"success": True, "data": data}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+@router.get("/proxy")
+async def proxy_url(url: str):
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}, timeout=15) as resp:
+                content_type = resp.headers.get("Content-Type", "")
+                content_bytes = await resp.read()
+                if "text/html" in content_type.lower():
+                    try:
+                        content_str = content_bytes.decode('utf-8', errors='ignore')
+                        base_tag = f"<base href='{url}'>"
+                        if "<head>" in content_str.lower():
+                            content_str = re.sub(r'(<head[^>]*>)', r'\1' + base_tag, content_str, flags=re.IGNORECASE)
+                        else:
+                            content_str = base_tag + content_str
+                        content_bytes = content_str.encode('utf-8')
+                    except Exception:
+                        pass
+                return Response(content=content_bytes, media_type=content_type)
+    except Exception as e:
+        return Response(content=f"Failed to load URL: {str(e)}", status_code=500, media_type="text/plain")
 
 @router.get("/rejected")
 def get_rejected():

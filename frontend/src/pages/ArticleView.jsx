@@ -66,7 +66,7 @@ export default function ArticleView() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [isEditMode, setIsEditMode] = useState(false)
-  const [isSplitView, setIsSplitView] = useState(false)
+  const [isSplitView, setIsSplitView] = useState(true)
   const [editedStory, setEditedStory] = useState(null)
   const [actionLoading, setActionLoading] = useState(null)
 
@@ -231,10 +231,6 @@ export default function ArticleView() {
           }`}>
             {story.status?.toUpperCase() || 'UNKNOWN'}
           </span>
-          <div className={`edit-toggle ${isSplitView ? 'active' : ''}`} onClick={() => setIsSplitView(!isSplitView)}>
-             <Split size={14} />
-             <span style={{ marginLeft: '8px' }}>SPLIT VIEW</span>
-          </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           {story.status === 'Draft' && (
@@ -485,7 +481,7 @@ export default function ArticleView() {
             </div>
             {story.url ? (
               <iframe 
-                src={story.url} 
+                src={`${API_BASE}/api/proxy?url=${encodeURIComponent(story.url)}`} 
                 title="Original Source Signal" 
                 style={{ width: '100%', flex: 1, border: 'none', background: '#fff' }} 
               />
