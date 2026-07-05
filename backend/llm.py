@@ -452,8 +452,8 @@ def _rewrite_article_fallback(content, url=None, title=None):
     if any(x in headline.lower() for x in ["exciting news", "zapway cycle", "we are proud", "we're excited", "we are thrilled"]):
         headline = "Electric Vehicle Sector Accelerates Sourcing and Fleet Infrastructure"
 
-    if len(headline) > 80:
-        headline = truncate_word_safe(headline, 80)
+    if len(headline) > 120:
+        headline = truncate_word_safe(headline, 120)
 
     topic = matched_company if matched_company else "Global"
     
@@ -478,15 +478,13 @@ def _rewrite_article_fallback(content, url=None, title=None):
     ]
 
     # Construct complete sentences for SEO metadata to avoid trailing dots or cut-off sentences
-    seo_title = f"{topic} EV Market Analysis & Smart Mobility Trends"
-    if len(seo_title) > 60:
-        seo_title = truncate_word_safe(f"{topic} EV News & Market Analysis | ZAPWAY", 60)
-    
-    seo_desc = f"Discover the latest electric vehicle developments and charging infrastructure updates for {topic}. Learn about smart mobility milestones on ZAPWAY."
-    if len(seo_desc) > 155:
-        seo_desc = truncate_word_safe(f"Latest electric vehicle news and charging updates for {topic}. Read key smart mobility developments on ZAPWAY.", 155)
-    if len(seo_desc) > 155:
-        seo_desc = truncate_word_safe(f"Latest electric vehicle news and charging infrastructure updates. Read key smart mobility developments on ZAPWAY.", 155)
+    seo_title = f"{topic} EV News & Market Analysis | ZAPWAY"
+    seo_title = clean_incomplete_ending(seo_title)
+
+    if topic and topic != "Global":
+        seo_desc = f"Latest electric vehicle news and charging updates for {topic}. Read key smart mobility developments on ZAPWAY."
+    else:
+        seo_desc = f"Latest electric vehicle news and charging infrastructure updates. Read key smart mobility developments on ZAPWAY."
 
     result = {
         "title": headline,

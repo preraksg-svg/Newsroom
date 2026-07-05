@@ -12,12 +12,16 @@ from keyword_engine import KeywordEngine, generate_keyword_faq
 def truncate_word_safe(text, max_chars):
     if not text or len(text) <= max_chars:
         return text
-    # Find the last space before the limit
     truncated = text[:max_chars]
+    # Try to find a sentence boundary first
+    last_period = truncated.rfind('. ')
+    if last_period > max_chars * 0.5:
+        return text[:last_period+1].strip()
+        
     last_space = truncated.rfind(' ')
     if last_space != -1:
-        return text[:last_space].strip()
-    return truncated
+        return text[:last_space].strip() + "..."
+    return truncated + "..."
 
 def clean_incomplete_ending(text):
     if not text:
@@ -45,8 +49,8 @@ def generate_seo_metadata(title, content, news_type="EV"):
         try:
             llm_meta = generate_meta_tags(primary, title, content[:200])
             if llm_meta and "meta_title" in llm_meta:
-                meta_title_val = clean_incomplete_ending(truncate_word_safe(llm_meta["meta_title"], 60))
-                meta_desc_val = clean_incomplete_ending(truncate_word_safe(llm_meta.get("meta_description", llm_meta.get("meta_desc", "")), 155))
+                meta_title_val = clean_incomplete_ending(llm_meta["meta_title"])
+                meta_desc_val = clean_incomplete_ending(llm_meta.get("meta_description", llm_meta.get("meta_desc", "")))
                 return {
                     "meta_title": meta_title_val,
                     "meta_desc": meta_desc_val,
@@ -68,9 +72,9 @@ def generate_seo_metadata(title, content, news_type="EV"):
     
     meta_title = f"{title} | ZAPWAY"
     if len(meta_title) > 60:
-        meta_title = truncate_word_safe(f"{title} | ZAPWAY EV News", 60)
-    if len(meta_title) > 60 or not meta_title:
-        meta_title = truncate_word_safe(f"{title}", 60)
+        meta_title = truncate_word_safe(f"{title} | ZAPWAY EV News", 80)
+    if len(meta_title) > 80 or not meta_title:
+        meta_title = truncate_word_safe(f"{title}", 80)
     
     meta_title = clean_incomplete_ending(meta_title)
 
@@ -114,8 +118,8 @@ def generate_seo_metadata(title, content, news_type="EV"):
     meta_desc = clean_incomplete_ending(meta_desc)
     
     return {
-        "meta_title": truncate_word_safe(meta_title, 60),
-        "meta_desc": truncate_word_safe(meta_desc, 155),
+        "meta_title": meta_title,
+        "meta_desc": meta_desc,
         "keywords": primary,
         "strategy": strategy
     }
