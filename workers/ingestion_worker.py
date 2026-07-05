@@ -134,8 +134,28 @@ async def process_task_safe(worker_id, src, traceparent):
     """Process a single scraping task with trace preservation and circuit breaker wrapping."""
     source_id = src["source_id"]
     domain = src["domain"]
+    # Map type correctly from domain if it's an abstract category
     stype = src["type"].lower()
+    domain_lower = domain.lower()
     
+    if "twitter.com" in domain_lower:
+        stype = "twitter"
+    elif "youtube.com" in domain_lower or "youtu.be" in domain_lower:
+        stype = "youtube"
+    elif "reddit.com" in domain_lower:
+        stype = "reddit"
+    elif "instagram.com" in domain_lower:
+        stype = "instagram"
+    elif "facebook.com" in domain_lower:
+        stype = "facebook"
+    elif stype in ["news_api", "newsapi"]:
+        stype = "newsapi"
+    elif stype == "newsdata":
+        stype = "newsdata"
+    elif stype == "gnews":
+        stype = "gnews"
+    else:
+        stype = "website"
     # Import scraping modules dynamically
     from workers.twitter_worker import scrape_twitter
     from workers.youtube_worker import scrape_youtube

@@ -86,13 +86,10 @@ async def scrape_website(url: str):
                     pass # Fallback to summary
 
                     
-                ev_keywords = re.compile(r'(ev|electric|battery|policy|charging|solar|renewable)', re.IGNORECASE)
                 if ev_keywords.search(article_content):
                     final_content = article_content
                 else:
-                    filtered = llm_filter_website(article_content)
-                    if not filtered: continue
-                    final_content = filtered
+                    final_content = article_content
 
                 dt_str = entry.get("published", entry.get("updated", ""))
                 try:
@@ -162,9 +159,7 @@ async def scrape_website(url: str):
                                 if ev_keywords.search(article_content):
                                     final_content = article_content
                                 else:
-                                    filtered = llm_filter_website(article_content)
-                                    if not filtered: continue
-                                    final_content = filtered
+                                    final_content = article_content
 
                                 results.append({
                                     "title": title,
