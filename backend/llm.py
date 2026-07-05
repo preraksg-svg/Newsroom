@@ -467,104 +467,15 @@ def _rewrite_article_fallback(content, url=None, title=None):
     body_sentences = unique_sentences[1:] if len(unique_sentences) > 1 else []
     additional_input_text = " ".join(body_sentences)
 
-    ai_summary_text = (
-        f"The recent market intelligence report regarding {topic} reveals key milestones in the electrification sector. "
-        f"By focusing on component localization, charging infrastructure expansion, and battery management optimization, the sector addresses core operational constraints. "
-        f"This analysis examines the strategic developments, local integration challenges, and the resulting changes in consumer EV adoption rates across major global and domestic corridors. "
-        f"The findings indicate a steady shift toward battery-powered systems, driven by policy incentives and industrial scaling."
-    )
+    ai_summary_text = additional_input_text[:300] + "..." if additional_input_text else headline
+    key_points_text = f"* {headline}\n* Detailed updates provided in the source."
+    what_happened_text = additional_input_text if additional_input_text else headline
 
-    key_points_text = (
-        f"* Strategic deployment of high-capacity DC charging infrastructure along heavy-traffic corridors to reduce range anxiety.\n"
-        f"* Increased utilization of localized supply chains and component sourcing to mitigate global import dependencies.\n"
-        f"* Implementation of smart grid balancing protocols to manage peak charging loads effectively without grid disruption.\n"
-        f"* Integration of real-time telemetry data into vehicle navigation platforms to streamline charging station discovery.\n"
-        f"* Gradual decline in battery pack production costs through manufacturing improvements and cell chemistry optimization."
-    )
-
-    what_happened_text = (
-        f"The latest industry announcement regarding {topic} highlights a structured effort to scale manufacturing capacity and improve product availability. "
-        f"Manufacturers are optimizing production floor operations to meet rising consumer demand while maintaining high quality control standards. "
-        f"This includes the integration of automated battery assembly modules, refined thermal management systems, and direct software updates to improve vehicle diagnostics. "
-        f"Furthermore, strategic partnerships with grid operators are being finalized to support the deployment of high-voltage chargers in key commercial zones. "
-        f"This systemic approach allows the organization to build a resilient production line that can withstand market fluctuations. "
-        f"Additionally, the deployment is structured to support commercial fleet operations, reducing transition downtime and offering robust charging performance in high-density areas. "
-        f"This ensures that regional grids can accommodate the new load without overloading transformer units. "
-        f"{additional_input_text}"
-    )
-
-    why_it_matters_text = (
-        f"Establishing a reliable electrified transport ecosystem is critical for achieving carbon neutrality and reducing operational overheads. "
-        f"For passenger vehicle operators and fleet management companies, these developments translate directly to lower total cost of ownership and improved vehicle uptime. "
-        f"Furthermore, standardizing charger interfaces and communication protocols minimizes technical fragmentation in the charging network, ensuring interoperability. "
-        f"This interoperability encourages hesitant buyers to make the transition, knowing they can access public charging facilities without experiencing compatibility issues. "
-        f"Ultimately, building a seamless charging corridor network builds long-term consumer trust and stabilizes secondary market resale valuations. "
-        f"This transition is necessary for long-term fleet resilience."
-    )
-
-    impact_industry_text = (
-        f"The broader automotive industry is undergoing a significant reallocation of capital from internal combustion engines to battery-electric platforms. "
-        f"This shift forces traditional suppliers to adapt their production lines for electric drivetrains, battery enclosures, and power electronics. "
-        f"As competition intensifies, original equipment manufacturers are entering direct agreements with cell producers to secure raw material supplies. "
-        f"This vertical integration trend is reshaping the automotive value chain, reducing the influence of traditional middle-tier suppliers and accelerating tech innovation."
-    )
-
-    impact_india_text = (
-        f"In India, these developments directly align with national electric mobility goals and local manufacturing initiatives. "
-        f"The production-linked incentive schemes introduced by the central government continue to drive the localization of battery pack assembly and electric motors. "
-        f"Furthermore, state-level EV policies that offer road tax exemptions and charging infrastructure subsidies are vital for boosting regional sales. "
-        f"Expanding the fast-charging network along major national highways is essential to connect tier-one cities with emerging industrial corridors, fostering nationwide adoption."
-    )
-
-    zapway_analysis_text = (
-        f"From a platform perspective, these updates alter the range prediction algorithms and route optimization models on the ZAPWAY application. "
-        f"By incorporating the updated performance metrics and real-time charging station locations, ZAPWAY provides users with precise state-of-charge forecasts. "
-        f"This reduces the likelihood of range anxiety and helps fleet operators optimize delivery schedules. "
-        f"The system continuously gathers telemetry data to update its routing recommendations, ensuring that EV drivers can navigate both urban centers and highways with confidence. "
-        f"These adjustments will be integrated into the upcoming navigation update, improving route calculations by an estimated fifteen percent."
-    )
-
-    future_outlook_text = (
-        f"Over the next twelve to thirty-six months, the electric vehicle market is expected to see increased collaboration between automakers and grid utility companies. "
-        f"Vehicle-to-grid integration and bidirectional charging will emerge as standard features, enabling electric vehicles to act as distributed energy storage systems. "
-        f"Additionally, the maturation of second-life battery projects will create sustainable recycling pathways for retired vehicle packs. "
-        f"These developments will contribute to a more stable electrical grid and a circular automotive economy."
-    )
-
-    conclusion_text = (
-        f"In conclusion, the successful transition to electric mobility requires a balanced approach that addresses charging infrastructure, supply chains, and vehicle affordability. "
-        f"The latest updates concerning {topic} demonstrate steady progress toward solving these complex industrial challenges. "
-        f"As regulatory pressure increases and technology matures, the adoption of clean transportation solutions will continue to accelerate, laying the foundation for sustainable smart mobility grids. "
-        f"Addressing grid constraints and battery recycling early on will ensure the longevity of the clean transport ecosystem."
-    )
-
-    # Dynamically select sections based on content relevance
     sections = [
         {"heading": "AI Summary", "content": ai_summary_text},
         {"heading": "Key Points", "content": key_points_text},
-        {"heading": "What Happened", "content": what_happened_text},
-        {"heading": "Why It Matters", "content": why_it_matters_text}
+        {"heading": "What Happened", "content": what_happened_text}
     ]
-
-    # Dynamic conditions
-    content_lower = (content or "").lower()
-    headline_lower = (headline or "").lower()
-
-    is_industry_relevant = any(x in content_lower for x in ["industry", "market", "competit", "oem", "manufacturer", "battery", "supply chain", "production"])
-    is_india_relevant = any(x in content_lower or x in headline_lower for x in ["india", "delhi", "mumbai", "bangalore", "tata", "mahindra", "ola", "ather", "smev", "pib", "ministry"])
-    is_future_relevant = len(content or "") > 150
-
-    if is_industry_relevant:
-        sections.append({"heading": "Impact on EV Industry", "content": impact_industry_text})
-    if is_india_relevant:
-        sections.append({"heading": "Impact on India", "content": impact_india_text})
-        
-    sections.append({"heading": "ZAPWAY Analysis", "content": zapway_analysis_text})
-    
-    if is_future_relevant:
-        sections.append({"heading": "Future Outlook", "content": future_outlook_text})
-        
-    sections.append({"heading": "Conclusion", "content": conclusion_text})
 
     # Construct complete sentences for SEO metadata to avoid trailing dots or cut-off sentences
     seo_title = f"{topic} EV Market Analysis & Smart Mobility Trends"
