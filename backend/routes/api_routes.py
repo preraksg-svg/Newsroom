@@ -178,10 +178,21 @@ def get_raw_source(id: str):
 @router.get("/proxy")
 async def proxy_url(url: str):
     try:
+        if not url.startswith("http"):
+            url = "https://" + url
+            
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}, timeout=15) as resp:
-                content_type = resp.headers.get("Content-Type", "")
-                content_bytes = await resp.read()
+            async with session.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}, timeout=10) as resp:
+                if resp.status in (401, 403, 406, 503):
+                    # Fallback to public CORS proxy if blocked (e.g. Cloudflare)
+                    fallback_url = f"https://api.allorigins.win/raw?url={url}"
+                    async with session.get(fallback_url, timeout=15) as fb_resp:
+                        content_type = fb_resp.headers.get("Content-Type", "text/html")
+                        content_bytes = await fb_resp.read()
+                else:
+                    content_type = resp.headers.get("Content-Type", "")
+                    content_bytes = await resp.read()
+                    
                 if "text/html" in content_type.lower():
                     try:
                         content_str = content_bytes.decode('utf-8', errors='ignore')
@@ -193,9 +204,18 @@ async def proxy_url(url: str):
                         content_bytes = content_str.encode('utf-8')
                     except Exception:
                         pass
+                        
                 return Response(content=content_bytes, media_type=content_type)
     except Exception as e:
-        return Response(content=f"Failed to load URL: {str(e)}", status_code=500, media_type="text/plain")
+        # Final fallback if aiohttp throws exception (e.g. SSL error)
+        try:
+            async with aiohttp.ClientSession() as session:
+                fallback_url = f"https://api.allorigins.win/raw?url={url}"
+                async with session.get(fallback_url, timeout=15) as fb_resp:
+                    content_bytes = await fb_resp.read()
+                    return Response(content=content_bytes, media_type="text/html")
+        except:
+            return Response(content=f"Failed to load URL: {str(e)}", status_code=500, media_type="text/plain")
 
 @router.get("/rejected")
 def get_rejected():
