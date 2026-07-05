@@ -81,6 +81,7 @@ def init_db():
                 type TEXT,
                 category TEXT,
                 tier TEXT,
+                country TEXT DEFAULT 'IN',
                 score_authority REAL DEFAULT 0.5,
                 score_accuracy REAL DEFAULT 0.5,
                 score_speed REAL DEFAULT 0.5,

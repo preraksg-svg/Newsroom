@@ -156,7 +156,10 @@ class NewsroomOrchestrator:
             # 8-21: Process each cluster
             processed_count = 0
             for signal in raw_signals:
-                await self.process_signal(signal)
+                try:
+                    await self.process_signal(signal)
+                except Exception as sig_err:
+                    print(f"[PIPELINE] Error processing signal {signal['id']}: {sig_err}")
                 processed_count += 1
             
             print(f"[PIPELINE] Processed {processed_count} signals.")
