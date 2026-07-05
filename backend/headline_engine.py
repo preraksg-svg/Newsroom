@@ -167,6 +167,7 @@ RULES:
 - Keep factual accuracy
 - Optimize for clicks + credibility
 - Max 15 words each
+- CRITICAL: ALWAYS complete your sentences. DO NOT leave generated headlines or texts cut off.
 
 Return STRICT JSON:
 {{
@@ -181,7 +182,7 @@ Return STRICT JSON:
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             temperature=0.5,
-            max_completion_tokens=400,
+            max_completion_tokens=1200,
             response_format={"type": "json_object"},
             messages=[
                 {"role": "system", "content": "You are a headline optimization engine. Output strict JSON only."},

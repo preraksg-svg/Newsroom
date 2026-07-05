@@ -112,7 +112,7 @@ Return ONLY the post content. No explanations."""
                 {"role": "user", "content": user_prompt}
             ],
             temperature=0.6,
-            max_completion_tokens=300
+            max_completion_tokens=1200
         )
         if hasattr(completion, 'usage') and completion.usage:
             log_groq_usage(completion.usage.total_tokens)
@@ -128,7 +128,7 @@ Return ONLY the post content. No explanations."""
                         {"role": "user", "content": user_prompt}
                     ],
                     temperature=0.6,
-                    max_completion_tokens=300
+                    max_completion_tokens=1200
                 )
                 return completion.choices[0].message.content.strip()
             except Exception as e2:
@@ -1049,6 +1049,7 @@ RULES:
 - summary: Max 80 words. Cover: what happened + why it matters for EV buyers. No fluff. No repetition. No generic phrases.
 - key_points: Exactly 3 bullet points. Each max 12 words. Specific facts only.
 - sections: If the article is not structured, generate 3-4 structured sections with 'heading' and 'content'.
+- CRITICAL: ALWAYS complete your sentences. DO NOT leave generated summaries, points, or sections cut off.
 
 Title: {title}
 Content: {body}
@@ -1071,7 +1072,7 @@ Return ONLY valid JSON:
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             temperature=0.2,
-            max_completion_tokens=300,
+            max_completion_tokens=1800,
             response_format={"type": "json_object"},
             messages=[
                 {"role": "system", "content": "You are a precise EV news summarizer. Output strict JSON only. No markdown."},
