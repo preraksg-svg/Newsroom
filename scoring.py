@@ -5,10 +5,7 @@ from groq import Groq
 import os
 from dateutil import parser
 
-# Initialize Groq client
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-if not os.environ.get("GROQ_API_KEY"):
-    raise ValueError("GROQ_API_KEY environment variable is not set. Please set it in your .env file.")
+from backend.llm import get_groq_client
 
 KNOWN_PUBLISHERS = {
     "reuters": 95, "bloomberg": 95, "insideevs": 85, "electrek": 85, 
@@ -46,6 +43,17 @@ Do NOT include markdown wrapping like ```json. ONLY return valid JSON.
     
     user_prompt = f"TITLE: {title}\n\nCONTENT Snippet: {content[:2000]}"
     
+    client = get_groq_client()
+    if not client:
+        print("Scoring Heuristic LLM Error: AI client unavailable.")
+        # Fallback empty heuristic
+        return {
+            "intelligence": {"topic_importance": 50, "novelty": 50, "data_richness": 50, "ecosystem_impact": 50, "technical_depth": 50},
+            "virality": {"topic_trend": 50, "emotion": 50, "shareability": 50},
+            "relevance": {"india_relevance": 50, "user_utility": 50, "category_importance": 50},
+            "news_type": "General"
+        }
+
     try:
         completion = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
