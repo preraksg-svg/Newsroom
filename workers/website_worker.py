@@ -39,23 +39,7 @@ def llm_filter_website(text: str) -> str:
         )
         return completion.choices[0].message.content.strip()
     except Exception as e:
-        if "rate_limit_exceeded" in str(e):
-            print(f"[LLM] Website filter primary model rate limited. Falling back to 8b-instant.")
-            try:
-                completion = client.chat.completions.create(
-                    model="llama-3.1-8b-instant",
-                    messages=[
-                        {"role": "system", "content": "Extract clean article content with headings. Focus only on EV-related news, policy, launches, or technology. Remove ads and noise. Return empty if irrelevant."},
-                        {"role": "user", "content": text}
-                    ],
-                    temperature=0.1,
-                    max_tokens=600
-                )
-                return completion.choices[0].message.content.strip()
-            except Exception as e2:
-                print(f"[LLM] Error in website filter fallback: {e2}")
-        else:
-            print(f"[LLM] Error in website filter: {e}")
+        print(f"[LLM] Error in website filter: {e}")
         return ""
 
 async def scrape_website(url: str):
