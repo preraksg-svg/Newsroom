@@ -479,6 +479,7 @@ def _rewrite_article_fallback(content, url=None, title=None):
 
     # Construct complete sentences for SEO metadata to avoid trailing dots or cut-off sentences
     seo_title = f"{topic} EV News & Market Analysis | ZAPWAY"
+    from seo_engine import clean_incomplete_ending
     seo_title = clean_incomplete_ending(seo_title)
 
     if topic and topic != "Global":
