@@ -73,6 +73,12 @@ async def worker_loop(worker_id: int):
                         skipped_count += 1
                         record_worker_ingestion(source_id, was_selected=False)
                         continue
+                        
+                    # ── Freshness: Skip news older than 24 hours ──────
+                    import time
+                    if int(time.time()) - r.get("timestamp", int(time.time())) > 86400:
+                        skipped_count += 1
+                        continue
 
                     # Pre-Cluster Deduplication
                     url_hash = hashlib.md5(r['url'].encode()).hexdigest()

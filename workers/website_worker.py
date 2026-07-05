@@ -96,6 +96,10 @@ async def scrape_website(url: str):
                     timestamp = int(parser.parse(dt_str).timestamp()) if dt_str else int(time.time())
                 except:
                     timestamp = int(time.time())
+                
+                # Check if news is older than 24 hours (86400 seconds)
+                if int(time.time()) - timestamp > 86400:
+                    continue
 
                 results.append({
                     "title": title,
@@ -161,13 +165,28 @@ async def scrape_website(url: str):
                                 else:
                                     final_content = article_content
 
+                                # Extract publication date if possible
+                                meta_date = a_soup.find("meta", property="article:published_time")
+                                if not meta_date:
+                                    meta_date = a_soup.find("meta", attrs={"name": "publication_date"})
+                                timestamp = int(time.time())
+                                if meta_date and meta_date.get("content"):
+                                    try:
+                                        timestamp = int(parser.parse(meta_date["content"]).timestamp())
+                                    except:
+                                        pass
+                                
+                                # Check if news is older than 24 hours
+                                if int(time.time()) - timestamp > 86400:
+                                    continue
+
                                 results.append({
                                     "title": title,
                                     "content_raw": final_content,
                                     "source": base_domain,
                                     "source_type": "website",
                                     "author": base_domain,
-                                    "timestamp": int(time.time()),
+                                    "timestamp": timestamp,
                                     "url": link,
                                     "engagement": {"likes": 0, "comments": 0, "shares": 0}
                                 })
