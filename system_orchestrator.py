@@ -204,24 +204,12 @@ class NewsroomOrchestrator:
         with get_db() as conn:
             cur = conn.cursor()
             
-            # 1) Auto-reject non-Indian signals to avoid processing them (Global EV news rejected)
-            cur.execute("""
-                UPDATE scraped_raw 
-                SET clustered = 1 
-                WHERE id IN (
-                    SELECT r.id FROM scraped_raw r
-                    LEFT JOIN sources s ON r.source_id = s.source_id
-                    WHERE r.clustered = 0 AND COALESCE(s.country, 'IN') != 'IN'
-                )
-            """)
-            
-            # 2) Fetch only Indian signals
+            # 2) Fetch signals (Global + India allowed)
             cur.execute("""
                 SELECT r.*, COALESCE(s.country, 'IN') as country 
                 FROM scraped_raw r
                 LEFT JOIN sources s ON r.source_id = s.source_id
                 WHERE r.clustered = 0 AND CAST(r.timestamp AS INTEGER) >= ? 
-                AND COALESCE(s.country, 'IN') = 'IN'
                 ORDER BY r.timestamp DESC
                 LIMIT ?
             """, (cutoff, limit))
