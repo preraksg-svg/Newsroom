@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { google } = require('googleapis');
@@ -20,7 +20,12 @@ function checkScheduledEntries() {
   
   overdue.forEach(e => {
     console.log(`[Scheduler Alert] Title: "${e.title}" | Scheduled Date: ${e.date} | Note: "${e.note || ''}"`);
-    // Electron Notification API call will be inserted here
+    if (Notification.isSupported()) {
+      new Notification({
+        title: 'Overdue Post Reminder',
+        body: `"${e.title}" (scheduled for ${e.date}) is pending post.`
+      }).show();
+    }
   });
 }
 
@@ -223,5 +228,11 @@ ipcMain.handle('sys:toggleDaemon', (event, enable) => {
 ipcMain.handle('sys:checkDaemon', () => {
   const settings = db.getSettings();
   return { enabled: !!settings.backgroundRemindersEnabled };
+});
+
+ipcMain.on('webview:sendData', (event, webviewId, text) => {
+  if (mainWindow) {
+    mainWindow.webContents.send('webview:pasteData', webviewId, text);
+  }
 });
 

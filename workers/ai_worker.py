@@ -4,7 +4,6 @@ import logging
 from system_orchestrator import NewsroomOrchestrator
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format='[AI-WORKER] %(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("ai_worker")
 
 async def ai_processing_loop():
@@ -39,4 +38,6 @@ async def ai_processing_loop():
             await asyncio.sleep(10)
 
 if __name__ == "__main__":
+    import logging
+    logging.basicConfig(level=logging.INFO, format='[AI-WORKER] %(asctime)s - %(levelname)s - %(message)s')
     asyncio.run(ai_processing_loop())

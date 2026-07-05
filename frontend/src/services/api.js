@@ -9,6 +9,9 @@ const fetchApi = async (path, options = {}) => {
     return json.data
   } catch (err) {
     console.error(`[API Error] ${path}:`, err)
+    if (err.message === 'Failed to fetch') {
+      throw new Error('Backend Server is Offline. Please ensure you have launched the app using the Launch_Zapway_Newsroom.bat script (which needs to stay open).')
+    }
     throw err
   }
 }

@@ -183,8 +183,8 @@ class NewsroomOrchestrator:
     def get_latest_raw_signals(self, limit=10):
         """Fetch unclustered signals from scraped_raw enforcing a 90% India / 10% Global ratio."""
         current_time = int(time.time())
-        # Look back up to 365 days to ensure crawled signals are processed successfully
-        cutoff = current_time - 31536000
+        # Look back up to 7 days to ensure only recent signals are processed
+        cutoff = current_time - 604800
         with get_db() as conn:
             cur = conn.cursor()
             # Fetch all unclustered signals in the window, joining with sources to get country
@@ -236,7 +236,7 @@ class NewsroomOrchestrator:
 
         # 8.5: LLM Noise Filtering (Moved from ingestion layer to ensure fast intake)
         from backend.llm import filter_article
-        filter_res = filter_article(signal.get('title', ''), signal.get('content', ''))
+        filter_res = await asyncio.to_thread(filter_article, signal.get('title', ''), signal.get('content', ''))
         if not filter_res.get('relevant', True):
              print(f"[FILTER] Signal rejected by AI Gatekeeper: {filter_res.get('reason', 'Irrelevant content')}")
              return
@@ -247,7 +247,8 @@ class NewsroomOrchestrator:
             content_pkg = await self.generate_article_via_llm(signal, mode)
             
             # 12: Content Scoring (PRE-PUBLISH)
-            score_res = compute_content_score(
+            score_res = await asyncio.to_thread(
+                compute_content_score,
                 headline=content_pkg['title'],
                 content=content_pkg['body'],
                 source_url=signal['url'],
@@ -259,11 +260,11 @@ class NewsroomOrchestrator:
                 return
 
             # 13: Keyword + SEO Engine
-            seo_pkg = generate_seo_metadata(content_pkg['title'], content_pkg['body'])
-            seo_faq = generate_faq(content_pkg['body'], seo_pkg['keywords'])
+            seo_pkg = await asyncio.to_thread(generate_seo_metadata, content_pkg['title'], content_pkg['body'])
+            seo_faq = await asyncio.to_thread(generate_faq, content_pkg['body'], seo_pkg['keywords'])
             
             # 14-15: Variant Generation (Bandit Ready)
-            h_variants = generate_headline_variations(content_pkg['title'], content_pkg['body'])
+            h_variants = await asyncio.to_thread(generate_headline_variations, content_pkg['title'], content_pkg['body'])
             
             # 16-18: Publication & DB Storage
             # Resolve actual source/publisher name from sources database
@@ -310,7 +311,7 @@ class NewsroomOrchestrator:
             # Send Email Notification
             try:
                 from email_utils import send_alert_email
-                send_alert_email(content_pkg['title'])
+                asyncio.create_task(asyncio.to_thread(send_alert_email, content_pkg['title']))
             except Exception as email_err:
                 print(f"[PIPELINE] Failed to send email notification: {email_err}")
             
@@ -348,7 +349,7 @@ class NewsroomOrchestrator:
         
         # Use run_microtask_a_with_retry from layer3_generation.generation_fanout
         from layer3_generation.generation_fanout import run_microtask_a_with_retry
-        result = await run_microtask_a_with_retry(signal['content'], url=signal.get('url'), trace_id=self.trace_id)
+        result = await run_microtask_a_with_retry(signal['content'], url=signal.get('url'), trace_id=self.trace_id, title=signal.get('title'))
         
         if not result or result == "ABORT_INSUFFICIENT_DATA":
             print(f"[OBSERVABILITY][{self.traceparent}] [GROUNDING] LLM returned ABORT_INSUFFICIENT_DATA or empty response.")

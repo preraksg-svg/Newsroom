@@ -17,6 +17,7 @@ export default function App() {
   const [calendar, setCalendar] = useState([]);
   const [settings, setSettings] = useState({ youtubeOauth: {}, publishDefaults: {} });
   const [daemonEnabled, setDaemonEnabled] = useState(false);
+  const [librarySearchQuery, setLibrarySearchQuery] = useState('');
 
   // Zone A: AI Tab Dock State
   const [openAiTabs, setOpenAiTabs] = useState([
@@ -611,20 +612,17 @@ export default function App() {
                 <input 
                   type="text" 
                   placeholder="Search metadata archive..." 
-                  onChange={(e) => {
-                    const q = e.target.value.toLowerCase();
-                    if (window.api) {
-                      window.api.getCalendar().then(all => {
-                        setCalendar(all.filter(i => i.title.toLowerCase().includes(q) || (i.note || '').toLowerCase().includes(q)));
-                      });
-                    }
-                  }} 
+                  value={librarySearchQuery}
+                  onChange={(e) => setLibrarySearchQuery(e.target.value)} 
                 />
               </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-              {calendar.map(item => (
+              {calendar.filter(item => {
+                const q = librarySearchQuery.toLowerCase();
+                return item.title.toLowerCase().includes(q) || (item.note || '').toLowerCase().includes(q);
+              }).map(item => (
                 <div key={item.id} className="glass-panel" style={{ display: 'flex', flexDirection: 'column', height: '220px' }}>
                   <div className="panel-header" style={{ textTransform: 'none', display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ fontWeight: 700 }}>{item.title}</span>

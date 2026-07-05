@@ -2,6 +2,7 @@ import os
 import json
 import re
 import time
+import asyncio
 import traceback
 import hashlib
 from backend.db.queries import get_db, log_groq_usage
@@ -160,7 +161,7 @@ def validate_word_count(payload):
         return [f"Total article length across sections is {total_words} words, which is below the minimum required 600 words. Please rewrite and significantly expand all sections (except Key Points) with multiple detailed paragraphs of context, explaining technical terms, adding business implications, and providing rich details to reach between 600 and 900 words."]
     return []
 
-async def run_microtask_a_with_retry(content, url=None, trace_id=None):
+async def run_microtask_a_with_retry(content, url=None, trace_id=None, title=None):
     client = get_groq_client()
     max_tokens = calculate_dynamic_headroom(content)
     
@@ -179,7 +180,7 @@ async def run_microtask_a_with_retry(content, url=None, trace_id=None):
 Follow these strict constraints:
 1. PERSPECTIVE: Write exclusively in the third-person objective. Never use "we", "our", "us", "I", "you", or "your". Refer to entities by their formal names (e.g., "Rivian", "Tata Power", "the manufacturer").
 2. LINGUISTIC CLOSURE: Every sentence must be grammatically complete and concluded. Do not trail off, leave sentences unfinished, or output incomplete words.
-3. GROUNDING: Do not use prior training knowledge to invent news, figures, or timelines. Only use facts present in the provided sources. If the source text is empty or corrupt, abort by outputting: "ABORT_INSUFFICIENT_DATA".
+3. GROUNDING & DATA INTEGRITY: Do not use prior training knowledge to invent news, figures, or timelines. Only use facts present in the provided sources. If the source text is empty or corrupt, abort by outputting: "ABORT_INSUFFICIENT_DATA". CRITICAL: Do NOT alter, modify, translate, or round original prices (e.g. keep 'Rs 27.90 lakh' exactly as in the source), variant/trim names (e.g. keep 'Comfort' or 'eMax 7 Comfort' exactly as is), model names, specs, numbers, or specific brand figures. Keep all factual figures, names, and prices completely unchanged from the raw source.
 4. ANTI-FLUFF: Strip out all promotional language. Banish phrases like "proud to announce", "exceptional performance", "committed to our mission", and social hashtags.
 5. NO STUFFING: Do not insert generic paragraphs about battery chemistries or sustainability unless explicitly and numerically detailed in the raw source inputs.
 6. ZAPWAY ANALYSIS: You must dynamically calculate how the news event alters route optimization variables, charging station discovery timelines, or real-world battery range prediction factors on the ZAPWAY application platform.
@@ -214,7 +215,7 @@ JSON Structure to return:
     if not client:
         print(f"[TRACE:{traceparent}] Groq client unavailable. Using fallback generation.")
         from backend.llm import _rewrite_article_fallback
-        return _rewrite_article_fallback(content, url=url)
+        return _rewrite_article_fallback(content, url=url, title=title)
         
     def call_with_backoff(model, messages, temp, response_format=None):
         retries = 4
@@ -356,4 +357,4 @@ Output the entire, corrected JSON object."""
     except Exception as e:
         print(f"[TRACE:{traceparent}][CRITICAL] Failed to execute generation task A: {e}")
         from backend.llm import _rewrite_article_fallback
-        return _rewrite_article_fallback(content, url=url)
+        return _rewrite_article_fallback(content, url=url, title=title)

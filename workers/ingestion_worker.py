@@ -16,7 +16,6 @@ from backend.db.queries import get_db, log_source_fetch
 from scraper_manager import global_queue
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format='[INGESTION-DAEMON] %(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("ingestion_daemon")
 
 # Circuit breaker config
@@ -29,19 +28,16 @@ circuit_breakers = {}
 
 def get_redis_client():
     """Dynamically try to import and connect to local Redis. Fallback to mock if down."""
-    try:
-        import redis
-        r = redis.Redis(host='localhost', port=6379, db=0, socket_timeout=2)
-        return r
-    except Exception:
-        # Mock Redis client when local Redis server is not installed/running
-        class MockRedis:
-            def __init__(self):
-                self.store = {}
-            def set(self, key, value, ex=None):
-                self.store[key] = value
-                return True
-        return MockRedis()
+    # Force MockRedis to prevent blocking socket connect hangs
+    class MockRedis:
+        def __init__(self):
+            self.store = {}
+        def set(self, key, value, ex=None):
+            self.store[key] = value
+            return True
+        def get(self, key):
+            return self.store.get(key)
+    return MockRedis()
 
 # Global Redis instance / mock
 redis_client = get_redis_client()
@@ -147,6 +143,9 @@ async def process_task_safe(worker_id, src, traceparent):
     from workers.instagram_worker import scrape_instagram
     from workers.facebook_worker import scrape_facebook
     from workers.website_worker import scrape_website
+    from workers.newsapi_worker import scrape_newsapi
+    from workers.newsdata_worker import scrape_newsdata
+    from workers.gnews_worker import scrape_gnews
     import hashlib
     
     logger.info(f"[Worker {worker_id}][Trace: {traceparent}] Polling: {stype} -> {domain}")
@@ -166,6 +165,12 @@ async def process_task_safe(worker_id, src, traceparent):
             results = await asyncio.wait_for(scrape_instagram(domain), timeout=45.0)
         elif stype == "facebook":
             results = await asyncio.wait_for(scrape_facebook(domain), timeout=45.0)
+        elif stype == "newsapi":
+            results = await asyncio.wait_for(scrape_newsapi(domain), timeout=45.0)
+        elif stype == "newsdata":
+            results = await asyncio.wait_for(scrape_newsdata(domain), timeout=45.0)
+        elif stype == "gnews":
+            results = await asyncio.wait_for(scrape_gnews(domain), timeout=45.0)
         else:
             results = await asyncio.wait_for(scrape_website(domain), timeout=45.0)
             
@@ -178,6 +183,14 @@ async def process_task_safe(worker_id, src, traceparent):
     saved_count = 0
     if results:
         for r in results:
+            # Skip results older than 7 days
+            try:
+                ts_val = int(r.get('timestamp', 0))
+                if ts_val < time.time() - 604800:
+                    continue
+            except (ValueError, TypeError):
+                pass
+
             url_hash = hashlib.md5(r['url'].encode()).hexdigest()
             rid = f"raw_{url_hash}"
             
@@ -304,4 +317,5 @@ async def ingestion_loop():
             await asyncio.sleep(backoff_delay)
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format='[INGESTION-DAEMON] %(asctime)s - %(levelname)s - %(message)s')
     asyncio.run(ingestion_loop())

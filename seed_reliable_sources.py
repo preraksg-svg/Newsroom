@@ -7,6 +7,10 @@ sys.path.append(os.getcwd())
 from backend.db.queries import get_db
 
 RELIABLE_SOURCES = [
+    # API Integrations
+    {"name": "NewsAPI Global", "url": "newsapi", "type": "newsapi", "category": "News_API", "tier": "Tier 1", "score_authority": 0.95, "access_method": "newsapi", "country": "Global"},
+    {"name": "NewsData Global", "url": "newsdata", "type": "newsdata", "category": "News_API", "tier": "Tier 1", "score_authority": 0.95, "access_method": "newsdata", "country": "Global"},
+    {"name": "GNews Global", "url": "gnews", "type": "gnews", "category": "News_API", "tier": "Tier 1", "score_authority": 0.95, "access_method": "gnews", "country": "Global"},
     # OEMs (1-35)
     {"name": "Tata Motors", "url": "https://twitter.com/TataMotors", "type": "OEM", "category": "Passenger_EV", "tier": "Tier 1", "score_authority": 0.88, "access_method": "Playwright", "country": "IN"},
     {"name": "Mahindra Electric", "url": "https://twitter.com/MahindraRise", "type": "OEM", "category": "Passenger_EV", "tier": "Tier 1", "score_authority": 0.87, "access_method": "Playwright", "country": "IN"},

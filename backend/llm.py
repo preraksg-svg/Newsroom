@@ -155,7 +155,7 @@ def check_duplicate_news(new_title, existing_titles):
         return False
 
 
-def _rewrite_article_fallback(content, url=None):
+def _rewrite_article_fallback(content, url=None, title=None):
     import re
     if content:
         content = re.sub(r'<[^>]+>', '', content)
@@ -217,7 +217,22 @@ def _rewrite_article_fallback(content, url=None):
     # Clean/deduplicate sentences
     seen = set()
     unique_sentences = []
-    for s in [s.strip() for s in re.split(r'[.!?\n\r]+', content or "") if len(s.strip()) > 10]:
+    
+    paragraphs = re.split(r'[\n\r]+', content or "")
+    raw_sentences = []
+    for para in paragraphs:
+        para = para.strip()
+        if not para:
+            continue
+        chunks = re.split(r'(?<=[.!?])\s+', para)
+        for chunk in chunks:
+            chunk = chunk.strip()
+            if len(chunk) > 10:
+                if not chunk.endswith(('.', '!', '?')):
+                    chunk += '.'
+                raw_sentences.append(chunk)
+
+    for s in raw_sentences:
         cleaned_s = clean_voice_manifest_violations(s)
         if cleaned_s.lower() not in seen:
             seen.add(cleaned_s.lower())
@@ -231,120 +246,127 @@ def _rewrite_article_fallback(content, url=None):
     
     content_lower = (content or "").lower()
     matched_company = None
+    min_index = len(content_lower) + 1
     for company in ev_companies:
-        if company.lower() in content_lower:
+        idx = content_lower.find(company.lower())
+        if idx != -1 and idx < min_index:
+            min_index = idx
             matched_company = company
-            break
             
     # Deterministic variation using hash of content
     import hashlib
     content_hash = int(hashlib.md5((content or "").encode()).hexdigest(), 16)
     
     headline = ""
-    if matched_company:
-        if "tata motors" in content_lower:
+    if title:
+        headline = clean_voice_manifest_violations(title)
+        if any(x in headline.lower() for x in ["exciting news", "zapway cycle", "we are proud", "we're excited", "we are thrilled"]):
+            headline = "Electric Vehicle Sector Accelerates Sourcing and Fleet Infrastructure"
+    elif matched_company:
+        comp_key = matched_company.lower()
+        if comp_key == "tata motors":
             options = [
                 "Tata Motors Delivers Next-Generation Electric Passenger Vehicles",
                 "Tata Motors Accelerates Highway EV Deployment With Extended Range Models",
                 "Tata Motors Launches High-Capacity Battery Pack Upgrades for Urban Commuters"
             ]
-        elif "tata power" in content_lower:
+        elif comp_key == "tata power":
             options = [
                 "Tata Power EZ Charge Expands Highway EV Charging Infrastructure",
                 "Tata Power Adds Fifty New Ultra-Fast Charging Corridor Nodes Across India",
                 "Tata Power CPO Division Secures Strategic Land Parcels for Grid Expansion"
             ]
-        elif "tata" in content_lower:
+        elif comp_key == "tata":
             options = [
                 "Tata EV Infrastructure Program Boosts Nationwide Smart Charger Access",
                 "Tata Group Allocates Capital to Establish Regional Gigafactory Hubs",
                 "Tata Passenger EV Fleet Crosses Record Operational Milestones"
             ]
-        elif "mahindra" in content_lower:
+        elif comp_key == "mahindra":
             options = [
                 "Mahindra Electrifies SUV Portfolio With New Component Sourcing Deals",
                 "Mahindra Secures New Subsidies and Expands Electric Passenger Car Capacity",
                 "Mahindra Rolls Out Advanced Thermal Management Systems for Electric Platforms"
             ]
-        elif "ola electric" in content_lower or "ola" in content_lower:
+        elif comp_key in ("ola electric", "ola"):
             options = [
                 "Ola Electric Scales Up Hypercharger Network Grid Across Key Corridors",
                 "Ola Electric Integrates Real-Time Diagnostics on Charging App",
                 "Ola Electric Expands High-Speed Two-Wheeler Retail Dealership Footprint"
             ]
-        elif "ather" in content_lower:
+        elif comp_key == "ather":
             options = [
                 "Ather Energy Secures Funding to Expand Electric Scooter Assembly Lines",
                 "Ather Energy Opens New Experience Centers and Fast-Charging Points",
                 "Ather Energy Accelerates Regional Grid Integration for Smart Two-Wheelers"
             ]
-        elif "okinawa" in content_lower:
+        elif comp_key == "okinawa":
             options = [
                 "Okinawa Autotech Launches Localized High-Performance Electric Scooters",
                 "Okinawa Autotech Achieves New Sales Milestones in Indian Two-Wheeler Segment",
                 "Okinawa Autotech Upgrades Battery Enclosures to Meet Advanced Safety Norms"
             ]
-        elif "atul auto" in content_lower:
+        elif comp_key == "atul auto":
             options = [
                 "Atul Auto Rolls Out New Fleet of Cargo Electric Three-Wheelers",
                 "Atul Auto Expands Last-Mile Electrified Delivery Operations in Metro Areas",
                 "Atul Auto Launches High-Payload Electric Cargo Transport Vehicles"
             ]
-        elif "simple energy" in content_lower:
+        elif comp_key == "simple energy":
             options = [
                 "Simple Energy Increases Production Capacity for Electric Vehicles",
                 "Simple Energy Speeds Up Delivery Timelines for Premium Electric Scooters",
                 "Simple Energy Integrates Local Sourcing to Reduce EV Assembly Costs"
             ]
-        elif "bajaj auto" in content_lower:
+        elif comp_key == "bajaj auto":
             options = [
                 "Bajaj Auto Expands Chetak Electric Scooter Retail Distribution Grid",
                 "Bajaj Auto Launches New Affordable Variants in Chetak Electric Lineup",
                 "Bajaj Auto Integrates Smart Telemetry on Electric Scooter Dashboard"
             ]
-        elif "servotech" in content_lower:
+        elif comp_key == "servotech":
             options = [
                 "Servotech Power Systems Secures Major Order for EV DC Fast Chargers",
                 "Servotech Expands Manufacturing Facility to Double Electric Charger Output",
                 "Servotech Collaborates to Introduce Standardized Power Grid Balancing Tools"
             ]
-        elif "delta india" in content_lower:
+        elif comp_key == "delta india":
             options = [
                 "Delta India Unveils High-Capacity DC Chargers for Public Networks",
                 "Delta India Partners to Integrate Renewable Solar Power With Grid Chargers",
                 "Delta India Expands High-Efficiency Rectifier Production for Stations"
             ]
-        elif "zeon" in content_lower:
+        elif comp_key == "zeon":
             options = [
                 "Zeon Charging Collaborates to Expand Premium Highway Charging Hubs",
                 "Zeon Charging Integrates Multi-Network Payment Protocols for Drivers",
                 "Zeon Charging Deploys Forty New Fast DC Chargers on Transit Routes"
             ]
-        elif "statiq" in content_lower:
+        elif comp_key == "statiq":
             options = [
                 "Statiq Launches Integrated EV Fleet Charging Solutions in Urban Zones",
                 "Statiq Expands High-Voltage Charging Infrastructure Network for Logistics",
                 "Statiq Introduces Smart Scheduling Protocols at Heavy-Traffic Nodes"
             ]
-        elif "charge zone" in content_lower:
+        elif comp_key == "charge zone":
             options = [
                 "Charge Zone Secures Institutional Capital to Scale Fast Charging Nodes",
                 "Charge Zone Deploys High-Capacity Commercial Charging Corridors",
                 "Charge Zone Integrates Fleet Telemetry With Public Charging Databases"
             ]
-        elif "tesla" in content_lower:
+        elif comp_key == "tesla":
             options = [
                 "Tesla Optimizes Autonomous Vehicle Navigation and Range Telemetry",
                 "Tesla Accelerates Global Charging Corridor Deployment and Battery Supply",
                 "Tesla Achieves New Production Record for Low-Cost Battery Enclosures"
             ]
-        elif "byd" in content_lower:
+        elif comp_key == "byd":
             options = [
                 "BYD Unveils Flagship Premium Electric SUV Platforms for Global Markets",
                 "BYD Launches High-Density Blade Battery Pack With Extended Thermal Life",
                 "BYD Expands Assembly Lines in New Regions to Meet Passenger EV Demand"
             ]
-        elif "rivian" in content_lower:
+        elif comp_key == "rivian":
             options = [
                 "Rivian Expands Retail Delivery Volume and Power Pack Capacity",
                 "Rivian Integrates Dual-Motor AWD Powertrains in SUV Production Lines",
@@ -550,7 +572,7 @@ def _rewrite_article_fallback(content, url=None):
     return result
 
 
-def rewrite_article(content, url=None, *args, **kwargs):
+def rewrite_article(content, url=None, title=None, *args, **kwargs):
     """Rewrites article using the powerful Llama 3 70B."""
     system_prompt = """You are the AI engine powering the ZAPWAY EV Newsroom.
 
@@ -580,7 +602,7 @@ Reject:
 - General automobile news unless EV-focused
 
 ----------------------------------------
-2. SOURCE QUALITY RULES
+2. SOURCE QUALITY & DATA INTEGRITY RULES
 ----------------------------------------
 
 - Prioritize trusted sources:
@@ -588,6 +610,7 @@ Reject:
 - Avoid low-quality or unknown sources
 - Do NOT fabricate information
 - Use only provided content (no hallucination)
+- CRITICAL: Do NOT alter, modify, translate, or round original prices (e.g. keep 'Rs 27.90 lakh' exactly as in the source), variant/trim names (e.g. keep 'Comfort' or 'eMax 7 Comfort' exactly as is), model names, specs, numbers, or specific brand figures. Keep all factual figures, names, and prices completely unchanged from the raw source.
 
 ----------------------------------------
 3. CONTENT GENERATION RULES
@@ -800,7 +823,7 @@ You must return the output as a valid JSON object.
     
     client = get_groq_client()
     if not client:
-        return _rewrite_article_fallback(content, url=url)
+        return _rewrite_article_fallback(content, url=url, title=title)
     try:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
@@ -818,7 +841,7 @@ You must return the output as a valid JSON object.
         return json.loads(response_text)
     except Exception as e:
         print(f"Rewriting error: {e}")
-        return _rewrite_article_fallback(content, url=url)
+        return _rewrite_article_fallback(content, url=url, title=title)
 
 def rewrite_article_adaptive(content, rag_patterns, policy, predicted_score):
     """Rewrites article using the RAG and Policy Engine instructions as generated by the Hybrid Learning System."""

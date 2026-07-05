@@ -83,7 +83,15 @@ def generate_seo_metadata(title, content, news_type="EV"):
     if content:
         clean_content = re.sub(r'<[^>]+>', '', content)
         clean_content = re.sub(r'\s+', ' ', clean_content).strip()
-        extracted_s = [s.strip() + "." for s in re.split(r'[.!?]+', clean_content) if len(s.strip()) > 20]
+        
+        extracted_s = []
+        for s in re.split(r'(?<=[.!?])\s+', clean_content):
+            s = s.strip()
+            if len(s) > 20:
+                if not s.endswith(('.', '!', '?')):
+                    s += '.'
+                extracted_s.append(s)
+                
         if extracted_s:
             desc_sentences.insert(0, extracted_s[0])
             if len(extracted_s) > 1:

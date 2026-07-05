@@ -22,11 +22,9 @@ async def main():
     
     # Upsert/Sync sources on start to update domains and sync registry changes
     try:
-        from backend.db.queries import get_db
-        with get_db() as conn:
-            print("[WORKERS] Syncing/Upserting reliable sources registry...")
-            from seed_reliable_sources import seed
-            seed()
+        print("[WORKERS] Syncing/Upserting reliable sources registry...")
+        from seed_reliable_sources import seed
+        seed()
     except Exception as se:
         print(f"[WORKERS] Syncing sources failed or skipped: {se}")
 
@@ -51,6 +49,8 @@ async def main():
     print("[INIT] Initializing Diagnostics task...")
     async def diagnostics_loop():
         from scripts.verify_sources import main as verify_sources_main
+        # Let other workers complete their initial cycle before running diagnostics (1 hour delay)
+        await asyncio.sleep(3600)
         while True:
             try:
                 logger.info("[DIAGNOSTICS] Triggering sources verification loop...")

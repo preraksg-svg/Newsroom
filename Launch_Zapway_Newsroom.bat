@@ -10,6 +10,10 @@ cd /d "C:\Users\PIT\.gemini\antigravity\scratch\ZapwayNewsroom"
 echo 1. Starting Backend Server...
 start "" cmd /k "python -m backend.main"
 
+:: Start the background workers separately
+echo 1.5. Starting Background Workers...
+start "" cmd /k "python run_workers.py"
+
 :: Wait for server to boot
 timeout /t 3 /nobreak >nul
 

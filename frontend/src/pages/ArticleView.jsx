@@ -499,13 +499,13 @@ export default function ArticleView() {
            <div className="control-block">
              <div className="block-title">EDITORIAL SCORE</div>
              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-               <div style={{ fontSize: '3.5rem', fontWeight: 900, color: (story.final_score || 0) >= 80 ? 'var(--c-green)' : 'var(--c-cyan)' }}>
+               <div style={{ fontSize: '3.5rem', fontWeight: 900, color: true ? 'var(--c-green)' : 'var(--c-cyan)' }}>
                  {(story.final_score || 0).toFixed(0)}
                </div>
                <div style={{ color: 'var(--text-muted)', fontWeight: 700 }}>/ 100</div>
              </div>
              <div className="score-meter" style={{ height: '8px', marginTop: '10px' }}>
-               <div className="score-fill" style={{ width: `${story.final_score || 0}%`, background: (story.final_score || 0) >= 80 ? 'var(--c-green)' : 'var(--c-cyan)' }} />
+               <div className="score-fill" style={{ width: `${story.final_score || 0}%`, background: true ? 'var(--c-green)' : 'var(--c-cyan)' }} />
              </div>
              <button className="btn btn-ghost full" style={{ marginTop: '12px', fontSize: '0.7rem' }} onClick={() => setShowScoreBreakdown(!showScoreBreakdown)}>
                {showScoreBreakdown ? 'HIDE BREAKDOWN' : 'VIEW BREAKDOWN'}

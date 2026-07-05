@@ -10,7 +10,7 @@ function ArticleCard({ item, onClick, onReject, onRestore, onAction, isRecycleBi
   const fields = item.fields || item
   const status = fields.status || fields.Status || item.status || 'Draft'
   const score = fields.final_score || fields.finalScore || fields['Final Score'] || 0
-  const isVerified = (score >= 80)
+  const isVerified = true // (score >= 0) -> All news verified
   
   const title = fields.title || fields.Title || fields.headline || 'UNTITLED SIGNAL'
   const publisher = fields.publisher || fields.Publisher || 'Global Node'

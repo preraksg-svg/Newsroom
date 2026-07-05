@@ -18,9 +18,16 @@ try:
     from backend.db.queries import get_db
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT count(*) FROM sources")
-        if cur.fetchone()[0] == 0:
-            print("[BACKEND] Sources table is empty! Seeding reliable sources...")
+        # Ensure source_scores table exists and is seeded
+        cur.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='source_scores'")
+        has_table = cur.fetchone()[0] > 0
+        is_empty = True
+        if has_table:
+            cur.execute("SELECT count(*) FROM source_scores")
+            is_empty = cur.fetchone()[0] == 0
+            
+        if is_empty:
+            print("[BACKEND] source_scores table is empty! Seeding reliable sources...")
             from seed_reliable_sources import seed
             seed()
 except Exception as se:
@@ -40,7 +47,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if os.getenv("ZAPWAY_AUTO_START_WORKERS", "true").lower() in {"0", "false", "no"}:
+    if os.getenv("ZAPWAY_AUTO_START_WORKERS", "false").lower() in {"0", "false", "no"}:
         print("[BACKEND] Worker auto-start explicitly disabled. Run 'python run_workers.py' separately.")
         yield
         return
