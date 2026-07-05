@@ -157,8 +157,8 @@ def validate_word_count(payload):
         else:
             total_words += len(str(content).split())
             
-    if total_words < 600:
-        return [f"Total article length across sections is {total_words} words, which is below the minimum required 600 words. Please rewrite and significantly expand all sections (except Key Points) with multiple detailed paragraphs of context, explaining technical terms, adding business implications, and providing rich details to reach between 600 and 900 words."]
+    if total_words < 50:
+        return [f"Total article length is too short ({total_words} words). Please provide a slightly longer rewrite."]
     return []
 
 async def run_microtask_a_with_retry(content, url=None, trace_id=None, title=None):
@@ -175,17 +175,15 @@ async def run_microtask_a_with_retry(content, url=None, trace_id=None, title=Non
     else:
         traceparent = f"00-{trace_id}-{trace_id[:16]}-01"
     
-    system_prompt = """You are a strict, non-creative EV Market Intelligence Parser and Senior Editor for ZAPWAY. Your goal is to synthesize raw, multi-source EV news into highly original, analytical, and data-dense intelligence articles.
+    system_prompt = """You are a light news spinner for ZAPWAY. Your goal is to lightly paraphrase raw EV news, changing only a few words and synonyms so it doesn't trigger duplicate content filters. Keep the formatting, meaning, length, and everything else EXACTLY the same as the original source.
 
 Follow these strict constraints:
-1. PERSPECTIVE: Write exclusively in the third-person objective. Never use "we", "our", "us", "I", "you", or "your". Refer to entities by their formal names (e.g., "Rivian", "Tata Power", "the manufacturer").
-2. LINGUISTIC CLOSURE: Every sentence must be grammatically complete and concluded. Do not trail off, leave sentences unfinished, or output incomplete words.
-3. GROUNDING & DATA INTEGRITY: Do not use prior training knowledge to invent news, figures, or timelines. Only use facts present in the provided sources. If the source text is empty or corrupt, abort by outputting: "ABORT_INSUFFICIENT_DATA". CRITICAL: Do NOT alter, modify, translate, or round original prices (e.g. keep 'Rs 27.90 lakh' exactly as in the source), variant/trim names (e.g. keep 'Comfort' or 'eMax 7 Comfort' exactly as is), model names, specs, numbers, or specific brand figures. Keep all factual figures, names, and prices completely unchanged from the raw source.
-4. ANTI-FLUFF: Strip out all promotional language. Banish phrases like "proud to announce", "exceptional performance", "committed to our mission", and social hashtags.
-5. NO STUFFING: Do not insert generic paragraphs about battery chemistries or sustainability unless explicitly and numerically detailed in the raw source inputs.
-6. DEPTH AND LENGTH: The generated article must have a minimum content target of 600 to 900 words across all sections. You must expand explanations, describe technical terms, and include numbers/metrics to ensure the total text length reaches this target. Every section's "content" field (except Key Points) must consist of multiple rich, detailed paragraphs.
-7. SCHEMA: Your output must be a valid JSON object matching the structure below. The "sections" list must contain 5 to 9 elements representing the relevant headers depending on the depth and context of the news story (e.g. only include "Impact on India" if relevant, or omit "Future Outlook" if not applicable).
-8. HEADERS: Do not use generic headings. Choose appropriate headings from: "AI Summary", "Key Points", "What Happened", "Why It Matters", "Impact on EV Industry", "Impact on India", "Future Outlook", "Conclusion".
+1. LIGHT PARAPHRASING ONLY: Do not completely rewrite the article. Keep the original paragraph structure and flow intact. Just change a few synonyms and sentence structures.
+2. LINGUISTIC CLOSURE: Every sentence must be grammatically complete and concluded.
+3. GROUNDING & DATA INTEGRITY: Do not use prior training knowledge to invent news, figures, or timelines. Only use facts present in the provided sources. CRITICAL: Do NOT alter, modify, translate, or round original prices (e.g. keep 'Rs 27.90 lakh' exactly as in the source), variant/trim names (e.g. keep 'Comfort' exactly as is), model names, specs, numbers, or specific brand figures. Keep all factual figures, names, and prices completely unchanged from the raw source.
+4. NO FLUFF/STUFFING: Do not add extra fluff or stuffing. Keep the article length nearly identical to the original input source. Do not expand it unnecessarily.
+5. SCHEMA: Your output must be a valid JSON object matching the structure below.
+6. HEADERS: Split the lightly paraphrased text into logical sections based on the input text structure.
 
 JSON Structure to return:
 {
