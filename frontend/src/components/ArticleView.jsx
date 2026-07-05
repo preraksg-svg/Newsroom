@@ -110,7 +110,7 @@ export default function ArticleView() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { isEditMode, setEditMode } = useStore()
-  const [isSplitView, setIsSplitView] = useState(true)
+  const [isSplitView, setIsSplitView] = useState(false)
   const [editedArticle, setEditedArticle] = useState(null)
   const [activeActions, setActiveActions] = useState({}) // track loading per action
   const queryClient = useQueryClient()
@@ -234,6 +234,9 @@ export default function ArticleView() {
           <div className={`edit-toggle ${isEditMode ? 'active' : ''}`} onClick={() => setEditMode(!isEditMode)}>
             {isEditMode ? '● EDITING' : '○ VIEW MODE'}
           </div>
+          <button className="btn btn-ghost" onClick={() => setIsSplitView(!isSplitView)}>
+            {isSplitView ? 'SINGLE VIEW' : 'SPLIT VIEW'}
+          </button>
           {story.status !== 'Rejected' && (
             <button 
                 className="btn btn-primary" 

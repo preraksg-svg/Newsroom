@@ -66,7 +66,7 @@ export default function ArticleView() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [isEditMode, setIsEditMode] = useState(false)
-  const [isSplitView, setIsSplitView] = useState(true)
+  const [isSplitView, setIsSplitView] = useState(false)
   const [editedStory, setEditedStory] = useState(null)
   const [actionLoading, setActionLoading] = useState(null)
 
@@ -231,6 +231,10 @@ export default function ArticleView() {
           }`}>
             {story.status?.toUpperCase() || 'UNKNOWN'}
           </span>
+          <div className={`edit-toggle ${isSplitView ? 'active' : ''}`} onClick={() => setIsSplitView(!isSplitView)}>
+             <Split size={14} />
+             <span style={{ marginLeft: '8px' }}>SPLIT VIEW</span>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           {story.status === 'Draft' && (
