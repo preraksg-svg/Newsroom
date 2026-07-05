@@ -910,10 +910,15 @@ OUTPUT FORMAT (STRICT)
         if not text or len(text) <= max_chars:
             return text
         truncated = text[:max_chars]
+        # Try to find a sentence boundary first
+        last_period = truncated.rfind('. ')
+        if last_period > max_chars * 0.5:
+            return text[:last_period+1].strip()
+            
         last_space = truncated.rfind(' ')
         if last_space != -1:
-            return text[:last_space].strip()
-        return truncated
+            return text[:last_space].strip() + "..."
+        return truncated + "..."
 
     client = get_groq_client()
     if not client:
@@ -930,7 +935,21 @@ OUTPUT FORMAT (STRICT)
             log_groq_usage(response.usage.total_tokens)
         return json.loads(response.choices[0].message.content)
     except Exception as e:
-        print(f"Meta generation error: {e}")
+        if "rate_limit_exceeded" in str(e):
+            print(f"[LLM] Primary model rate limited in meta generation. Falling back to 8b-instant.")
+            try:
+                response = client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    temperature=0.2,
+                    response_format={"type": "json_object"},
+                    messages=[{"role": "system", "content": "You are a strict SEO metadata generator. Output valid JSON."}, 
+                              {"role": "user", "content": prompt}]
+                )
+                return json.loads(response.choices[0].message.content)
+            except Exception as e2:
+                print(f"Error in generate_meta_tags fallback: {e2}")
+        else:
+            print(f"Meta generation error: {e}")
         return {"meta_title": truncate_word_safe(headline, 60), "meta_description": truncate_word_safe(summary, 155)}
 
 def ai_edit_section(section_name, content, instruction):
