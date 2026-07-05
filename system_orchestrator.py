@@ -47,12 +47,16 @@ class NewsroomOrchestrator:
             print("[PIPELINE][STEP 1-4] Starting Multi-Channel Ingestion...")
             
             # Import scrapers dynamically
-            from workers.website_worker import scrape_website
             from workers.twitter_worker import scrape_twitter
             from workers.youtube_worker import scrape_youtube
+            from workers.website_worker import scrape_website
             from workers.reddit_worker import scrape_reddit
             from workers.instagram_worker import scrape_instagram
             from workers.facebook_worker import scrape_facebook
+            from workers.newsapi_worker import scrape_newsapi
+            from workers.newsdata_worker import scrape_newsdata
+            from workers.gnews_worker import scrape_gnews
+            from backend.db.queries import get_db, create_draft, init_db
             import hashlib
             import random
             
@@ -69,8 +73,11 @@ class NewsroomOrchestrator:
                 source_id = src['source_id']
                 domain = src['domain']
                 
+                stype_db = src.get('type', '').lower()
                 domain_lower = domain.lower()
-                if "twitter.com" in domain_lower:
+                if stype_db in ["newsapi", "newsdata", "gnews"]:
+                    stype = stype_db
+                elif "twitter.com" in domain_lower:
                     stype = "twitter"
                 elif "youtube.com" in domain_lower or "youtu.be" in domain_lower:
                     stype = "youtube"
@@ -97,6 +104,12 @@ class NewsroomOrchestrator:
                             results = await asyncio.wait_for(scrape_instagram(domain), timeout=45.0)
                         elif stype == "facebook":
                             results = await asyncio.wait_for(scrape_facebook(domain), timeout=45.0)
+                        elif stype == "newsapi":
+                            results = await asyncio.wait_for(scrape_newsapi(domain), timeout=45.0)
+                        elif stype == "newsdata":
+                            results = await asyncio.wait_for(scrape_newsdata(domain), timeout=45.0)
+                        elif stype == "gnews":
+                            results = await asyncio.wait_for(scrape_gnews(domain), timeout=45.0)
                         else:
                             results = await asyncio.wait_for(scrape_website(domain), timeout=45.0)
                     except Exception as scrape_err:

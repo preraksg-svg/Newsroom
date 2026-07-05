@@ -142,6 +142,21 @@ export default function NewsBoard({ isRecycleBin }) {
     items.forEach(item => {
       const f = item.fields || item
       const s = f.status || f.Status || item.status || 'Draft'
+        
+      // Drafts section should only show news fetched in the last 48 hours
+      if (s === 'Draft') {
+        const createdStr = f.created_at || item.created_at;
+        if (createdStr) {
+          const parseStr = createdStr.replace(' ', 'T');
+          const createdDate = new Date(parseStr);
+          const now = new Date();
+          const hoursDiff = (now - createdDate) / (1000 * 60 * 60);
+          if (hoursDiff > 48) {
+            return; // Skip rendering this draft
+          }
+        }
+      }
+
       if (base[s]) {
         base[s].push(item)
       } else {
