@@ -166,8 +166,8 @@ RULES:
 - Each headline must use a DIFFERENT pattern type
 - Keep factual accuracy
 - Optimize for clicks + credibility
-- Max 15 words each
-- CRITICAL: ALWAYS complete your sentences. DO NOT leave generated headlines or texts cut off.
+- Aim for around 10-15 words each, but ALWAYS complete the sentence completely.
+- CRITICAL: ALWAYS complete your sentences. DO NOT leave generated headlines or texts cut off. Finishing the sentence is more important than length limits.
 
 Return STRICT JSON:
 {{

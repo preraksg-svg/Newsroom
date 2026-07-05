@@ -811,7 +811,7 @@ Step 5: Dynamically create:
 
 Step 6: Optimize for: curiosity gap, readability, engagement, shareability.
 Step 7: Avoid: repetitive patterns, clickbait without substance, generic headings.
-Step 8: Enforce complete, grammatically correct sentences for meta_title (max 60 chars) and meta_description (max 155 chars) optimized with both short and long-tail SEO keywords. No trailing dots or cut-off sentences.
+Step 8: Enforce complete, grammatically correct sentences for meta_title (aim for ~70 chars) and meta_description (aim for ~160 chars) optimized with both short and long-tail SEO keywords. NO trailing dots or cut-off sentences. Completing the sentence is more important than character limits.
 
 OUTPUT FORMAT (STRICT JSON):
 {
@@ -868,7 +868,7 @@ Article Summary: {summary}
 ----------------------------------------
 META TITLE RULES (MANDATORY)
 ----------------------------------------
-- Max 60 characters
+- Aim for 60-70 characters, but prioritize finishing the sentence completely.
 - Must include the Primary Keyword
 - Should include company name OR location OR key number (if available)
 - Make it compelling and click-worthy
@@ -878,7 +878,7 @@ META TITLE RULES (MANDATORY)
 ----------------------------------------
 META DESCRIPTION RULES (MANDATORY)
 ----------------------------------------
-- Max 155 characters
+- Aim for 150-160 characters, but prioritize finishing the sentence completely.
 - Must include Primary Keyword naturally
 - Clearly explain what happened
 - Add urgency or importance
@@ -1062,9 +1062,9 @@ def generate_ai_summary(title: str, content: str, sections: list = None) -> dict
 Write a razor-sharp AI summary for this EV news article.
 
 RULES:
-- headline: ONE punchy sentence (max 12 words). Must state the actual news fact.
-- summary: Max 80 words. Cover: what happened + why it matters for EV buyers. No fluff. No repetition. No generic phrases.
-- key_points: Exactly 3 bullet points. Each max 12 words. Specific facts only.
+- headline: ONE punchy complete sentence. Must state the actual news fact.
+- summary: Around 80 words. Cover: what happened + why it matters for EV buyers. No fluff. No repetition. Always finish your sentences.
+- key_points: Exactly 3 bullet points. Each a complete sentence. Specific facts only.
 - sections: If the article is not structured, generate 3-4 structured sections with 'heading' and 'content'.
 - CRITICAL: ALWAYS complete your sentences. DO NOT leave generated summaries, points, or sections cut off.
 
