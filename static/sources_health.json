@@ -1,19 +1,49 @@
 {
-  "latency_index_ms": 7853.05,
-  "total_checked": 214,
-  "healthy_count": 157,
-  "degraded_count": 5,
+  "latency_index_ms": 6428.79,
+  "total_checked": 219,
+  "healthy_count": 160,
+  "degraded_count": 7,
   "offline_count": 52,
   "sources": [
+    {
+      "source_id": "newsapi_global",
+      "name": "NewsAPI Global",
+      "url": "https://newsapi",
+      "tier": "Tier 1",
+      "status": "Offline",
+      "latency_ms": 0.0,
+      "error": "DNS/Connection Error",
+      "checked_at": "2026-07-05T11:11:19Z"
+    },
+    {
+      "source_id": "newsdata_global",
+      "name": "NewsData Global",
+      "url": "https://newsdata",
+      "tier": "Tier 1",
+      "status": "Offline",
+      "latency_ms": 0.0,
+      "error": "DNS/Connection Error",
+      "checked_at": "2026-07-05T11:11:19Z"
+    },
+    {
+      "source_id": "gnews_global",
+      "name": "GNews Global",
+      "url": "https://gnews",
+      "tier": "Tier 1",
+      "status": "Offline",
+      "latency_ms": 0.0,
+      "error": "DNS/Connection Error",
+      "checked_at": "2026-07-05T11:11:19Z"
+    },
     {
       "source_id": "tata_motors",
       "name": "Tata Motors",
       "url": "https://twitter.com/TataMotors",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 2070.17,
+      "latency_ms": 1267.03,
       "error": null,
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "mahindra_electric",
@@ -21,9 +51,9 @@
       "url": "https://twitter.com/MahindraRise",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 1768.45,
+      "latency_ms": 1270.52,
       "error": null,
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "ola_electric",
@@ -31,9 +61,9 @@
       "url": "https://twitter.com/OlaElectric",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 2201.11,
+      "latency_ms": 1293.24,
       "error": null,
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "ather_energy",
@@ -41,9 +71,9 @@
       "url": "https://twitter.com/atherenergy",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 1371.25,
+      "latency_ms": 1257.71,
       "error": null,
-      "checked_at": "2026-07-01T17:56:31Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "tvs_motor",
@@ -51,9 +81,9 @@
       "url": "https://twitter.com/TVSMotorCompany",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 1741.8,
+      "latency_ms": 1221.33,
       "error": null,
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "bajaj_auto",
@@ -61,9 +91,9 @@
       "url": "https://twitter.com/bajaj_auto",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 1094.98,
+      "latency_ms": 876.95,
       "error": null,
-      "checked_at": "2026-07-01T17:56:31Z"
+      "checked_at": "2026-07-05T11:11:17Z"
     },
     {
       "source_id": "mg_motor_india",
@@ -71,9 +101,9 @@
       "url": "https://twitter.com/MGMotorIn",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 1321.28,
+      "latency_ms": 1461.64,
       "error": null,
-      "checked_at": "2026-07-01T17:56:31Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "hyundai_india",
@@ -81,9 +111,9 @@
       "url": "https://twitter.com/HyundaiIndia",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 2120.52,
+      "latency_ms": 1352.21,
       "error": null,
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "byd_india",
@@ -91,9 +121,9 @@
       "url": "https://twitter.com/BYD_India",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 792.3,
+      "latency_ms": 717.54,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:31Z"
+      "checked_at": "2026-07-05T11:11:17Z"
     },
     {
       "source_id": "kia_india",
@@ -101,9 +131,9 @@
       "url": "https://twitter.com/KiaInd",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 2172.08,
+      "latency_ms": 1317.55,
       "error": null,
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "simple_energy",
@@ -111,9 +141,9 @@
       "url": "https://twitter.com/simpleenergy",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 832.48,
+      "latency_ms": 1015.91,
       "error": null,
-      "checked_at": "2026-07-01T17:56:31Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "ultraviolette_automotive",
@@ -121,9 +151,9 @@
       "url": "https://twitter.com/UltravioletteEV",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 2193.53,
+      "latency_ms": 1809.37,
       "error": null,
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "hero_vida",
@@ -131,9 +161,9 @@
       "url": "https://twitter.com/VidaDotWorld",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 1989.01,
+      "latency_ms": 1988.57,
       "error": null,
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "hop_electric",
@@ -141,9 +171,9 @@
       "url": "https://twitter.com/Hopelectric_",
       "tier": "Tier 2",
       "status": "Offline",
-      "latency_ms": 751.95,
+      "latency_ms": 1502.64,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:31Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "ampere",
@@ -151,9 +181,9 @@
       "url": "https://twitter.com/ampere_ebikes",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 1063.58,
+      "latency_ms": 1652.14,
       "error": null,
-      "checked_at": "2026-07-01T17:56:31Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "revolt_motors",
@@ -161,9 +191,9 @@
       "url": "https://twitter.com/RevoltMotorsIN",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 2262.05,
+      "latency_ms": 2666.22,
       "error": null,
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:19Z"
     },
     {
       "source_id": "okinawa_autotech",
@@ -171,9 +201,9 @@
       "url": "https://twitter.com/OkinawaAutotech",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 1454.08,
+      "latency_ms": 1849.44,
       "error": null,
-      "checked_at": "2026-07-01T17:56:31Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "pure_ev",
@@ -181,9 +211,9 @@
       "url": "https://twitter.com/PUREEVIndia",
       "tier": "Tier 2",
       "status": "Offline",
-      "latency_ms": 1771.01,
+      "latency_ms": 2003.89,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "tork_motors",
@@ -191,9 +221,9 @@
       "url": "https://twitter.com/torkmotors",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 1803.96,
+      "latency_ms": 1933.57,
       "error": null,
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "greaves_cotton",
@@ -201,9 +231,9 @@
       "url": "https://twitter.com/GreavesCottonLtd",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 1847.52,
+      "latency_ms": 1904.98,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "atul_auto",
@@ -211,9 +241,9 @@
       "url": "https://twitter.com/AtulAutoLimited",
       "tier": "Tier 2",
       "status": "Offline",
-      "latency_ms": 1952.1,
+      "latency_ms": 1914.99,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "kinetic_green",
@@ -221,9 +251,9 @@
       "url": "https://twitter.com/KineticGreenIN",
       "tier": "Tier 2",
       "status": "Offline",
-      "latency_ms": 2010.79,
+      "latency_ms": 1933.16,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:18Z"
     },
     {
       "source_id": "altigreen_propulsion",
@@ -231,9 +261,9 @@
       "url": "https://twitter.com/Altigreen",
       "tier": "Tier 2",
       "status": "Offline",
-      "latency_ms": 2065.99,
+      "latency_ms": 2049.49,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:19Z"
     },
     {
       "source_id": "omega_seiki_mobility",
@@ -241,9 +271,9 @@
       "url": "https://twitter.com/OmegaSeiki",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 3177.82,
+      "latency_ms": 2149.09,
       "error": null,
-      "checked_at": "2026-07-01T17:56:33Z"
+      "checked_at": "2026-07-05T11:11:19Z"
     },
     {
       "source_id": "euler_motors",
@@ -251,9 +281,9 @@
       "url": "https://twitter.com/EulerMotors",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 2472.47,
+      "latency_ms": 2276.22,
       "error": null,
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:19Z"
     },
     {
       "source_id": "piaggio_india",
@@ -261,9 +291,9 @@
       "url": "https://twitter.com/PiaggioIndia",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 2464.57,
+      "latency_ms": 2419.14,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:32Z"
+      "checked_at": "2026-07-05T11:11:19Z"
     },
     {
       "source_id": "switch_mobility",
@@ -271,9 +301,9 @@
       "url": "https://twitter.com/switch_mobility",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 2762.95,
+      "latency_ms": 2516.23,
       "error": null,
-      "checked_at": "2026-07-01T17:56:33Z"
+      "checked_at": "2026-07-05T11:11:19Z"
     },
     {
       "source_id": "jbm_auto",
@@ -281,9 +311,9 @@
       "url": "https://twitter.com/jbm_group",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 2570.35,
+      "latency_ms": 2554.17,
       "error": null,
-      "checked_at": "2026-07-01T17:56:33Z"
+      "checked_at": "2026-07-05T11:11:19Z"
     },
     {
       "source_id": "olectra_greentech",
@@ -291,9 +321,9 @@
       "url": "https://twitter.com/OlectraGreen",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 2579.75,
+      "latency_ms": 2503.25,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:33Z"
+      "checked_at": "2026-07-05T11:11:19Z"
     },
     {
       "source_id": "ve_commercial_(eicher)",
@@ -301,9 +331,9 @@
       "url": "https://twitter.com/VECommercial",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 3033.72,
+      "latency_ms": 2518.46,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:33Z"
+      "checked_at": "2026-07-05T11:11:19Z"
     },
     {
       "source_id": "bharatbenz_india",
@@ -311,9 +341,9 @@
       "url": "https://twitter.com/BharatBenz1",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 2770.94,
+      "latency_ms": 2583.79,
       "error": null,
-      "checked_at": "2026-07-01T17:56:33Z"
+      "checked_at": "2026-07-05T11:11:19Z"
     },
     {
       "source_id": "eka_mobility",
@@ -321,9 +351,9 @@
       "url": "https://twitter.com/ekamobility",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 3030.08,
+      "latency_ms": 2925.73,
       "error": null,
-      "checked_at": "2026-07-01T17:56:33Z"
+      "checked_at": "2026-07-05T11:11:19Z"
     },
     {
       "source_id": "river",
@@ -331,9 +361,9 @@
       "url": "https://twitter.com/ridewithriver",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 2987.43,
+      "latency_ms": 2638.89,
       "error": null,
-      "checked_at": "2026-07-01T17:56:33Z"
+      "checked_at": "2026-07-05T11:11:19Z"
     },
     {
       "source_id": "matter_energy",
@@ -341,9 +371,9 @@
       "url": "https://twitter.com/matter_energy",
       "tier": "Tier 2",
       "status": "Offline",
-      "latency_ms": 2762.21,
+      "latency_ms": 2623.05,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:33Z"
+      "checked_at": "2026-07-05T11:11:19Z"
     },
     {
       "source_id": "orxa_energies",
@@ -351,9 +381,9 @@
       "url": "https://twitter.com/OrxaEnergies",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 2874.45,
+      "latency_ms": 2790.69,
       "error": null,
-      "checked_at": "2026-07-01T17:56:33Z"
+      "checked_at": "2026-07-05T11:11:19Z"
     },
     {
       "source_id": "tesla",
@@ -361,9 +391,9 @@
       "url": "https://twitter.com/Tesla",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 3958.85,
+      "latency_ms": 3695.46,
       "error": null,
-      "checked_at": "2026-07-01T17:56:34Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "byd_global",
@@ -371,9 +401,9 @@
       "url": "https://twitter.com/BYDCompany",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4095.31,
+      "latency_ms": 3565.46,
       "error": null,
-      "checked_at": "2026-07-01T17:56:34Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "volkswagen",
@@ -381,9 +411,9 @@
       "url": "https://twitter.com/Volkswagen",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 3480.32,
+      "latency_ms": 3638.59,
       "error": null,
-      "checked_at": "2026-07-01T17:56:33Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "ford",
@@ -391,9 +421,9 @@
       "url": "https://twitter.com/Ford",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 3928.16,
+      "latency_ms": 3842.89,
       "error": null,
-      "checked_at": "2026-07-01T17:56:34Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "gm",
@@ -401,9 +431,9 @@
       "url": "https://twitter.com/GM",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4266.6,
+      "latency_ms": 3632.83,
       "error": null,
-      "checked_at": "2026-07-01T17:56:34Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "hyundai_global",
@@ -411,9 +441,9 @@
       "url": "https://twitter.com/Hyundai_Global",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 3818.34,
+      "latency_ms": 3813.1,
       "error": null,
-      "checked_at": "2026-07-01T17:56:34Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "rivian",
@@ -421,9 +451,9 @@
       "url": "https://twitter.com/Rivian",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4232.14,
+      "latency_ms": 3621.69,
       "error": null,
-      "checked_at": "2026-07-01T17:56:34Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "lucid_motors",
@@ -431,9 +461,9 @@
       "url": "https://twitter.com/LucidMotors",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4704.84,
+      "latency_ms": 3798.18,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "polestar",
@@ -441,9 +471,9 @@
       "url": "https://twitter.com/PolestarCars",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4721.02,
+      "latency_ms": 3760.65,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "nio",
@@ -451,9 +481,9 @@
       "url": "https://twitter.com/NIOGlobal",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4788.19,
+      "latency_ms": 3822.65,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "xpeng",
@@ -461,9 +491,9 @@
       "url": "https://twitter.com/XPengMotors",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 3629.16,
+      "latency_ms": 3322.94,
       "error": null,
-      "checked_at": "2026-07-01T17:56:34Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "li_auto",
@@ -471,9 +501,9 @@
       "url": "https://twitter.com/LiAuto_Official",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 3937.86,
+      "latency_ms": 3333.69,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:34Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "rimac_automobili",
@@ -481,9 +511,9 @@
       "url": "https://twitter.com/RimacAuto",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 3650.95,
+      "latency_ms": 3321.7,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:34Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "tata_power_ez_charge",
@@ -491,9 +521,9 @@
       "url": "https://twitter.com/TataPower",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4680.84,
+      "latency_ms": 4077.13,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "statiq",
@@ -501,9 +531,9 @@
       "url": "https://twitter.com/StatiqIndia",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4623.29,
+      "latency_ms": 4217.53,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "chargezone",
@@ -511,9 +541,9 @@
       "url": "https://twitter.com/ChargeZone_",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 4421.23,
+      "latency_ms": 3918.92,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:34Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "zeon_charging",
@@ -521,19 +551,19 @@
       "url": "https://twitter.com/zeoncharging",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4320.5,
+      "latency_ms": 4051.44,
       "error": null,
-      "checked_at": "2026-07-01T17:56:34Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
-      "source_id": "jio-bp_pulse",
+      "source_id": "jio_bp_pulse",
       "name": "Jio-bp Pulse",
       "url": "https://twitter.com/jiobp",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4631.6,
+      "latency_ms": 3979.42,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:20Z"
     },
     {
       "source_id": "fortum_india",
@@ -541,9 +571,9 @@
       "url": "https://twitter.com/FortumIndia",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4796.69,
+      "latency_ms": 4231.05,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "glida_india",
@@ -551,9 +581,9 @@
       "url": "https://twitter.com/GlidaIndia",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4626.95,
+      "latency_ms": 4500.77,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "magenta_chargegrid",
@@ -561,9 +591,9 @@
       "url": "https://twitter.com/MagentaCharge",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4886.08,
+      "latency_ms": 4505.08,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "ev_motors_plugngo",
@@ -571,9 +601,9 @@
       "url": "https://twitter.com/PlugNgoIndia",
       "tier": "Tier 2",
       "status": "Offline",
-      "latency_ms": 4615.85,
+      "latency_ms": 4523.08,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "delta_electronics_india",
@@ -581,9 +611,9 @@
       "url": "https://twitter.com/DeltaIndia",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4819.12,
+      "latency_ms": 4319.37,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "exicom_power",
@@ -591,9 +621,9 @@
       "url": "https://twitter.com/ExicomIndia",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 4903.37,
+      "latency_ms": 4685.57,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "abb_india_ev",
@@ -601,9 +631,9 @@
       "url": "https://twitter.com/ABBIndia",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 5197.81,
+      "latency_ms": 4718.43,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "siemens_india_emobility",
@@ -611,9 +641,9 @@
       "url": "https://twitter.com/SiemensIndia",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 5815.26,
+      "latency_ms": 4955.48,
       "error": null,
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "servotech_power_systems",
@@ -621,9 +651,9 @@
       "url": "https://twitter.com/Servotech_Ltd",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 6364.53,
+      "latency_ms": 5210.18,
       "error": null,
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "sun_mobility",
@@ -631,9 +661,9 @@
       "url": "https://twitter.com/SUN_Mobility",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 5585.9,
+      "latency_ms": 4473.1,
       "error": null,
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "battery_smart",
@@ -641,9 +671,9 @@
       "url": "https://twitter.com/Battery_Smart",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 5596.2,
+      "latency_ms": 4802.06,
       "error": null,
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "bolt.earth",
@@ -651,9 +681,9 @@
       "url": "https://twitter.com/BoltEarth",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 5372.64,
+      "latency_ms": 4610.53,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "kazam_ev",
@@ -661,9 +691,9 @@
       "url": "https://twitter.com/KazamEV",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 5359.39,
+      "latency_ms": 4919.25,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "chargepoint",
@@ -671,9 +701,9 @@
       "url": "https://twitter.com/ChargePointnet",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 5951.06,
+      "latency_ms": 5286.06,
       "error": null,
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "evbox",
@@ -681,9 +711,9 @@
       "url": "https://twitter.com/EVBox",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 5396.0,
+      "latency_ms": 4875.47,
       "error": null,
-      "checked_at": "2026-07-01T17:56:35Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "electrify_america",
@@ -691,9 +721,9 @@
       "url": "https://twitter.com/ElectrifyAm",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 6288.45,
+      "latency_ms": 5199.15,
       "error": null,
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "ionity",
@@ -701,9 +731,9 @@
       "url": "https://twitter.com/IONITY_EU",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 5524.99,
+      "latency_ms": 4936.4,
       "error": null,
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:21Z"
     },
     {
       "source_id": "tesla_supercharger",
@@ -711,9 +741,9 @@
       "url": "https://twitter.com/TeslaCharging",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 6171.2,
+      "latency_ms": 5687.35,
       "error": null,
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "shell_recharge",
@@ -721,9 +751,9 @@
       "url": "https://twitter.com/ShellRecharge",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 5536.16,
+      "latency_ms": 5266.17,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "bp_pulse",
@@ -731,9 +761,9 @@
       "url": "https://twitter.com/bp_pulse",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 5766.74,
+      "latency_ms": 5379.13,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "pib_india",
@@ -741,9 +771,9 @@
       "url": "https://twitter.com/PIB_India",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 7011.74,
+      "latency_ms": 5665.15,
       "error": null,
-      "checked_at": "2026-07-01T17:56:37Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "mohi_india",
@@ -751,9 +781,9 @@
       "url": "https://twitter.com/MoHI_India",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 6178.54,
+      "latency_ms": 5227.57,
       "error": null,
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "niti_aayog",
@@ -761,9 +791,9 @@
       "url": "https://twitter.com/NITIAayog",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 6990.31,
+      "latency_ms": 5822.91,
       "error": null,
-      "checked_at": "2026-07-01T17:56:37Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "bee_india",
@@ -771,9 +801,9 @@
       "url": "https://twitter.com/beeindiadigital",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 7090.46,
+      "latency_ms": 6111.0,
       "error": null,
-      "checked_at": "2026-07-01T17:56:37Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "cesl_india",
@@ -781,9 +811,9 @@
       "url": "https://twitter.com/CESLIndia",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 6036.77,
+      "latency_ms": 5391.0,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "siam_india",
@@ -791,9 +821,9 @@
       "url": "https://twitter.com/siamindia",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 7271.22,
+      "latency_ms": 5977.74,
       "error": null,
-      "checked_at": "2026-07-01T17:56:37Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "smev_india",
@@ -801,9 +831,9 @@
       "url": "https://twitter.com/smevindia",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 6181.71,
+      "latency_ms": 5502.82,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "fada_india",
@@ -811,9 +841,9 @@
       "url": "https://twitter.com/FADA_India",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 7576.83,
+      "latency_ms": 6087.73,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "arai_india",
@@ -821,9 +851,9 @@
       "url": "https://twitter.com/ARAIIndia",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 6270.68,
+      "latency_ms": 5864.95,
       "error": null,
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "icat_manesar",
@@ -831,9 +861,9 @@
       "url": "https://twitter.com/ICAT_Manesar",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 6366.61,
+      "latency_ms": 5821.93,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "electrek",
@@ -841,9 +871,9 @@
       "url": "https://electrek.co/feed/",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 5884.1,
+      "latency_ms": 5314.96,
       "error": null,
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "insideevs",
@@ -851,9 +881,9 @@
       "url": "https://insideevs.com/rss/articles/all/",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 6218.54,
+      "latency_ms": 5559.51,
       "error": null,
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "cleantechnica",
@@ -861,9 +891,9 @@
       "url": "https://cleantechnica.com/feed/",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 6131.81,
+      "latency_ms": 5339.03,
       "error": null,
-      "checked_at": "2026-07-01T17:56:36Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "ev_magazine",
@@ -871,19 +901,19 @@
       "url": "https://twitter.com/EV_Mag",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 6767.37,
+      "latency_ms": 5931.97,
       "error": null,
-      "checked_at": "2026-07-01T17:56:37Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "green_car_reports",
       "name": "Green Car Reports",
       "url": "https://www.greencarreports.com/rss",
       "tier": "Tier 1",
-      "status": "Healthy",
-      "latency_ms": 7170.58,
-      "error": null,
-      "checked_at": "2026-07-01T17:56:37Z"
+      "status": "Degraded",
+      "latency_ms": 5843.48,
+      "error": "HTTP 403: Rate-limited/Blocked",
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "teslarati",
@@ -891,9 +921,9 @@
       "url": "https://twitter.com/Teslarati",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 8058.7,
+      "latency_ms": 6601.6,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "evreporter_india",
@@ -901,9 +931,9 @@
       "url": "https://twitter.com/evreporter",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 7117.18,
+      "latency_ms": 6243.0,
       "error": null,
-      "checked_at": "2026-07-01T17:56:37Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "evreporter_rss",
@@ -911,9 +941,9 @@
       "url": "https://evreporter.com/feed/",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 6666.53,
+      "latency_ms": 5940.61,
       "error": null,
-      "checked_at": "2026-07-01T17:56:37Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "plugin_india",
@@ -921,9 +951,9 @@
       "url": "https://twitter.com/pluginindia",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 6911.84,
+      "latency_ms": 6200.58,
       "error": null,
-      "checked_at": "2026-07-01T17:56:37Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "et_auto_india",
@@ -931,9 +961,9 @@
       "url": "https://twitter.com/ETAuto",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 7649.93,
+      "latency_ms": 6888.97,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "autocar_india",
@@ -941,9 +971,9 @@
       "url": "https://twitter.com/autocarindiamag",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 8367.97,
+      "latency_ms": 6800.17,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "overdrive_india",
@@ -951,9 +981,9 @@
       "url": "https://twitter.com/odmag",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 7742.97,
+      "latency_ms": 6885.09,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "saur_energy",
@@ -961,9 +991,9 @@
       "url": "https://twitter.com/Saur_Energy",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 8279.31,
+      "latency_ms": 7499.68,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "saur_energy_rss",
@@ -971,9 +1001,9 @@
       "url": "https://www.saurenergy.com/solar-energy-news/",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 6753.71,
+      "latency_ms": 5901.76,
       "error": null,
-      "checked_at": "2026-07-01T17:56:37Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "mercom_india_ev",
@@ -981,9 +1011,9 @@
       "url": "https://mercomindia.com/feed/",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 7016.1,
+      "latency_ms": 6021.33,
       "error": null,
-      "checked_at": "2026-07-01T17:56:37Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "cleantechnica_india_rss",
@@ -991,9 +1021,9 @@
       "url": "https://cleantechnica.com/tag/india/feed/",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 6864.56,
+      "latency_ms": 5948.74,
       "error": null,
-      "checked_at": "2026-07-01T17:56:37Z"
+      "checked_at": "2026-07-05T11:11:22Z"
     },
     {
       "source_id": "inc42_mobility",
@@ -1001,9 +1031,9 @@
       "url": "https://twitter.com/Inc42",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 9118.55,
+      "latency_ms": 7154.39,
       "error": null,
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "times_of_india_ev",
@@ -1011,19 +1041,19 @@
       "url": "https://timesofindia.indiatimes.com/auto/ev",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 7823.74,
+      "latency_ms": 6615.57,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "hindustan_times_auto",
       "name": "Hindustan Times Auto",
       "url": "https://auto.hindustantimes.com/ev",
       "tier": "Tier 1",
-      "status": "Offline",
-      "latency_ms": 7080.86,
-      "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:37Z"
+      "status": "Degraded",
+      "latency_ms": 6028.08,
+      "error": "HTTP 403: Rate-limited/Blocked",
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "business_standard_ev",
@@ -1031,9 +1061,9 @@
       "url": "https://www.business-standard.com/topic/electric-vehicles",
       "tier": "Tier 1",
       "status": "Degraded",
-      "latency_ms": 7144.89,
+      "latency_ms": 6066.56,
       "error": "HTTP 403: Rate-limited/Blocked",
-      "checked_at": "2026-07-01T17:56:37Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "catl_global",
@@ -1041,9 +1071,9 @@
       "url": "https://twitter.com/catl_official",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 8493.41,
+      "latency_ms": 7192.72,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "lg_energy_solution",
@@ -1051,9 +1081,9 @@
       "url": "https://twitter.com/LG_EnergySol",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 8140.36,
+      "latency_ms": 6618.65,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "samsung_sdi",
@@ -1061,9 +1091,9 @@
       "url": "https://twitter.com/SamsungSDI",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 7829.65,
+      "latency_ms": 6653.1,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "panasonic_energy",
@@ -1071,9 +1101,9 @@
       "url": "https://twitter.com/Panasonic_En",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 7806.44,
+      "latency_ms": 6682.55,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "log9_materials",
@@ -1081,9 +1111,9 @@
       "url": "https://twitter.com/log9materials",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 7864.57,
+      "latency_ms": 6726.12,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "lohum_lithium",
@@ -1091,9 +1121,9 @@
       "url": "https://twitter.com/LohumLithium",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 7849.37,
+      "latency_ms": 6736.54,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "autocar_india_yt",
@@ -1101,29 +1131,29 @@
       "url": "https://www.youtube.com/@autocarindia1",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 8547.64,
+      "latency_ms": 7637.08,
       "error": null,
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
-      "source_id": "r/indiaev",
+      "source_id": "r_indiaev",
       "name": "r/IndiaEV",
       "url": "https://www.reddit.com/r/IndiaEV/",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 7722.73,
+      "latency_ms": 6283.18,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
-      "source_id": "r/electricvehicles",
+      "source_id": "r_electricvehicles",
       "name": "r/electricvehicles",
       "url": "https://www.reddit.com/r/electricvehicles/",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 7801.67,
+      "latency_ms": 6320.01,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "nitin_gadkari",
@@ -1131,9 +1161,9 @@
       "url": "https://twitter.com/nitin_gadkari",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 8917.29,
+      "latency_ms": 7399.72,
       "error": null,
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "bhavish_aggarwal",
@@ -1141,9 +1171,9 @@
       "url": "https://twitter.com/bhash",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 9649.57,
+      "latency_ms": 7788.87,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "yulu_mobility_nodes",
@@ -1151,9 +1181,9 @@
       "url": "https://www.yulu.bike",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 7920.37,
+      "latency_ms": 6734.26,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "zypp_electric_delivery",
@@ -1161,9 +1191,9 @@
       "url": "https://www.zypp.app",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 7944.56,
+      "latency_ms": 6717.58,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "baaz_bikes_network",
@@ -1173,7 +1203,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "zen_mobility_cargo",
@@ -1181,9 +1211,9 @@
       "url": "https://zenmobility.com",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 8377.0,
+      "latency_ms": 7069.63,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "dispatch_vehicles",
@@ -1191,9 +1221,9 @@
       "url": "https://dispatchvehicles.com",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 10004.4,
+      "latency_ms": 7402.94,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "turno_ev_market",
@@ -1201,9 +1231,9 @@
       "url": "https://www.turno.club",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 8620.08,
+      "latency_ms": 7082.27,
       "error": null,
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "vidyut_tech_finance",
@@ -1211,9 +1241,9 @@
       "url": "https://www.vidyuttech.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 8409.87,
+      "latency_ms": 6787.66,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "mufin_green_finance",
@@ -1221,9 +1251,9 @@
       "url": "https://mufingreenfinance.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 8309.14,
+      "latency_ms": 6845.51,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "ecofy_green_mobility",
@@ -1231,9 +1261,9 @@
       "url": "https://www.ecofy.co.in",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 8314.65,
+      "latency_ms": 6831.91,
       "error": null,
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "liger_mobility_tech",
@@ -1241,9 +1271,9 @@
       "url": "https://www.ligermobility.com",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 11537.07,
+      "latency_ms": 9598.3,
       "error": null,
-      "checked_at": "2026-07-01T17:56:42Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "geliose_mobility_iitd",
@@ -1251,9 +1281,9 @@
       "url": "https://www.geliose.com",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 9425.51,
+      "latency_ms": 6901.84,
       "error": null,
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "gogoro_india_network",
@@ -1261,9 +1291,9 @@
       "url": "https://www.gogoro.com/in",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 9767.65,
+      "latency_ms": 6917.66,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "strikeco_electric_3w",
@@ -1273,7 +1303,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:38Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "triton_ev_india",
@@ -1281,9 +1311,9 @@
       "url": "https://www.tritonev.co",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 10160.37,
+      "latency_ms": 8400.5,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "srivaru_motors_prana",
@@ -1291,9 +1321,9 @@
       "url": "https://srivarumotors.com",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 8786.17,
+      "latency_ms": 7122.2,
       "error": null,
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "corrit_electric",
@@ -1301,9 +1331,9 @@
       "url": "https://corritelectric.com",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 8702.17,
+      "latency_ms": 6962.0,
       "error": null,
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "evtric_motors_india",
@@ -1311,9 +1341,9 @@
       "url": "https://evtric.com",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 8739.24,
+      "latency_ms": 6956.51,
       "error": null,
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:23Z"
     },
     {
       "source_id": "aarya_automobiles",
@@ -1323,7 +1353,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:41Z"
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "tata_autocomp_taco",
@@ -1331,9 +1361,9 @@
       "url": "https://www.tataautocomp.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 9191.1,
+      "latency_ms": 7265.03,
       "error": null,
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "epsilon_materials",
@@ -1341,9 +1371,9 @@
       "url": "https://www.epsilonam.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 10124.7,
+      "latency_ms": 7848.52,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "altmin_materials",
@@ -1353,7 +1383,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "himadri_chemicals",
@@ -1363,7 +1393,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "bharat_forge_ev",
@@ -1371,9 +1401,9 @@
       "url": "https://www.bharatforge.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 9133.39,
+      "latency_ms": 7433.89,
       "error": null,
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "batx_recycling",
@@ -1381,9 +1411,9 @@
       "url": "https://batxenergies.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 10852.93,
+      "latency_ms": 8258.42,
       "error": null,
-      "checked_at": "2026-07-01T17:56:41Z"
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "nexcharge_exide_jv",
@@ -1393,7 +1423,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "adani_total_emobility",
@@ -1403,7 +1433,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "bpcl_edrive_corridors",
@@ -1411,9 +1441,9 @@
       "url": "https://www.bharatpetroleum.in",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 10053.07,
+      "latency_ms": 8297.52,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "hpcl_ev_zones",
@@ -1421,9 +1451,9 @@
       "url": "https://www.hindustanpetroleum.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 9227.85,
+      "latency_ms": 7374.03,
       "error": null,
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "iocl_wayside_charging",
@@ -1431,9 +1461,9 @@
       "url": "https://www.iocl.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 9625.91,
+      "latency_ms": 7640.62,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "gmr_green_transit",
@@ -1441,9 +1471,9 @@
       "url": "https://www.gmrgroup.in",
       "tier": "Tier 2",
       "status": "Offline",
-      "latency_ms": 9216.46,
+      "latency_ms": 7333.03,
       "error": "HTTP 503",
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "powergrid_ev_charging",
@@ -1453,7 +1483,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "Connection Timeout",
-      "checked_at": "2026-07-01T17:56:49Z"
+      "checked_at": "2026-07-05T11:12:18Z"
     },
     {
       "source_id": "teri_india_mobility",
@@ -1461,9 +1491,9 @@
       "url": "https://www.teriin.org",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 9322.15,
+      "latency_ms": 7469.99,
       "error": null,
-      "checked_at": "2026-07-01T17:56:39Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "cstep_clean_mobility",
@@ -1471,9 +1501,9 @@
       "url": "https://www.cstep.in",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 9790.52,
+      "latency_ms": 7749.27,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "cse_india_advocacy",
@@ -1481,9 +1511,9 @@
       "url": "https://www.cseindia.org",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 9522.28,
+      "latency_ms": 7633.18,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "bis_standards_ev",
@@ -1491,9 +1521,9 @@
       "url": "https://www.bis.gov.in",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 11218.8,
+      "latency_ms": 9256.05,
       "error": null,
-      "checked_at": "2026-07-01T17:56:41Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "invest_india_ev",
@@ -1501,9 +1531,9 @@
       "url": "https://www.investindia.gov.in",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 9619.84,
+      "latency_ms": 7603.05,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "acma_india_localized",
@@ -1511,9 +1541,9 @@
       "url": "https://www.acma.in",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 9929.31,
+      "latency_ms": 7667.84,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "ev_update_media_india",
@@ -1521,9 +1551,9 @@
       "url": "https://evupdatemedia.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 9779.82,
+      "latency_ms": 7702.3,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "auto_punditz_metrics",
@@ -1531,9 +1561,9 @@
       "url": "https://www.autopunditz.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 9949.43,
+      "latency_ms": 7860.24,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "autotech_review_india",
@@ -1541,9 +1571,9 @@
       "url": "https://autotechreview.com",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 9971.92,
+      "latency_ms": 7710.15,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "power_trans_india",
@@ -1551,9 +1581,9 @@
       "url": "https://www.powertransmission.in",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 15610.92,
+      "latency_ms": 9436.74,
       "error": null,
-      "checked_at": "2026-07-01T17:56:46Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "eq_international_ev",
@@ -1561,9 +1591,9 @@
       "url": "https://www.eqmagpro.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 11154.56,
+      "latency_ms": 9715.23,
       "error": null,
-      "checked_at": "2026-07-01T17:56:41Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "solar_quarter_ev",
@@ -1571,9 +1601,9 @@
       "url": "https://solarquarter.com",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 10318.76,
+      "latency_ms": 8238.04,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "energetica_india_ev",
@@ -1583,7 +1613,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "best_bus_mumbai",
@@ -1591,9 +1621,9 @@
       "url": "https://www.bestundertaking.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 10946.29,
+      "latency_ms": 8665.03,
       "error": null,
-      "checked_at": "2026-07-01T17:56:41Z"
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "dtc_delhi_ebuses",
@@ -1601,9 +1631,9 @@
       "url": "https://dtc.delhi.gov.in",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 10646.77,
+      "latency_ms": 8822.8,
       "error": null,
-      "checked_at": "2026-07-01T17:56:41Z"
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "pmpml_ebus_pune",
@@ -1611,9 +1641,9 @@
       "url": "https://www.pmpml.org",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 12244.06,
+      "latency_ms": 9864.95,
       "error": null,
-      "checked_at": "2026-07-01T17:56:42Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "msrtc_shivai_fleet",
@@ -1621,9 +1651,9 @@
       "url": "https://www.msrtc.maharashtra.gov.in",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 10279.38,
+      "latency_ms": 7991.83,
       "error": null,
-      "checked_at": "2026-07-01T17:56:40Z"
+      "checked_at": "2026-07-05T11:11:24Z"
     },
     {
       "source_id": "ksrtc_ev_bus_karnataka",
@@ -1631,9 +1661,9 @@
       "url": "https://ksrtc.karnataka.gov.in",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 11060.31,
+      "latency_ms": 8470.25,
       "error": null,
-      "checked_at": "2026-07-01T17:56:41Z"
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "tsrtc_ev_bus_telangana",
@@ -1641,29 +1671,29 @@
       "url": "https://www.tsrtc.telangana.gov.in",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 11529.5,
+      "latency_ms": 8125.82,
       "error": null,
-      "checked_at": "2026-07-01T17:56:42Z"
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "evo_india_ev",
       "name": "Evo India EV",
-      "url": "https://www.evoindia.com/ev",
+      "url": "https://www.evoindia.com/news",
       "tier": "Tier 1",
-      "status": "Offline",
-      "latency_ms": 10345.84,
-      "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:40Z"
+      "status": "Healthy",
+      "latency_ms": 8195.49,
+      "error": null,
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "carandbike_ev",
       "name": "Carandbike EV",
-      "url": "https://www.carandbike.com/news/electric-vehicles",
+      "url": "https://www.carandbike.com/news",
       "tier": "Tier 1",
-      "status": "Offline",
-      "latency_ms": 10472.35,
-      "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:40Z"
+      "status": "Healthy",
+      "latency_ms": 8275.52,
+      "error": null,
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "thrustzone_ev",
@@ -1671,9 +1701,9 @@
       "url": "https://www.thrustzone.com/category/electric-vehicles/",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 11170.21,
+      "latency_ms": 8313.35,
       "error": null,
-      "checked_at": "2026-07-01T17:56:41Z"
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "topgear_india_ev",
@@ -1681,9 +1711,9 @@
       "url": "https://www.topgearindia.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 13814.32,
+      "latency_ms": 9418.62,
       "error": null,
-      "checked_at": "2026-07-01T17:56:44Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "gaadikey_ev",
@@ -1691,9 +1721,9 @@
       "url": "https://www.gaadikey.com/blog/category/electric-vehicles/",
       "tier": "Tier 2",
       "status": "Offline",
-      "latency_ms": 13205.3,
+      "latency_ms": 9664.42,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:43Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "ackodrive_ev",
@@ -1701,19 +1731,19 @@
       "url": "https://ackodrive.com/news/electric-vehicles/",
       "tier": "Tier 1",
       "status": "Degraded",
-      "latency_ms": 10745.61,
+      "latency_ms": 8367.37,
       "error": "HTTP 403: Rate-limited/Blocked",
-      "checked_at": "2026-07-01T17:56:41Z"
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "autobics_ev",
       "name": "Autobics EV",
-      "url": "https://www.autobics.com/category/electric-vehicles/",
+      "url": "https://www.autobics.com/news/",
       "tier": "Tier 2",
       "status": "Offline",
-      "latency_ms": 12874.61,
+      "latency_ms": 10465.01,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:43Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "indianautosblog_ev",
@@ -1721,9 +1751,9 @@
       "url": "https://indianautosblog.com/electric-vehicles",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 11089.72,
+      "latency_ms": 8623.05,
       "error": null,
-      "checked_at": "2026-07-01T17:56:41Z"
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "flywheel_auto_ev",
@@ -1733,7 +1763,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:44Z"
+      "checked_at": "2026-07-05T11:11:28Z"
     },
     {
       "source_id": "carblogindia_ev",
@@ -1741,9 +1771,29 @@
       "url": "https://www.carblogindia.com",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 11593.22,
+      "latency_ms": 8919.14,
       "error": null,
-      "checked_at": "2026-07-01T17:56:42Z"
+      "checked_at": "2026-07-05T11:11:25Z"
+    },
+    {
+      "source_id": "autocar_india_website",
+      "name": "Autocar India Website",
+      "url": "https://www.autocarindia.com/electric-vehicles",
+      "tier": "Tier 1",
+      "status": "Healthy",
+      "latency_ms": 8855.2,
+      "error": null,
+      "checked_at": "2026-07-05T11:11:25Z"
+    },
+    {
+      "source_id": "overdrive_india_website",
+      "name": "Overdrive India Website",
+      "url": "https://www.overdrive.in/news/",
+      "tier": "Tier 1",
+      "status": "Healthy",
+      "latency_ms": 8838.29,
+      "error": null,
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "gaadicabs_electric",
@@ -1753,7 +1803,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:41Z"
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "snap_e_cabs_fleet",
@@ -1761,9 +1811,9 @@
       "url": "https://www.snapecabs.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 11748.53,
+      "latency_ms": 9234.51,
       "error": null,
-      "checked_at": "2026-07-01T17:56:42Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "seahawk_corporate_ev",
@@ -1771,9 +1821,9 @@
       "url": "https://www.seahawktravels.in/electric-fleet-for-corporates",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 11560.53,
+      "latency_ms": 9115.75,
       "error": null,
-      "checked_at": "2026-07-01T17:56:42Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "lithium_urban_fleet",
@@ -1783,7 +1833,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:42Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "glyd_mahindra_fleet",
@@ -1791,9 +1841,9 @@
       "url": "https://www.glyd.in",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 11869.75,
+      "latency_ms": 9268.96,
       "error": null,
-      "checked_at": "2026-07-01T17:56:42Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "ecocabs_electric",
@@ -1801,9 +1851,9 @@
       "url": "https://ecocabs.in",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 11447.88,
+      "latency_ms": 9008.67,
       "error": null,
-      "checked_at": "2026-07-01T17:56:41Z"
+      "checked_at": "2026-07-05T11:11:25Z"
     },
     {
       "source_id": "e_drive_india_cpo",
@@ -1811,9 +1861,9 @@
       "url": "https://www.edriveindia.com",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 13546.99,
+      "latency_ms": 10792.78,
       "error": null,
-      "checked_at": "2026-07-01T17:56:44Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "sunfuel_electric_cpo",
@@ -1821,9 +1871,9 @@
       "url": "https://www.sunfuelelectric.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 11860.6,
+      "latency_ms": 9248.24,
       "error": null,
-      "checked_at": "2026-07-01T17:56:42Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "shell_recharge_india",
@@ -1831,9 +1881,9 @@
       "url": "https://www.shell.in",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 11639.77,
+      "latency_ms": 9308.72,
       "error": null,
-      "checked_at": "2026-07-01T17:56:42Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "electric_pe",
@@ -1841,9 +1891,9 @@
       "url": "https://www.electricpe.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 11693.68,
+      "latency_ms": 9402.98,
       "error": null,
-      "checked_at": "2026-07-01T17:56:42Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "charzer_cpo_network",
@@ -1853,7 +1903,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:44Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "pulse_energy",
@@ -1861,9 +1911,9 @@
       "url": "https://www.pulseenergy.co",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 12835.21,
+      "latency_ms": 10108.54,
       "error": null,
-      "checked_at": "2026-07-01T17:56:43Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "giga_force_ev",
@@ -1873,7 +1923,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "Connection Timeout",
-      "checked_at": "2026-07-01T17:56:52Z"
+      "checked_at": "2026-07-05T11:12:18Z"
     },
     {
       "source_id": "tata_autocomp_systems",
@@ -1881,9 +1931,9 @@
       "url": "https://www.tataautocomp.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 12200.1,
+      "latency_ms": 9724.61,
       "error": null,
-      "checked_at": "2026-07-01T17:56:42Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "lucas_tvs_motors",
@@ -1891,9 +1941,9 @@
       "url": "https://www.lucastvs.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 12152.59,
+      "latency_ms": 9491.71,
       "error": null,
-      "checked_at": "2026-07-01T17:56:42Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "mindacorp_ev",
@@ -1903,7 +1953,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "Connection Timeout",
-      "checked_at": "2026-07-01T17:56:52Z"
+      "checked_at": "2026-07-05T11:12:18Z"
     },
     {
       "source_id": "dana_anand_india",
@@ -1911,9 +1961,9 @@
       "url": "https://www.anandgroupindia.com/danaanandindia/",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 12716.92,
+      "latency_ms": 10099.52,
       "error": null,
-      "checked_at": "2026-07-01T17:56:43Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "kptech_automotive",
@@ -1921,9 +1971,9 @@
       "url": "https://www.kpit.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 12807.63,
+      "latency_ms": 10182.92,
       "error": null,
-      "checked_at": "2026-07-01T17:56:43Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "tata_elxsi_ev",
@@ -1931,9 +1981,9 @@
       "url": "https://www.tataelxsi.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 15751.17,
+      "latency_ms": 10041.65,
       "error": null,
-      "checked_at": "2026-07-01T17:56:46Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "attron_motors",
@@ -1941,9 +1991,9 @@
       "url": "https://www.attronautomotive.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 12784.55,
+      "latency_ms": 9772.78,
       "error": null,
-      "checked_at": "2026-07-01T17:56:43Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "powerdrift_reviews",
@@ -1951,9 +2001,9 @@
       "url": "https://www.youtube.com/@PowerDrift",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 12981.94,
+      "latency_ms": 9921.88,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:43Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "motoroctane_evs",
@@ -1961,9 +2011,9 @@
       "url": "https://www.youtube.com/@MotorOctane",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 13370.88,
+      "latency_ms": 10499.68,
       "error": null,
-      "checked_at": "2026-07-01T17:56:43Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "faisal_khan_ev",
@@ -1971,9 +2021,9 @@
       "url": "https://www.youtube.com/@FaisalKhan",
       "tier": "Tier 1",
       "status": "Offline",
-      "latency_ms": 12995.11,
+      "latency_ms": 9950.08,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:43Z"
+      "checked_at": "2026-07-05T11:11:26Z"
     },
     {
       "source_id": "gagan_choudhary_ev",
@@ -1981,9 +2031,9 @@
       "url": "https://www.youtube.com/@GaganChoudhary",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 13336.97,
+      "latency_ms": 10689.84,
       "error": null,
-      "checked_at": "2026-07-01T17:56:43Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "talking_ev_india",
@@ -1991,9 +2041,9 @@
       "url": "https://www.youtube.com/@TalkingEVIndia",
       "tier": "Tier 2",
       "status": "Offline",
-      "latency_ms": 13062.6,
+      "latency_ms": 10120.7,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:43Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "ev_duniya",
@@ -2001,9 +2051,9 @@
       "url": "https://www.youtube.com/@EVDuniya",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 13325.19,
+      "latency_ms": 10300.78,
       "error": null,
-      "checked_at": "2026-07-01T17:56:43Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "ev_kannada_car",
@@ -2011,9 +2061,9 @@
       "url": "https://www.youtube.com/@EVKannada",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 13598.75,
+      "latency_ms": 10556.19,
       "error": null,
-      "checked_at": "2026-07-01T17:56:44Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "ev_telugu_car",
@@ -2021,9 +2071,9 @@
       "url": "https://www.youtube.com/@TeluguEV",
       "tier": "Tier 2",
       "status": "Offline",
-      "latency_ms": 13184.48,
+      "latency_ms": 10285.86,
       "error": "HTTP 404",
-      "checked_at": "2026-07-01T17:56:43Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "ev_hindi_car",
@@ -2031,9 +2081,9 @@
       "url": "https://www.youtube.com/@EVHindi",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 13554.32,
+      "latency_ms": 11042.21,
       "error": null,
-      "checked_at": "2026-07-01T17:56:44Z"
+      "checked_at": "2026-07-05T11:11:28Z"
     },
     {
       "source_id": "aeee_mobility",
@@ -2041,9 +2091,9 @@
       "url": "https://www.aeee.in",
       "tier": "Tier 2",
       "status": "Degraded",
-      "latency_ms": 13375.87,
+      "latency_ms": 10187.48,
       "error": "HTTP 403: Rate-limited/Blocked",
-      "checked_at": "2026-07-01T17:56:43Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "ceew_india_mobility",
@@ -2051,9 +2101,9 @@
       "url": "https://www.ceew.in",
       "tier": "Tier 1",
       "status": "Degraded",
-      "latency_ms": 13968.34,
+      "latency_ms": 10483.9,
       "error": "HTTP 403: Rate-limited/Blocked",
-      "checked_at": "2026-07-01T17:56:44Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "climate_trends_mobility",
@@ -2061,9 +2111,9 @@
       "url": "https://climatetrends.in",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 13566.29,
+      "latency_ms": 11065.43,
       "error": null,
-      "checked_at": "2026-07-01T17:56:44Z"
+      "checked_at": "2026-07-05T11:11:28Z"
     },
     {
       "source_id": "carbon_copy_mobility",
@@ -2071,9 +2121,9 @@
       "url": "https://carboncopy.info",
       "tier": "Tier 2",
       "status": "Healthy",
-      "latency_ms": 13690.07,
+      "latency_ms": 10813.96,
       "error": null,
-      "checked_at": "2026-07-01T17:56:44Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "delhi_ev_cell",
@@ -2081,9 +2131,9 @@
       "url": "https://ev.delhi.gov.in",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 14081.53,
+      "latency_ms": 11054.17,
       "error": null,
-      "checked_at": "2026-07-01T17:56:44Z"
+      "checked_at": "2026-07-05T11:11:28Z"
     },
     {
       "source_id": "maharashtra_ev_portal",
@@ -2092,8 +2142,8 @@
       "tier": "Tier 1",
       "status": "Offline",
       "latency_ms": 0.0,
-      "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:46Z"
+      "error": "Connection Timeout",
+      "checked_at": "2026-07-05T11:12:18Z"
     },
     {
       "source_id": "tamil_nadu_ev_portal",
@@ -2103,7 +2153,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:44Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "karnataka_ev_portal",
@@ -2113,7 +2163,7 @@
       "status": "Offline",
       "latency_ms": 0.0,
       "error": "DNS/Connection Error",
-      "checked_at": "2026-07-01T17:56:44Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "maxwell_energy_bms",
@@ -2121,9 +2171,9 @@
       "url": "https://www.maxwellenergy.com",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 13899.43,
+      "latency_ms": 10737.65,
       "error": null,
-      "checked_at": "2026-07-01T17:56:44Z"
+      "checked_at": "2026-07-05T11:11:27Z"
     },
     {
       "source_id": "gayam_motor_works",
@@ -2131,9 +2181,9 @@
       "url": "https://www.gayammotorworks.com",
       "tier": "Tier 2",
       "status": "Degraded",
-      "latency_ms": 15216.52,
+      "latency_ms": 11620.68,
       "error": "HTTP 403: Rate-limited/Blocked",
-      "checked_at": "2026-07-01T17:56:45Z"
+      "checked_at": "2026-07-05T11:11:28Z"
     },
     {
       "source_id": "carandbike_yt",
@@ -2141,10 +2191,10 @@
       "url": "https://www.youtube.com/@carandbike",
       "tier": "Tier 1",
       "status": "Healthy",
-      "latency_ms": 14336.73,
+      "latency_ms": 11165.92,
       "error": null,
-      "checked_at": "2026-07-01T17:56:44Z"
+      "checked_at": "2026-07-05T11:11:28Z"
     }
   ],
-  "generated_at": "2026-07-01T17:56:52Z"
+  "generated_at": "2026-07-05T11:12:18Z"
 }

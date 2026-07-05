@@ -181,32 +181,36 @@ class NewsroomOrchestrator:
             return {"success": False, "error": str(e)}
 
     def get_latest_raw_signals(self, limit=10):
-        """Fetch unclustered signals from scraped_raw enforcing a 90% India / 10% Global ratio."""
+        """Fetch unclustered signals from scraped_raw for strictly India (IN) sources."""
         current_time = int(time.time())
         # Look back up to 7 days to ensure only recent signals are processed
         cutoff = current_time - 604800
         with get_db() as conn:
             cur = conn.cursor()
-            # Fetch all unclustered signals in the window, joining with sources to get country
+            
+            # 1) Auto-reject non-Indian signals to avoid processing them (Global EV news rejected)
+            cur.execute("""
+                UPDATE scraped_raw 
+                SET clustered = 1 
+                WHERE id IN (
+                    SELECT r.id FROM scraped_raw r
+                    LEFT JOIN sources s ON r.source_id = s.source_id
+                    WHERE r.clustered = 0 AND COALESCE(s.country, 'IN') != 'IN'
+                )
+            """)
+            
+            # 2) Fetch only Indian signals
             cur.execute("""
                 SELECT r.*, COALESCE(s.country, 'IN') as country 
                 FROM scraped_raw r
                 LEFT JOIN sources s ON r.source_id = s.source_id
                 WHERE r.clustered = 0 AND CAST(r.timestamp AS INTEGER) >= ? 
+                AND COALESCE(s.country, 'IN') = 'IN'
                 ORDER BY r.timestamp DESC
-            """, (cutoff,))
-            rows = [dict(row) for row in cur.fetchall()]
+                LIMIT ?
+            """, (cutoff, limit))
+            selected_signals = [dict(row) for row in cur.fetchall()]
             
-            # Separate pools
-            india_pool = [r for r in rows if r['country'] == 'IN']
-            global_pool = [r for r in rows if r['country'] != 'IN']
-            
-            # Select strictly India first up to the limit, fill remainder with global
-            selected_signals = india_pool[:limit]
-            if len(selected_signals) < limit:
-                needed = limit - len(selected_signals)
-                selected_signals.extend(global_pool[:needed])
-                
             # Mark selected as clustered
             for sig in selected_signals:
                 cur.execute("UPDATE scraped_raw SET clustered = 1 WHERE id = ?", (sig['id'],))
@@ -217,10 +221,10 @@ class NewsroomOrchestrator:
         """Steps 8-21 for a single signal."""
         print(f"[SIGNAL] Processing: {signal['title'][:50]}...")
         
-        # Verify raw content is present and is at least 50 words (or 15 words for social media channels)
+        # Verify raw content is present and is at least 150 words (or 15 words for social media channels)
         raw_content = signal.get('content', '') or ''
         word_count = len(raw_content.split())
-        min_words = 15 if signal.get('source_type') in ['twitter', 'reddit', 'instagram', 'facebook', 'youtube', 'Social', 'Video'] else 50
+        min_words = 15 if signal.get('source_type') in ['twitter', 'reddit', 'instagram', 'facebook', 'youtube', 'Social', 'Video'] else 150
         if not raw_content.strip() or word_count < min_words:
             print(f"[OBSERVABILITY][{self.traceparent}] [GROUNDING_GATE_BLOCK] Signal contains insufficient data ({word_count} words). Aborting.")
             with get_db() as conn:
