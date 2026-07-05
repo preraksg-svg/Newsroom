@@ -136,8 +136,8 @@ class NewsroomOrchestrator:
                         log_source_fetch(source_id, 'empty', 0)
                     print(f"[PIPELINE] Source {source_id}: Saved {saved_count} new raw signals.")
 
-            print(f"[PIPELINE] Scraping {len(sources_to_scrape)} sources with concurrency limit 2...")
-            sem = asyncio.Semaphore(2)
+            print(f"[PIPELINE] Scraping {len(sources_to_scrape)} sources with concurrency limit 20...")
+            sem = asyncio.Semaphore(20)
             async def scrape_sem(s):
                 async with sem:
                     return await scrape_source_safe(s)
@@ -227,7 +227,7 @@ class NewsroomOrchestrator:
         # Verify raw content is present and is at least 150 words (or 15 words for social media channels)
         raw_content = signal.get('content', '') or ''
         word_count = len(raw_content.split())
-        min_words = 15 if signal.get('source_type') in ['twitter', 'reddit', 'instagram', 'facebook', 'youtube', 'Social', 'Video'] else 150
+        min_words = 15 if signal.get('source_type') in ['twitter', 'reddit', 'instagram', 'facebook', 'youtube', 'Social', 'Video', 'newsapi', 'newsdata', 'gnews'] else 150
         if not raw_content.strip() or word_count < min_words:
             print(f"[OBSERVABILITY][{self.traceparent}] [GROUNDING_GATE_BLOCK] Signal contains insufficient data ({word_count} words). Aborting.")
             with get_db() as conn:

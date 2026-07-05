@@ -16,6 +16,9 @@ from workers.website_worker import scrape_website
 from workers.reddit_worker import scrape_reddit
 from workers.instagram_worker import scrape_instagram
 from workers.facebook_worker import scrape_facebook
+from workers.newsapi_worker import scrape_newsapi
+from workers.newsdata_worker import scrape_newsdata
+from workers.gnews_worker import scrape_gnews
 from backend.db.queries import get_db, log_source_fetch
 from learning_engine import (
     record_worker_ingestion, should_skip_content,
@@ -49,6 +52,12 @@ async def worker_loop(worker_id: int):
                         results = await scrape_instagram(url)
                     elif stype == "facebook":
                         results = await scrape_facebook(url)
+                    elif stype == "newsapi":
+                        results = await scrape_newsapi(url)
+                    elif stype == "newsdata":
+                        results = await scrape_newsdata(url)
+                    elif stype == "gnews":
+                        results = await scrape_gnews(url)
                     else:
                         results = await scrape_website(url)
                     break

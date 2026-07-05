@@ -20,6 +20,9 @@ async def scrape_newsapi(domain_or_query: str):
         logger.warning("[NewsAPI] NEWS_API_KEY not found in environment. Skipping.")
         return results
 
+    if domain_or_query in ["newsapi", "newsdata", "gnews"]:
+        domain_or_query = ""
+
     # Determine if we are querying a specific domain or general topics
     if domain_or_query and "." in domain_or_query and " " not in domain_or_query:
         params = {

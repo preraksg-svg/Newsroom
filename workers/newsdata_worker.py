@@ -18,7 +18,11 @@ async def scrape_newsdata(domain_or_query: str):
         logger.warning("[NewsData] NEWS_DATA_API_KEY not found in environment. Skipping.")
         return results
 
-    query = domain_or_query if domain_or_query else "electric vehicle OR EV"
+    if domain_or_query in ["newsapi", "newsdata", "gnews"]:
+        domain_or_query = ""
+
+    # Determine if we are querying a specific domain or general topics
+    query = f"site:{domain_or_query}" if (domain_or_query and "." in domain_or_query and " " not in domain_or_query) else "electric vehicle OR EV"
     params = {
         "apikey": api_key,
         "q": query,

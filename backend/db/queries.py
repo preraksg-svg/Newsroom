@@ -114,6 +114,12 @@ def init_db():
             )
         ''')
         
+        # Add country column if it doesn't exist
+        try:
+            cur.execute("ALTER TABLE sources ADD COLUMN country TEXT DEFAULT 'IN'")
+        except Exception:
+            pass
+        
         cur.execute('''
             CREATE TABLE IF NOT EXISTS groq_usage (
                 date_str TEXT PRIMARY KEY,
