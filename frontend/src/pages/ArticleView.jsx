@@ -186,12 +186,19 @@ export default function ArticleView() {
   // Helper to safely parse JSON or return as is
   const safeParse = (data, fallback = []) => {
     if (!data) return fallback
-    if (typeof data === 'object') return data
-    try {
-      return JSON.parse(data)
-    } catch (e) {
-      return fallback
+    let parsed = data
+    if (typeof data !== 'object') {
+      try {
+        parsed = JSON.parse(data)
+      } catch (e) {
+        return fallback
+      }
     }
+    
+    if (Array.isArray(fallback) && !Array.isArray(parsed)) {
+       return fallback
+    }
+    return parsed
   }
 
   const sections = safeParse(editedStory.sections, [])
