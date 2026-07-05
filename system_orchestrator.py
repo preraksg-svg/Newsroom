@@ -157,8 +157,8 @@ class NewsroomOrchestrator:
             await asyncio.gather(*(scrape_sem(s) for s in sources_to_scrape), return_exceptions=True)
             
             # 5-7: Normalization, Dedup, Clustering
-            print("[STEP 5-7] Normalizing and Clustering Raw Signals...")
-            raw_signals = self.get_latest_raw_signals(limit=5)
+            print("\n[PIPELINE][STEP 5] AI Analysis & Scoring...")
+            raw_signals = self.get_latest_raw_signals(limit=50)
             # MANDATORY LOG
             print("Fetched signals for processing:", len(raw_signals) if raw_signals else 0)
             

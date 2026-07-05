@@ -10,10 +10,7 @@ from groq import Groq
 
 last_web_memory = {}
 
-EV_REGEX = re.compile(
-    r'\b(ev|evs|electric|hybrid|battery|charging|charger|sierra|punch|ola|ather|tata|mahindra|byd|scooter|windsor|curvv|volt|e-tron|eqs|eqe|eqa|eqb|enyaq|taycan|ioniq|nexon|tiago|tigor|xuv400|be\.05|comet|zs\s+ev|vida|chetak|iqube|roadster|motorcycle|scorpio\.e|thar\.e|altigreen|kinetic|euler|rv400|lithium|gigafactory|subsidy|subsidies|fame|zero-emission|electrified|electrification)\b',
-    re.IGNORECASE
-)
+EV_REGEX = re.compile(r'(electric| ev |evs|zero emission|battery|charging|charge|tesla|rivian|lucid|byd|scooter|bike|motor|sierra|punch|ola|ather|tata|mahindra|windsor|curvv|volt|e-tron|eqs|eqe|eqa|eqb|enyaq|taycan|ioniq|nexon|tiago|tigor|xuv400|be\.05|comet|zs\s+ev|vida|chetak|iqube|roadster|motorcycle|scorpio\.e|thar\.e|altigreen|kinetic|euler|rv400|lithium|gigafactory|subsidy|subsidies|fame|zero-emission|electrified|electrification)', re.IGNORECASE)
 
 def llm_filter_website(text: str) -> str:
     api_key = os.environ.get("GROQ_API_KEY")
@@ -159,8 +156,7 @@ async def scrape_website(url: str):
                             
                             if len(extracted_text) > 0:
                                 article_content = "\n".join(extracted_text)
-                                ev_keywords = re.compile(r'(ev|electric|battery|policy|charging|solar|renewable)', re.IGNORECASE)
-                                if ev_keywords.search(article_content):
+                                if EV_REGEX.search(article_content):
                                     final_content = article_content
                                 else:
                                     final_content = article_content
