@@ -197,10 +197,10 @@ def _rewrite_article_fallback(content, url=None, title=None):
         if not text or len(text) <= max_chars:
             return text
         truncated = text[:max_chars]
-        last_space = truncated.rfind(' ')
-        if last_space != -1:
-            return text[:last_space].strip()
-        return truncated
+        last_boundary = max(truncated.rfind('.'), truncated.rfind('!'), truncated.rfind('?'))
+        if last_boundary != -1 and last_boundary > 20:
+            return text[:last_boundary+1].strip()
+        return text
 
     def clean_voice_manifest_violations(text):
         if not text:
@@ -468,7 +468,13 @@ def _rewrite_article_fallback(content, url=None, title=None):
     body_sentences = unique_sentences[1:] if len(unique_sentences) > 1 else []
     additional_input_text = " ".join(body_sentences)
 
-    ai_summary_text = additional_input_text[:300] + "..." if additional_input_text else headline
+    if additional_input_text:
+        ai_summary_text = additional_input_text[:300]
+        last_b = max(ai_summary_text.rfind('.'), ai_summary_text.rfind('!'), ai_summary_text.rfind('?'))
+        if last_b != -1 and last_b > 50:
+            ai_summary_text = ai_summary_text[:last_b+1].strip()
+    else:
+        ai_summary_text = headline
     key_points_text = f"* {headline}\n* Detailed updates provided in the source."
     what_happened_text = additional_input_text if additional_input_text else headline
 
@@ -548,24 +554,15 @@ Reject:
 3. CONTENT GENERATION RULES
 ----------------------------------------
 
-You are NOT summarizing.
+You must preserve the original headline and the original news content as closely as possible. Do NOT write a new article from scratch or rewrite everything.
 
-You must:
-- extract ALL key details
-- expand explanations clearly
-- maintain or slightly increase content depth
+Specifically:
+- Keep the original headline almost exactly as is. Make only minor corrections or SEO keyword tuning without altering its core meaning.
+- Retain the original news content's structure, sentences, and vocabulary as much as possible. Simply adjust/polish a few words or sentences for SEO, grammatical flow, or journalistic clarity. Do NOT expand the text or write a long article if the source is short.
+- Do NOT hallucinate or add facts not present in the source.
 
-----------------------------------------
-DEPTH RULES:
-- Include numbers, companies, locations, timelines
-- Expand short points into clear explanations
-- Explain technical terms briefly
-- No fluff or repetition
-
-Minimum content target:
-- 600–900 words
-
-----------------------------------------
+Length target:
+- Keep the length similar to the original source content. Do NOT expand it.
 4. SEO OPTIMIZATION RULES (MANDATORY)
 ----------------------------------------
 

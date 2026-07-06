@@ -13,15 +13,10 @@ def truncate_word_safe(text, max_chars):
     if not text or len(text) <= max_chars:
         return text
     truncated = text[:max_chars]
-    # Try to find a sentence boundary first
-    last_period = truncated.rfind('. ')
-    if last_period > max_chars * 0.5:
-        return text[:last_period+1].strip()
-        
-    last_space = truncated.rfind(' ')
-    if last_space != -1:
-        return text[:last_space].strip() + "..."
-    return truncated + "..."
+    last_boundary = max(truncated.rfind('.'), truncated.rfind('!'), truncated.rfind('?'))
+    if last_boundary != -1 and last_boundary > 20:
+        return text[:last_boundary+1].strip()
+    return text
 
 def clean_incomplete_ending(text):
     if not text:
