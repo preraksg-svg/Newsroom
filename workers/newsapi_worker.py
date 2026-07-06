@@ -34,7 +34,7 @@ async def scrape_newsapi(domain_or_query: str):
             "sortBy": "publishedAt",
             "language": "en",
             "apiKey": api_key,
-            "pageSize": 10
+            "pageSize": 30
         }
     else:
         if is_global:
@@ -47,7 +47,7 @@ async def scrape_newsapi(domain_or_query: str):
             "sortBy": "publishedAt",
             "language": "en",
             "apiKey": api_key,
-            "pageSize": 10
+            "pageSize": 30
         }
 
     url = "https://newsapi.org/v2/everything"

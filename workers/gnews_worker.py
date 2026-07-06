@@ -18,16 +18,21 @@ async def scrape_gnews(domain_or_query: str):
         logger.warning("[GNews] GNEWS_API_KEY not found in environment. Skipping.")
         return results
 
-    if domain_or_query in ["newsapi", "newsdata", "gnews"]:
+    if domain_or_query in ["newsapi", "newsdata", "gnews", "gnews_global", "gnews_india"]:
+        is_global = "global" in domain_or_query.lower() or domain_or_query == "gnews"
         domain_or_query = ""
+    else:
+        is_global = True
 
     query = domain_or_query if domain_or_query else "electric vehicle OR EV"
     params = {
         "apikey": api_key,
         "q": query,
         "lang": "en",
-        "max": 10
+        "max": 30
     }
+    if not is_global:
+        params["country"] = "in"
 
     url = "https://gnews.io/api/v4/search"
     
