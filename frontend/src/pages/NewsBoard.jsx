@@ -148,7 +148,10 @@ export default function NewsBoard({ isRecycleBin }) {
       if (s === 'Draft') {
         const createdStr = f.created_at || item.created_at || item.createdTime || f.createdTime;
         if (createdStr) {
-          const parseStr = createdStr.replace(' ', 'T');
+          let parseStr = createdStr.replace(' ', 'T');
+          if (!parseStr.includes('Z') && !parseStr.includes('+') && !parseStr.includes('-')) {
+            parseStr += 'Z';
+          }
           const createdDate = new Date(parseStr);
           const now = new Date();
           const hoursDiff = (now - createdDate) / (1000 * 60 * 60);

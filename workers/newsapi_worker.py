@@ -20,8 +20,11 @@ async def scrape_newsapi(domain_or_query: str):
         logger.warning("[NewsAPI] NEWS_API_KEY not found in environment. Skipping.")
         return results
 
-    if domain_or_query in ["newsapi", "newsdata", "gnews"]:
+    if domain_or_query in ["newsapi", "newsdata", "gnews", "newsapi_global", "newsapi_india"]:
+        is_global = "global" in domain_or_query.lower() or domain_or_query == "newsapi"
         domain_or_query = ""
+    else:
+        is_global = True
 
     # Determine if we are querying a specific domain or general topics
     if domain_or_query and "." in domain_or_query and " " not in domain_or_query:
@@ -34,7 +37,11 @@ async def scrape_newsapi(domain_or_query: str):
             "pageSize": 10
         }
     else:
-        query = domain_or_query if domain_or_query else "electric vehicle OR EV"
+        if is_global:
+            query = "electric vehicle OR EV"
+        else:
+            query = "electric vehicle India OR EV India"
+            
         params = {
             "q": query,
             "sortBy": "publishedAt",

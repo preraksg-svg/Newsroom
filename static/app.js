@@ -162,7 +162,11 @@ function renderDashboard(records) {
 
         if (status === 'Draft' || status === 'Review' || status === 'Auto-Draft') {
             const createdStr = fields['created_at'] || r.createdTime || '';
-            const createdDate = createdStr ? new Date(createdStr.replace(' ', 'T')) : new Date(0);
+            let parseStr = createdStr.replace(' ', 'T');
+            if (parseStr && !parseStr.includes('Z') && !parseStr.includes('+') && !parseStr.includes('-')) {
+                parseStr += 'Z';
+            }
+            const createdDate = parseStr ? new Date(parseStr) : new Date(0);
             const now = new Date();
             const hoursDiff = (now - createdDate) / (1000 * 60 * 60);
             if (hoursDiff <= 48) {
