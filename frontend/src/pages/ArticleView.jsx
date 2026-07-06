@@ -254,7 +254,13 @@ export default function ArticleView() {
           }`}>
             {story.status?.toUpperCase() || 'UNKNOWN'}
           </span>
-          <div className={`edit-toggle ${isSplitView ? 'active' : ''}`} onClick={() => setIsSplitView(!isSplitView)}>
+          <div className={`edit-toggle ${isSplitView ? 'active' : ''}`} onClick={() => {
+            const nextVal = !isSplitView;
+            setIsSplitView(nextVal);
+            if (nextVal && story?.url) {
+              window.open(story.url, '_blank', 'noopener,noreferrer');
+            }
+          }}>
              <Split size={14} />
              <span style={{ marginLeft: '8px' }}>SPLIT VIEW</span>
           </div>

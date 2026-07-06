@@ -234,7 +234,13 @@ export default function ArticleView() {
           <div className={`edit-toggle ${isEditMode ? 'active' : ''}`} onClick={() => setEditMode(!isEditMode)}>
             {isEditMode ? '● EDITING' : '○ VIEW MODE'}
           </div>
-          <button className="btn btn-ghost" onClick={() => setIsSplitView(!isSplitView)}>
+          <button className="btn btn-ghost" onClick={() => {
+            const nextVal = !isSplitView;
+            setIsSplitView(nextVal);
+            if (nextVal && story?.url) {
+              window.open(story.url, '_blank', 'noopener,noreferrer');
+            }
+          }}>
             {isSplitView ? 'SINGLE VIEW' : 'SPLIT VIEW'}
           </button>
           {story.status !== 'Rejected' && (
