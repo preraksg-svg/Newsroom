@@ -559,6 +559,7 @@ You must preserve the original headline and the original news content as closely
 Specifically:
 - Keep the original headline almost exactly as is. Make only minor corrections or SEO keyword tuning without altering its core meaning.
 - Retain the original news content's structure, sentences, and vocabulary as much as possible. Simply adjust/polish a few words or sentences for SEO, grammatical flow, or journalistic clarity. Do NOT expand the text or write a long article if the source is short.
+- CRITICAL: If the original source content is truncated, ends with an ellipsis ("..."), or is cut off in the middle of a sentence, you MUST complete the sentence and make it grammatically correct. Never output trailing dots ("...") or leave any sentence incomplete.
 - Do NOT hallucinate or add facts not present in the source.
 
 Length target:

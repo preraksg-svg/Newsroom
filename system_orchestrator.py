@@ -241,6 +241,9 @@ class NewsroomOrchestrator:
         
         # Verify raw content is present and is at least 150 words (or 15 words for social media channels)
         raw_content = signal.get('content', '') or ''
+        # Strip trailing ellipses, Read more links, and truncated junk suffixes
+        import re
+        raw_content = re.sub(r'(\.\.\.\s*|\[\.\.\.\]\s*|Read\s+More\s*\.\.\.\s*|\[Read\s+More\]\s*)$', '', raw_content.strip(), flags=re.IGNORECASE)
         word_count = len(raw_content.split())
         min_words = 15 if signal.get('source_type') in ['twitter', 'reddit', 'instagram', 'facebook', 'youtube', 'Social', 'Video', 'newsapi', 'newsdata', 'gnews'] else 150
         if not raw_content.strip() or word_count < min_words:
