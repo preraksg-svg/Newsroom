@@ -180,7 +180,23 @@ export default function ArticleView() {
   })
 
   if (isLoading) return <Loader message="DECRYPTING ARTICLE INTELLIGENCE..." />
-  if (isError) return <ErrorState error={error.message} />
+  if (isError) {
+    if (error.message.includes('Article not found') || error.message.includes('404')) {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: '24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🔍</div>
+          <h2 style={{ fontFamily: 'var(--font-headline)', color: 'var(--c-magenta)', marginBottom: '16px' }}>ARTICLE NOT FOUND</h2>
+          <p style={{ color: 'var(--text-secondary)', maxWidth: '480px', marginBottom: '32px', fontSize: '0.95rem', lineHeight: '1.6' }}>
+            This news signal is not available in the active database. The database may have been reset due to a system deployment. Please return to the dashboard.
+          </p>
+          <button className="btn btn-primary" onClick={() => navigate('/news')}>
+            RETURN TO DASHBOARD
+          </button>
+        </div>
+      )
+    }
+    return <ErrorState error={error.message} />
+  }
   if (!story || !editedStory) return null
 
   // Helper to safely parse JSON or return as is
