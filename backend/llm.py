@@ -59,14 +59,15 @@ def filter_article(title, content):
         return {"relevant": False, "reason": "Heuristic match: No EV-related terminology found."}
 
     prompt = f"""
-    Analyze the news snippet below to determine if it is strictly about Electric Vehicles (EVs).
+    Analyze the news snippet below to determine if it is strictly about Electric Vehicles (EVs) or EV infrastructure in INDIA.
     Title: {title}
     Content: {content}
 
     CRITICAL RULES:
-    1. Only return "relevant": true if the MAIN focus of the article is explicitly about Electric Vehicles (EVs), EV launches, EV charging infrastructure, EV battery technology, EV policies, or major EV OEMs (like Tesla, BYD, Ola Electric, Ather Energy, Tata EV, Mahindra EV, etc.).
-    2. Absolutely REJECT (return "relevant": false) any general consumer electronics, mobile phones, smartphones, laptop reviews, or listings (e.g., "best phones under 30000", "iPhone updates", etc.). These are not relevant to EVs at all.
-    3. If EVs are only mentioned briefly in passing, or if it is general combustion engine automobile news, or general stock market updates, return "relevant": false.
+    1. Only return "relevant": true if the MAIN focus of the article is explicitly about Electric Vehicles (EVs), EV launches, EV charging infrastructure, EV battery technology, EV policies, or major EV OEMs in INDIA (such as Tata Motors, Ola Electric, Mahindra, Ather Energy, BYD India, etc., or EV activities taking place within India).
+    2. Absolutely REJECT (return "relevant": false) any news that is NOT set in India or not directly about the Indian EV market/infrastructure (e.g. general global EV news, Tesla in USA, BYD in Europe, battery research in Germany are NOT relevant unless they directly impact India).
+    3. Absolutely REJECT (return "relevant": false) any general consumer electronics, mobile phones, smartphones, laptop reviews, or listings (e.g., "best phones under 30000", "iPhone updates", etc.).
+    4. If EVs are only mentioned briefly in passing, or if it is general combustion engine automobile news, or general stock market updates, return "relevant": false.
     
     Output strictly JSON: {{ "relevant": true/false, "reason": "brief explanation" }}
     """
