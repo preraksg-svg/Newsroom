@@ -28,12 +28,18 @@ try:
         cur.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='source_scores'")
         has_table = cur.fetchone()[0] > 0
         is_empty = True
+        has_india = False
         if has_table:
             cur.execute("SELECT count(*) FROM source_scores")
             is_empty = cur.fetchone()[0] == 0
+            try:
+                cur.execute("SELECT count(*) FROM sources WHERE source_id = 'newsapi_india'")
+                has_india = cur.fetchone()[0] > 0
+            except:
+                pass
             
-        if is_empty:
-            print("[BACKEND] source_scores table is empty! Seeding reliable sources...")
+        if is_empty or not has_india:
+            print("[BACKEND] Seeding reliable sources (including new India APIs)...")
             from seed_reliable_sources import seed
             seed()
 except Exception as se:

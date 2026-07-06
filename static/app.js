@@ -161,7 +161,8 @@ function renderDashboard(records) {
         cardHtml += `</div>`;
 
         if (status === 'Draft' || status === 'Review' || status === 'Auto-Draft') {
-            const createdDate = new Date(story.created_at ? story.created_at.replace(' ', 'T') : 0);
+            const createdStr = fields['created_at'] || r.createdTime || '';
+            const createdDate = createdStr ? new Date(createdStr.replace(' ', 'T')) : new Date(0);
             const now = new Date();
             const hoursDiff = (now - createdDate) / (1000 * 60 * 60);
             if (hoursDiff <= 48) {

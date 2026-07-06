@@ -110,7 +110,8 @@ export default function NewsBoard({ isRecycleBin }) {
     queryKey: ['news', isRecycleBin, searchQuery, statusFilter],
     queryFn: () => isRecycleBin ? NewsService.getRejected() : NewsService.getNews({ 
       search: searchQuery, 
-      status: statusFilter === 'All' ? '' : statusFilter 
+      status: statusFilter === 'All' ? '' : statusFilter,
+      limit: 1000
     }),
     refetchInterval: 30000, 
   })
@@ -145,7 +146,7 @@ export default function NewsBoard({ isRecycleBin }) {
         
       // Drafts section should only show news fetched in the last 48 hours
       if (s === 'Draft') {
-        const createdStr = f.created_at || item.created_at;
+        const createdStr = f.created_at || item.created_at || item.createdTime || f.createdTime;
         if (createdStr) {
           const parseStr = createdStr.replace(' ', 'T');
           const createdDate = new Date(parseStr);
