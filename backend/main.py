@@ -45,6 +45,26 @@ try:
 except Exception as se:
     print(f"[BACKEND] Auto-seeding failed or skipped: {se}")
 
+# Clean title suffixes [xxxx] from database on startup
+try:
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT id, title FROM stories")
+        rows = cur.fetchall()
+        import re
+        cleaned_count = 0
+        for row in rows:
+            story_id, title = row
+            if re.search(r'\s*\[[a-fA-F0-9]{4}\]$', title):
+                new_title = re.sub(r'\s*\[[a-fA-F0-9]{4}\]$', '', title)
+                cur.execute("UPDATE stories SET title=? WHERE id=?", (new_title, story_id))
+                cleaned_count += 1
+        if cleaned_count > 0:
+            conn.commit()
+            print(f"[BACKEND] Title suffix cleaning complete. Cleaned {cleaned_count} titles.")
+except Exception as cle:
+    print(f"[BACKEND] Title suffix cleaning skipped: {cle}")
+
 initialize_headline_engine()
 initialize_thumbnail_engine()
 initialize_bandit_engine()
