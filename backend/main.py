@@ -55,13 +55,20 @@ try:
         cleaned_count = 0
         for row in rows:
             story_id, title = row
-            if re.search(r'\s*\[[a-fA-F0-9]{4}\]$', title):
-                new_title = re.sub(r'\s*\[[a-fA-F0-9]{4}\]$', '', title)
+            new_title = title
+            # Clean trailing suffixes
+            if re.search(r'\s*\[[a-fA-F0-9]{4}\]$', new_title):
+                new_title = re.sub(r'\s*\[[a-fA-F0-9]{4}\]$', '', new_title)
+            # Clean leading Update: prefixes
+            if re.search(r'^(Update|update|UPDATE)\s*:\s*', new_title):
+                new_title = re.sub(r'^(Update|update|UPDATE)\s*:\s*', '', new_title.strip())
+            
+            if new_title != title:
                 cur.execute("UPDATE stories SET title=? WHERE id=?", (new_title, story_id))
                 cleaned_count += 1
         if cleaned_count > 0:
             conn.commit()
-            print(f"[BACKEND] Title suffix cleaning complete. Cleaned {cleaned_count} titles.")
+            print(f"[BACKEND] Title prefix/suffix cleaning complete. Cleaned {cleaned_count} titles.")
 except Exception as cle:
     print(f"[BACKEND] Title suffix cleaning skipped: {cle}")
 

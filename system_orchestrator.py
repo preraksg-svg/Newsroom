@@ -237,7 +237,11 @@ class NewsroomOrchestrator:
 
     async def process_signal(self, signal):
         """Steps 8-21 for a single signal."""
-        print(f"[SIGNAL] Processing: {signal['title'][:50]}...")
+        import re
+        title = signal.get('title', '') or ''
+        title = re.sub(r'^(Update|update|UPDATE)\s*:\s*', '', title.strip())
+        signal['title'] = title
+        print(f"[SIGNAL] Processing: {title[:50]}...")
         
         # Verify raw content is present and is at least 150 words (or 15 words for social media channels)
         raw_content = signal.get('content', '') or ''
@@ -304,9 +308,13 @@ class NewsroomOrchestrator:
                     # Clean up identifier format (e.g. tata_motors -> Tata Motors)
                     publisher_name = publisher_name.replace('_', ' ').title()
 
+            title_clean = content_pkg.get('title', signal['title']) or ''
+            title_clean = re.sub(r'^(Update|update|UPDATE)\s*:\s*', '', title_clean.strip())
+            content_pkg['title'] = title_clean
+
             res = create_draft(
                 url=signal['url'],
-                title=content_pkg['title'],
+                title=title_clean,
                 original_content=signal['content'],
                 meta_title=seo_pkg['meta_title'],
                 meta_desc=seo_pkg['meta_desc'],
