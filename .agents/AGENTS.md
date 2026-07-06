@@ -13,3 +13,7 @@
 - **Action**:
   - Always fetch news items with a high limit (e.g., `limit=1000`) to prevent drafts from being cut off by pagination.
   - Parse date strings with the `Z` suffix to force UTC date parsing. This prevents local timezone offset shifts from hiding active drafts early.
+
+## 4. Complete Sentences Only & No Ellipses
+- **Rule**: The system must never output incomplete sentences or truncate any generated news content, headings, meta titles, or meta descriptions with trailing dots/ellipses (`...`).
+- **Action**: All truncation functions must only split at complete sentence boundaries (like periods, exclamation marks, or question marks) and must never append `...`.
