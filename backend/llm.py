@@ -414,10 +414,6 @@ def _rewrite_article_fallback(content, url=None, title=None):
             headline = unique_sentences[0]
             
     headline = clean_voice_manifest_violations(headline)
-    # Ensure uniqueness to prevent create_draft from rejecting it as duplicate
-    import hashlib, time
-    unique_suffix = hashlib.md5(str(time.time()).encode()).hexdigest()[:4]
-    headline = f"{headline} [{unique_suffix}]"
 
 
     # Clean official updates prefix dynamically
