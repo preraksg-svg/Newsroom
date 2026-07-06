@@ -212,8 +212,7 @@ export default function NewsBoard({ isRecycleBin }) {
           <div key={name} className="kanban-column" style={{ 
             minWidth: '350px', 
             flex: (statusFilter && statusFilter !== 'All') ? '0 0 450px' : '0 0 350px',
-            maxHeight: 'calc(100vh - 180px)',
-            minHeight: '650px'
+            maxHeight: 'calc(100vh - 180px)'
           }}>
             <div className="column-header">
               <span>{name}</span>
