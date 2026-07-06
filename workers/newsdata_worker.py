@@ -1,6 +1,6 @@
 import os
 import time
-import requests
+import aiohttp
 import asyncio
 from dateutil import parser
 import logging
@@ -32,47 +32,48 @@ async def scrape_newsdata(domain_or_query: str):
     url = "https://newsdata.io/api/1/news"
     
     try:
-        loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(None, lambda: requests.get(url, params=params, timeout=10))
-        
-        if response.status_code == 200:
-            data = response.json()
-            articles = data.get("results", [])
-            
-            for article in articles:
-                content = article.get("content") or article.get("description")
-                if not content:
-                    continue
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    articles = data.get("results", [])
                     
-                title = article.get("title", "")
-                link = article.get("link", "")
-                source_name = article.get("source_id", "NewsData")
-                author = article.get("creator") 
-                author = author[0] if author and isinstance(author, list) else source_name
-                
-                dt_str = article.get("pubDate", "")
-                try:
-                    timestamp = int(parser.parse(dt_str).timestamp()) if dt_str else int(time.time())
-                except:
-                    timestamp = int(time.time())
-                    
-                results.append({
-                    "title": title,
-                    "content_raw": content,
-                    "source": source_name,
-                    "source_type": "newsdata",
-                    "author": author,
-                    "timestamp": timestamp,
-                    "url": link,
-                    "engagement": {
-                        "likes": 0,
-                        "comments": 0,
-                        "shares": 0
-                    }
-                })
-        else:
-            logger.error(f"[NewsData] Error fetching data: {response.status_code} {response.text}")
+                    for article in articles:
+                        content = article.get("content") or article.get("description")
+                        if not content:
+                            continue
+                            
+                        title = article.get("title", "")
+                        link = article.get("link", "")
+                        source_name = article.get("source_id", "NewsData")
+                        author = article.get("creator") 
+                        author = author[0] if author and isinstance(author, list) else source_name
+                        
+                        dt_str = article.get("pubDate", "")
+                        try:
+                            timestamp = int(parser.parse(dt_str).timestamp()) if dt_str else int(time.time())
+                        except:
+                            timestamp = int(time.time())
+                            
+                        results.append({
+                            "title": title,
+                            "content_raw": content,
+                            "source": source_name,
+                            "source_type": "newsdata",
+                            "author": author,
+                            "timestamp": timestamp,
+                            "url": link,
+                            "engagement": {
+                                "likes": 0,
+                                "comments": 0,
+                                "shares": 0
+                            }
+                        })
+                else:
+                    text = await response.text()
+                    logger.error(f"[NewsData] Error fetching data: {response.status} {text}")
     except Exception as e:
         logger.error(f"[NewsData] Exception during fetch: {e}")
 
     return results
+

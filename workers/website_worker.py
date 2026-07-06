@@ -83,7 +83,7 @@ async def scrape_website(url: str):
                     pass # Fallback to summary
 
                     
-                if ev_keywords.search(article_content):
+                if EV_REGEX.search(article_content):
                     final_content = article_content
                 else:
                     final_content = article_content

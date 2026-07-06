@@ -67,7 +67,7 @@ class NewsroomOrchestrator:
             
             sources_to_scrape = all_sources
             
-            sem = asyncio.Semaphore(5)
+            sem = asyncio.Semaphore(30)
             
             async def scrape_source_safe(src):
                 source_id = src['source_id']
@@ -95,25 +95,27 @@ class NewsroomOrchestrator:
                     try:
                         print(f"[PIPELINE] Fetching {source_id} via {stype}...")
                         if stype == "twitter":
-                            results = await asyncio.wait_for(scrape_twitter(domain), timeout=45.0)
+                            results = await asyncio.wait_for(scrape_twitter(domain), timeout=2.0)
                         elif stype == "youtube":
-                            results = await asyncio.wait_for(scrape_youtube(domain), timeout=45.0)
+                            results = await asyncio.wait_for(scrape_youtube(domain), timeout=2.0)
                         elif stype == "reddit":
-                            results = await asyncio.wait_for(scrape_reddit(domain), timeout=45.0)
+                            results = await asyncio.wait_for(scrape_reddit(domain), timeout=2.0)
                         elif stype == "instagram":
-                            results = await asyncio.wait_for(scrape_instagram(domain), timeout=45.0)
+                            results = await asyncio.wait_for(scrape_instagram(domain), timeout=2.0)
                         elif stype == "facebook":
-                            results = await asyncio.wait_for(scrape_facebook(domain), timeout=45.0)
+                            results = await asyncio.wait_for(scrape_facebook(domain), timeout=2.0)
                         elif stype == "newsapi":
-                            results = await asyncio.wait_for(scrape_newsapi(domain), timeout=45.0)
+                            results = await asyncio.wait_for(scrape_newsapi(domain), timeout=15.0)
                         elif stype == "newsdata":
-                            results = await asyncio.wait_for(scrape_newsdata(domain), timeout=45.0)
+                            results = await asyncio.wait_for(scrape_newsdata(domain), timeout=15.0)
                         elif stype == "gnews":
-                            results = await asyncio.wait_for(scrape_gnews(domain), timeout=45.0)
+                            results = await asyncio.wait_for(scrape_gnews(domain), timeout=15.0)
                         else:
-                            results = await asyncio.wait_for(scrape_website(domain), timeout=45.0)
+                            results = await asyncio.wait_for(scrape_website(domain), timeout=15.0)
                     except Exception as scrape_err:
+                        import traceback
                         print(f"[PIPELINE] Error fetching {source_id}: {scrape_err}")
+                        traceback.print_exc()
                         
                     saved_count = 0
                     if results:

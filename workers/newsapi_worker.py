@@ -1,6 +1,6 @@
 import os
 import time
-import requests
+import aiohttp
 import asyncio
 from dateutil import parser
 import logging
@@ -46,47 +46,48 @@ async def scrape_newsapi(domain_or_query: str):
     url = "https://newsapi.org/v2/everything"
     
     try:
-        loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(None, lambda: requests.get(url, params=params, timeout=10))
-        
-        if response.status_code == 200:
-            data = response.json()
-            articles = data.get("articles", [])
-            
-            for article in articles:
-                # Require content
-                content = article.get("content") or article.get("description")
-                if not content:
-                    continue
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    articles = data.get("articles", [])
                     
-                title = article.get("title", "")
-                link = article.get("url", "")
-                source_name = article.get("source", {}).get("name", "NewsAPI")
-                author = article.get("author") or source_name
-                
-                dt_str = article.get("publishedAt", "")
-                try:
-                    timestamp = int(parser.parse(dt_str).timestamp()) if dt_str else int(time.time())
-                except:
-                    timestamp = int(time.time())
-                    
-                results.append({
-                    "title": title,
-                    "content_raw": content,
-                    "source": source_name,
-                    "source_type": "newsapi",
-                    "author": author,
-                    "timestamp": timestamp,
-                    "url": link,
-                    "engagement": {
-                        "likes": 0,
-                        "comments": 0,
-                        "shares": 0
-                    }
-                })
-        else:
-            logger.error(f"[NewsAPI] Error fetching data: {response.status_code} {response.text}")
+                    for article in articles:
+                        # Require content
+                        content = article.get("content") or article.get("description")
+                        if not content:
+                            continue
+                            
+                        title = article.get("title", "")
+                        link = article.get("url", "")
+                        source_name = article.get("source", {}).get("name", "NewsAPI")
+                        author = article.get("author") or source_name
+                        
+                        dt_str = article.get("publishedAt", "")
+                        try:
+                            timestamp = int(parser.parse(dt_str).timestamp()) if dt_str else int(time.time())
+                        except:
+                            timestamp = int(time.time())
+                            
+                        results.append({
+                            "title": title,
+                            "content_raw": content,
+                            "source": source_name,
+                            "source_type": "newsapi",
+                            "author": author,
+                            "timestamp": timestamp,
+                            "url": link,
+                            "engagement": {
+                                "likes": 0,
+                                "comments": 0,
+                                "shares": 0
+                            }
+                        })
+                else:
+                    text = await response.text()
+                    logger.error(f"[NewsAPI] Error fetching data: {response.status} {text}")
     except Exception as e:
         logger.error(f"[NewsAPI] Exception during fetch: {e}")
 
     return results
+
