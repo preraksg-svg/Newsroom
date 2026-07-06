@@ -105,11 +105,11 @@ class NewsroomOrchestrator:
                         elif stype == "facebook":
                             results = await asyncio.wait_for(scrape_facebook(domain), timeout=2.0)
                         elif stype == "newsapi":
-                            results = await asyncio.wait_for(scrape_newsapi(domain), timeout=15.0)
+                            results = await asyncio.wait_for(scrape_newsapi(source_id), timeout=15.0)
                         elif stype == "newsdata":
-                            results = await asyncio.wait_for(scrape_newsdata(domain), timeout=15.0)
+                            results = await asyncio.wait_for(scrape_newsdata(source_id), timeout=15.0)
                         elif stype == "gnews":
-                            results = await asyncio.wait_for(scrape_gnews(domain), timeout=15.0)
+                            results = await asyncio.wait_for(scrape_gnews(source_id), timeout=15.0)
                         else:
                             results = await asyncio.wait_for(scrape_website(domain), timeout=15.0)
                     except Exception as scrape_err:
@@ -206,12 +206,24 @@ class NewsroomOrchestrator:
         with get_db() as conn:
             cur = conn.cursor()
             
-            # 2) Fetch signals (Global + India allowed)
+            # 1) Auto-reject non-Indian signals to avoid processing them (Global EV news rejected)
+            cur.execute("""
+                UPDATE scraped_raw 
+                SET clustered = 1 
+                WHERE id IN (
+                    SELECT r.id FROM scraped_raw r
+                    LEFT JOIN sources s ON r.source_id = s.source_id
+                    WHERE r.clustered = 0 AND COALESCE(s.country, 'IN') != 'IN'
+                )
+            """)
+            
+            # 2) Fetch only Indian signals
             cur.execute("""
                 SELECT r.*, COALESCE(s.country, 'IN') as country 
                 FROM scraped_raw r
                 LEFT JOIN sources s ON r.source_id = s.source_id
                 WHERE r.clustered = 0 AND CAST(r.timestamp AS INTEGER) >= ? 
+                AND COALESCE(s.country, 'IN') = 'IN'
                 ORDER BY r.timestamp DESC
                 LIMIT ?
             """, (cutoff, limit))
