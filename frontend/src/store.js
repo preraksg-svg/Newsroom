@@ -17,4 +17,8 @@ export const useStore = create((set) => ({
   
   calendarDate: '',
   setCalendarDate: (val) => set({ calendarDate: val }),
+
+  // Ingestion State
+  isOrchestrating: false,
+  setIsOrchestrating: (val) => set({ isOrchestrating: val }),
 }))

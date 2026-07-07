@@ -5,10 +5,9 @@ import { useStore } from '../store'
 import { IntelligenceService } from '../services/api'
 
 export default function Sidebar() {
-  const { setStatusFilter } = useStore()
+  const { setStatusFilter, isOrchestrating, setIsOrchestrating } = useStore()
   const [timeLeft, setTimeLeft] = useState(null)
   const queryClient = useQueryClient()
-  const [isOrchestrating, setIsOrchestrating] = useState(false)
 
   useEffect(() => {
     const fetchTime = async () => {
@@ -39,10 +38,10 @@ export default function Sidebar() {
           await IntelligenceService.orchestrate();
           
           // Invalidate queries periodically over the next few seconds to catch the background creation
-          setTimeout(() => { queryClient.invalidateQueries({ queryKey: ['news-kanban'] }) }, 1000);
-          setTimeout(() => { queryClient.invalidateQueries({ queryKey: ['news-kanban'] }) }, 3000);
+          setTimeout(() => { queryClient.invalidateQueries({ queryKey: ['news'] }) }, 1000);
+          setTimeout(() => { queryClient.invalidateQueries({ queryKey: ['news'] }) }, 3000);
           setTimeout(async () => {
-            queryClient.invalidateQueries({ queryKey: ['news-kanban'] });
+            queryClient.invalidateQueries({ queryKey: ['news'] });
             setIsOrchestrating(false);
             
             // Re-fetch next fetch target time to update the local timer
@@ -73,7 +72,7 @@ export default function Sidebar() {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, isOrchestrating, queryClient])
+  }, [timeLeft, isOrchestrating, queryClient, setIsOrchestrating])
 
   const formatTime = (totalSeconds) => {
     if (totalSeconds === null) return 'LOADING...'
@@ -92,13 +91,13 @@ export default function Sidebar() {
          
          // Invalidate queries periodically over the next few seconds to catch the background creation
          setTimeout(() => {
-           queryClient.invalidateQueries({ queryKey: ['news-kanban'] })
+           queryClient.invalidateQueries({ queryKey: ['news'] })
          }, 1000)
          setTimeout(() => {
-           queryClient.invalidateQueries({ queryKey: ['news-kanban'] })
+           queryClient.invalidateQueries({ queryKey: ['news'] })
          }, 3000)
           setTimeout(async () => {
-            queryClient.invalidateQueries({ queryKey: ['news-kanban'] })
+            queryClient.invalidateQueries({ queryKey: ['news'] })
             setIsOrchestrating(false)
             
             // Re-fetch next fetch target time to update the local timer

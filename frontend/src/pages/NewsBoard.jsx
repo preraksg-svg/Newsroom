@@ -104,7 +104,7 @@ function ArticleCard({ item, onClick, onReject, onRestore, onAction, isRecycleBi
 export default function NewsBoard({ isRecycleBin }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { searchQuery, statusFilter } = useStore()
+  const { searchQuery, statusFilter, isOrchestrating } = useStore()
   
   const { data: res, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['news', isRecycleBin, searchQuery, statusFilter],
@@ -182,7 +182,12 @@ export default function NewsBoard({ isRecycleBin }) {
   if (isError) return <ErrorState error={error.message} />
   
   const totalItems = items.length
-  if (totalItems === 0) return <EmptyState title={isRecycleBin ? "RECYCLE BIN EMPTY" : "NO SIGNALS FOUND"} subtitle="START PIPELINE TO INGEST INTELLIGENCE" />
+  if (totalItems === 0) {
+    if (isOrchestrating) {
+      return <Loader message="ORCHESTRATING INGESTION PIPELINE... SCAPING & PROCESSING INDIAN EV NEWS..." />
+    }
+    return <EmptyState title={isRecycleBin ? "RECYCLE BIN EMPTY" : "NO SIGNALS FOUND"} subtitle="START PIPELINE TO INGEST INTELLIGENCE" />
+  }
 
   return (
     <div style={{ padding: '24px' }}>
@@ -200,6 +205,28 @@ export default function NewsBoard({ isRecycleBin }) {
           <RefreshCw size={14} style={{ marginRight: '8px' }} /> REFRESH
         </button>
       </div>
+      
+      {isOrchestrating && (
+        <div style={{
+          background: 'rgba(255, 0, 128, 0.1)',
+          border: '1px solid var(--c-magenta)',
+          color: 'var(--c-magenta)',
+          padding: '12px 16px',
+          borderRadius: '4px',
+          marginBottom: '24px',
+          fontSize: '0.8rem',
+          fontWeight: 800,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          fontFamily: 'var(--font-data)',
+          letterSpacing: '1px',
+          boxShadow: '0 0 10px rgba(255, 0, 128, 0.15)'
+        }}>
+          <span style={{ fontSize: '1.2rem', animation: 'spin 2s linear infinite' }}>⏳</span>
+          <span>INGESTION PIPELINE RUNNING: SCRAPING & REWRITING INDIAN EV NEWS IN BACKGROUND (DRAFTS REFRESHING DYNAMICALLY...)</span>
+        </div>
+      )}
       
       <div className="kanban-board" style={{ 
         display: 'flex', 
