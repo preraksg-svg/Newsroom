@@ -74,7 +74,7 @@ async def scrape_website(url: str):
                         soup = BeautifulSoup(article_req.text, 'html.parser')
                         extracted_text = []
                         for tag in soup.find_all(['h1', 'h2', 'h3', 'p']):
-                            txt = tag.get_text(strip=True)
+                            txt = tag.get_text(" ", strip=True)
                             if len(txt) > 30 and not bool(re.search(r'(subscribe|cookie|privacy|advertisement)', txt, re.I)):
                                 extracted_text.append(txt)
                         if len(extracted_text) > 0:
@@ -122,7 +122,7 @@ async def scrape_website(url: str):
                 base_domain = url.split("//")[-1].split("/")[0]
                 for a in soup.find_all('a', href=True):
                     href = a['href']
-                    title = a.get_text(strip=True)
+                    title = a.get_text(" ", strip=True)
                     if len(title) < 25:
                         continue
                     if href.startswith('/'):
@@ -150,7 +150,7 @@ async def scrape_website(url: str):
                             a_soup = BeautifulSoup(article_req.text, 'html.parser')
                             extracted_text = []
                             for tag in a_soup.find_all(['h1', 'h2', 'h3', 'p']):
-                                txt = tag.get_text(strip=True)
+                                txt = tag.get_text(" ", strip=True)
                                 if len(txt) > 30 and not bool(re.search(r'(subscribe|cookie|privacy|advertisement)', txt, re.I)):
                                     extracted_text.append(txt)
                             

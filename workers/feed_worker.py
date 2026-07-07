@@ -28,7 +28,7 @@ async def scrape_feed(url: str, source_type: str):
                         from bs4 import BeautifulSoup
                         soup = BeautifulSoup(article_req.text, 'html.parser')
                         for tag in soup.find_all(['h1', 'h2', 'h3', 'p', 'li']):
-                            clean_text = tag.get_text(strip=True)
+                            clean_text = tag.get_text(" ", strip=True)
                             if len(clean_text) > 20: 
                                 structured_content.append({"tag": tag.name, "text": clean_text})
                 except Exception as e:
@@ -38,7 +38,7 @@ async def scrape_feed(url: str, source_type: str):
                 if not structured_content:
                     summary = entry.get("summary", "")
                     from bs4 import BeautifulSoup
-                    clean_summary = BeautifulSoup(summary, 'html.parser').get_text(strip=True) if summary else ""
+                    clean_summary = BeautifulSoup(summary, 'html.parser').get_text(" ", strip=True) if summary else ""
                     structured_content.append({"tag": "p", "text": clean_summary})
 
                 content_raw = json.dumps(structured_content)
