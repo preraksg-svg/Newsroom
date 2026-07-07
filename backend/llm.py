@@ -202,6 +202,17 @@ def _rewrite_article_fallback(content, url=None, title=None):
             return text[:last_boundary+1].strip()
         return text
 
+    def clean_headline_garbage(title):
+        if not title:
+            return title
+        import re
+        # Clean publisher suffixes: e.g. " - Autocar India", " | CleanTechnica", " — Livemint"
+        cleaned = re.sub(r'\s+[\-\|\|\—\–\/]\s+([A-Za-z0-9\.\s]+)$', '', title)
+        # Clean date patterns at the end of headlines
+        cleaned = re.sub(r'\s+[\-\|\|\—\–\/]\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4}|[A-Za-z]+\s+\d{1,2},?\s+\d{4}|\d{4}-\d{2}-\d{2})$', '', cleaned)
+        cleaned = re.sub(r'\s*\(?\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\)?$', '', cleaned, flags=re.I)
+        return cleaned.strip()
+
     def clean_voice_manifest_violations(text):
         if not text:
             return text
@@ -276,7 +287,7 @@ def _rewrite_article_fallback(content, url=None, title=None):
     
     headline = ""
     if title:
-        headline = clean_voice_manifest_violations(title)
+        headline = clean_voice_manifest_violations(clean_headline_garbage(title))
         if any(x in headline.lower() for x in ["exciting news", "zapway cycle", "we are proud", "we're excited", "we are thrilled"]):
             headline = "Electric Vehicle Sector Accelerates Sourcing and Fleet Infrastructure"
     elif matched_company:
@@ -413,7 +424,7 @@ def _rewrite_article_fallback(content, url=None, title=None):
         else:
             headline = unique_sentences[0]
             
-    headline = clean_voice_manifest_violations(headline)
+    headline = clean_voice_manifest_violations(clean_headline_garbage(headline))
 
 
     # Clean official updates prefix dynamically

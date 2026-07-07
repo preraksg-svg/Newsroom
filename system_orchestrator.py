@@ -238,7 +238,9 @@ class NewsroomOrchestrator:
     async def process_signal(self, signal):
         """Steps 8-21 for a single signal."""
         import re
+        from backend.llm import clean_headline_garbage
         title = signal.get('title', '') or ''
+        title = clean_headline_garbage(title)
         title = re.sub(r'^(Update|update|UPDATE)\s*:\s*', '', title.strip())
         signal['title'] = title
         print(f"[SIGNAL] Processing: {title[:50]}...")
@@ -309,6 +311,8 @@ class NewsroomOrchestrator:
                     publisher_name = publisher_name.replace('_', ' ').title()
 
             title_clean = content_pkg.get('title', signal['title']) or ''
+            from backend.llm import clean_headline_garbage
+            title_clean = clean_headline_garbage(title_clean)
             title_clean = re.sub(r'^(Update|update|UPDATE)\s*:\s*', '', title_clean.strip())
             content_pkg['title'] = title_clean
 

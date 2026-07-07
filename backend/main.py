@@ -66,6 +66,10 @@ try:
             if re.search(r'^(Update|update|UPDATE)\s*:\s*', new_title):
                 new_title = re.sub(r'^(Update|update|UPDATE)\s*:\s*', '', new_title.strip())
             
+            # Clean publisher suffixes and dates using clean_headline_garbage
+            from backend.llm import clean_headline_garbage
+            new_title = clean_headline_garbage(new_title)
+            
             # Clean glued camelCase words (e.g. TataMotors -> Tata Motors)
             new_title = re.sub(r'([a-z])([A-Z])', r'\1 \2', new_title)
             new_body = re.sub(r'([a-z])([A-Z])', r'\1 \2', new_body)
