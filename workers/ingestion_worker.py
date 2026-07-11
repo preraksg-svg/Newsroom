@@ -301,10 +301,10 @@ async def ingestion_loop():
             # Reset loops retry parameters on successful execution cycle
             attempt = 0
             
-            # Sleep for 6 hours (21600 seconds) before the next cycle
-            jitter = random.uniform(-60.0, 60.0)
-            sleep_sec = 21600.0 + jitter
-            logger.info(f"[CYCLE-END] Completed ingestion pass. Sleeping for {sleep_sec:.2f}s...")
+            # Sleep for 30 minutes (1800 seconds) before the next cycle
+            jitter = random.uniform(-30.0, 30.0)
+            sleep_sec = 1800.0 + jitter
+            logger.info(f"[CYCLE-END] Completed ingestion pass. Sleeping for {sleep_sec:.2f}s (30 min) before next cycle...")
             await asyncio.sleep(sleep_sec)
             
         except Exception as global_err:

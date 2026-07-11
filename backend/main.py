@@ -49,14 +49,13 @@ except Exception as se:
 try:
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT id, title, body, original_content FROM stories")
+        cur.execute("SELECT id, title, original_content FROM stories")
         rows = cur.fetchall()
         import re
         cleaned_count = 0
         for row in rows:
-            story_id, title, body, original = row
+            story_id, title, original = row
             new_title = title or ""
-            new_body = body or ""
             new_original = original or ""
             
             # Clean trailing suffixes
@@ -72,22 +71,21 @@ try:
             
             # Clean glued camelCase words (e.g. TataMotors -> Tata Motors)
             new_title = re.sub(r'([a-z])([A-Z])', r'\1 \2', new_title)
-            new_body = re.sub(r'([a-z])([A-Z])', r'\1 \2', new_body)
             new_original = re.sub(r'([a-z])([A-Z])', r'\1 \2', new_original)
             
             # Ensure space after punctuation (e.g. Tata.New -> Tata. New)
             new_title = re.sub(r'(?<=[.!?])([A-Za-z])', r' \1', new_title)
-            new_body = re.sub(r'(?<=[.!?])([A-Za-z])', r' \1', new_body)
             new_original = re.sub(r'(?<=[.!?])([A-Za-z])', r' \1', new_original)
             
-            if new_title != title or new_body != body or new_original != original:
-                cur.execute("UPDATE stories SET title=?, body=?, original_content=? WHERE id=?", (new_title, new_body, new_original, story_id))
+            if new_title != title or new_original != original:
+                cur.execute("UPDATE stories SET title=?, original_content=? WHERE id=?", (new_title, new_original, story_id))
                 cleaned_count += 1
         if cleaned_count > 0:
             conn.commit()
             print(f"[BACKEND] Title/Content prefix, suffix, and spacing cleaning complete. Cleaned {cleaned_count} records.")
 except Exception as cle:
     print(f"[BACKEND] Title suffix cleaning skipped: {cle}")
+
 
 initialize_headline_engine()
 initialize_thumbnail_engine()

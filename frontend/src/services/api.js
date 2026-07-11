@@ -18,8 +18,12 @@ const fetchApi = async (path, options = {}) => {
 
 export const NewsService = {
   getNews: (params) => {
-    const q = new URLSearchParams(params).toString()
-    return fetchApi(`/api/news?${q}`)
+    // Strip null/undefined/empty string params to avoid backend filtering issues
+    const cleanParams = Object.fromEntries(
+      Object.entries(params || {}).filter(([_, v]) => v !== '' && v !== null && v !== undefined)
+    )
+    const q = new URLSearchParams(cleanParams).toString()
+    return fetchApi(`/api/news${q ? '?' + q : ''}`)
   },
   getArticle: (id) => fetchApi(`/api/news/${id}`),
   getRawSource: (id) => fetchApi(`/api/raw-source/${id}`),

@@ -175,8 +175,23 @@ def get_raw_source(id: str):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+@router.get("/publish-log/{id}")
+def get_publish_log(id: str):
+    """Return real-time Playwright publisher log for an article."""
+    from backend.services.news_service import PUBLISH_LOGS
+    logs = PUBLISH_LOGS.get(id, [])
+    return {"logs": logs}
+
 @router.get("/proxy")
-async def proxy_url(url: str):
+async def proxy_url(
+    url: str,
+    title: Optional[str] = None,
+    meta_title: Optional[str] = None,
+    meta_desc: Optional[str] = None,
+    source: Optional[str] = None,
+    source_url: Optional[str] = None,
+    sections: Optional[str] = None
+):
     try:
         if not url.startswith("http"):
             url = "https://" + url
@@ -196,7 +211,132 @@ async def proxy_url(url: str):
                 if "text/html" in content_type.lower():
                     try:
                         content_str = content_bytes.decode('utf-8', errors='ignore')
+                        
+                        # Rewrite relative asset paths to absolute zapway.app paths so SPA resources load correctly
+                        content_str = content_str.replace('src="/assets/', 'src="https://zapway.app/assets/')
+                        content_str = content_str.replace('href="/assets/', 'href="https://zapway.app/assets/')
+                        content_str = content_str.replace('href="/vite.svg"', 'href="https://zapway.app/vite.svg"')
+                        content_str = content_str.replace('href="/font.css"', 'href="https://zapway.app/font.css"')
+                        content_str = content_str.replace('src="/fonts/', 'src="https://zapway.app/fonts/')
+                        content_str = content_str.replace('href="/fonts/', 'href="https://zapway.app/fonts/')
+                        
                         base_tag = f"<base href='{url}'>"
+                        
+                        # Inject auto-login and form-fill script block
+                        if "zapway.app" in url.lower():
+                            # Parse sections list to construct main body and section heading
+                            import json
+                            parsed_sections = []
+                            if sections:
+                                try:
+                                    parsed_sections = json.loads(sections)
+                                except:
+                                    pass
+                            
+                            full_body_parts = []
+                            first_heading = ""
+                            first_content = ""
+                            for s in parsed_sections:
+                                if isinstance(s, dict):
+                                    if s.get("heading"):
+                                        full_body_parts.append(s["heading"])
+                                    if s.get("content"):
+                                        full_body_parts.append(s["content"])
+                            full_body = "\n\n".join(full_body_parts)
+                            
+                            if parsed_sections and isinstance(parsed_sections[0], dict):
+                                first_heading = parsed_sections[0].get("heading", "")
+                                first_content = parsed_sections[0].get("content", "")
+                            if not first_content:
+                                first_content = full_body
+
+                            word_count = len(full_body.split()) if full_body else 100
+                            read_time = f"{max(1, round(word_count / 200))} min read"
+
+                            login_script = f"""
+                            <script>
+                            (function() {{
+                                const articleData = {{
+                                    title: {repr(title or '')},
+                                    meta_title: {repr(meta_title or '')},
+                                    meta_desc: {repr(meta_desc or '')},
+                                    source: {repr(source or '')},
+                                    source_url: {repr(source_url or '')},
+                                    first_heading: {repr(first_heading or '')},
+                                    first_content: {repr(first_content or '')},
+                                    read_time: {repr(read_time)}
+                                }};
+
+                                let loginClicked = false;
+                                let formFilled = false;
+
+                                function runAutomation() {{
+                                    // 1. Handle Login Page
+                                    const emailField = document.getElementById('email');
+                                    const passwordField = document.getElementById('password');
+                                    if (emailField && passwordField && !loginClicked) {{
+                                        emailField.value = 'prerak.sg@gmail.com';
+                                        emailField.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                                        
+                                        passwordField.value = '132325';
+                                        passwordField.dispatchEvent(new Event('input', {{ bubbles: true }}));
+
+                                        const buttons = document.querySelectorAll('button');
+                                        for (let btn of buttons) {{
+                                            if (btn.textContent.toLowerCase().includes('login') || btn.textContent.toLowerCase().includes('sign in') || btn.type === 'submit') {{
+                                                loginClicked = true;
+                                                console.log('[AUTO-LOGIN] Submitting credentials');
+                                                btn.click();
+                                                break;
+                                            }}
+                                        }}
+                                        return;
+                                    }}
+
+                                    // 2. Handle Form Page
+                                    function fillByPlaceholder(placeholderText, value) {{
+                                        if (!value) return;
+                                        const inputs = document.querySelectorAll('input, textarea');
+                                        for (let el of inputs) {{
+                                            const ph = el.getAttribute('placeholder') || '';
+                                            if (ph.toLowerCase().includes(placeholderText.toLowerCase())) {{
+                                                if (!el.value) {{
+                                                    el.value = value;
+                                                    el.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                                                    console.log('[AUTO-FILL] Filled: ' + placeholderText);
+                                                }}
+                                                break;
+                                            }}
+                                        }}
+                                    }}
+
+                                    // Verify we are on the insertion form (and not login page)
+                                    if (!emailField && !passwordField && !formFilled) {{
+                                        const headlineField = document.querySelector('input[placeholder*="headline"], input[placeholder*="Headline"]');
+                                        if (headlineField) {{
+                                            fillByPlaceholder("Reuters", articleData.source);
+                                            fillByPlaceholder("news headline", articleData.title);
+                                            fillByPlaceholder("Google search results & browser tab", articleData.meta_title);
+                                            fillByPlaceholder("under the title in Google", articleData.meta_desc);
+                                            fillByPlaceholder("Jane Doe", "Zapway Team");
+                                            fillByPlaceholder("JD", "ZT");
+                                            fillByPlaceholder("Senior correspondent", "EV News Correspondent");
+                                            fillByPlaceholder("4 min read", articleData.read_time);
+                                            fillByPlaceholder("Overview, Key Findings", articleData.first_heading || articleData.title);
+                                            fillByPlaceholder("Section body text", articleData.first_content);
+                                            formFilled = true;
+                                            console.log('[AUTO-FILL] Form processing completed');
+                                        }}
+                                    }}
+                                }}
+                                
+                                // Poll every 500ms
+                                setInterval(runAutomation, 500);
+                            }})();
+                            </script>
+                            """
+                            base_tag = base_tag + login_script
+
                         if "<head>" in content_str.lower():
                             content_str = re.sub(r'(<head[^>]*>)', r'\1' + base_tag, content_str, flags=re.IGNORECASE)
                         else:

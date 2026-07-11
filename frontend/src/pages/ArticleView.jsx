@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import { Edit2, Save, Trash2, Split, Image as ImageIcon, Music, Zap, RefreshCw, Layers, Share2, Search, X } from 'lucide-react'
 import { NewsService, API_BASE } from '../services/api'
@@ -61,12 +61,126 @@ function SocialModal({ isOpen, onClose, bundle }) {
   )
 }
 
+/* ─── PUBLISH STATUS PANEL ──────────────────────────────────────── */
+function PublishStatusPanel({ articleId, story, sections }) {
+  const [logs, setLogs] = useState([])
+  const [lastStatus, setLastStatus] = useState('running')
+
+  useEffect(() => {
+    if (!articleId) return
+    let active = true
+    let interval = null
+
+    const poll = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/publish-log/${articleId}`)
+        const data = await res.json()
+        if (!active) return
+        setLogs(data.logs || [])
+        const last = (data.logs || []).slice(-1)[0]
+        if (last) setLastStatus(last.status)
+        if (last && (last.status === 'success' || last.status === 'error')) {
+          clearInterval(interval)
+        }
+      } catch {}
+    }
+
+    poll()
+    interval = setInterval(poll, 1000)
+    return () => { active = false; clearInterval(interval) }
+  }, [articleId])
+
+  const isDone = lastStatus === 'success'
+  const isError = lastStatus === 'error'
+  const isRunning = !isDone && !isError
+
+  const stepIcons = { init: '⚡', browser: '🌐', navigate: '🔗', login: '🔑', fill: '✏️', submit: '🚀', done: '✅', error: '❌' }
+
+  const logRows = logs.length > 0 ? logs : [
+    { step: 'init', msg: 'Waiting for publish to start...', status: 'running' }
+  ]
+
+  // Compute form preview values
+  const s = story || {}
+  const firstSection = (sections || [])[0] || {}
+  const previewFields = [
+    { label: 'Headline', value: s.title || '' },
+    { label: 'Meta Title', value: s.meta_title || '' },
+    { label: 'Meta Desc', value: s.meta_desc || s.meta_description || '' },
+    { label: 'Source', value: s.publisher || '' },
+    { label: 'First Heading', value: firstSection.heading || s.title || '' },
+    { label: 'Body Preview', value: (firstSection.content || '').slice(0, 80) + ((firstSection.content || '').length > 80 ? '...' : '') },
+    { label: 'Author', value: 'Zapway Team' },
+    { label: 'Author Initials', value: 'ZT' },
+    { label: 'Designation', value: 'EV News Correspondent' },
+  ]
+
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: '"JetBrains Mono", "Fira Code", monospace' }}>
+      {/* Terminal log */}
+      <div style={{ flex: '0 0 auto', padding: '18px 20px 12px', borderBottom: '1px solid rgba(0,240,255,0.1)' }}>
+        <div style={{ fontSize: '0.65rem', color: 'rgba(0,240,255,0.5)', marginBottom: '10px', letterSpacing: '2px' }}>
+          PLAYWRIGHT AUTOMATION LOG
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {logRows.map((log, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', animation: 'fadeIn 0.3s ease' }}>
+              <span style={{ fontSize: '0.8rem', minWidth: '20px' }}>{stepIcons[log.step] || '•'}</span>
+              <span style={{
+                fontSize: '0.72rem',
+                color: log.status === 'success' ? '#00ff88' : log.status === 'error' ? '#ff4444' : 'rgba(255,255,255,0.8)',
+                lineHeight: 1.5
+              }}>
+                {log.msg}
+              </span>
+              {i === logRows.length - 1 && isRunning && (
+                <span style={{ display: 'inline-block', width: '7px', height: '12px', background: 'var(--c-cyan)', animation: 'blink 0.8s step-end infinite', marginLeft: '2px', marginTop: '2px' }} />
+              )}
+            </div>
+          ))}
+        </div>
+        {isDone && (
+          <div style={{ marginTop: '12px', padding: '10px 14px', background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.3)', borderRadius: '6px', fontSize: '0.72rem', color: '#00ff88', fontWeight: 700 }}>
+            ✅ Article published to zapway.app successfully!
+          </div>
+        )}
+        {isError && (
+          <div style={{ marginTop: '12px', padding: '10px 14px', background: 'rgba(255,68,68,0.08)', border: '1px solid rgba(255,68,68,0.3)', borderRadius: '6px', fontSize: '0.72rem', color: '#ff6666' }}>
+            ❌ Publish failed. Open Zapway manually to submit.
+          </div>
+        )}
+      </div>
+
+      {/* Form preview */}
+      <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px 20px' }}>
+        <div style={{ fontSize: '0.65rem', color: 'rgba(0,240,255,0.5)', marginBottom: '12px', letterSpacing: '2px' }}>
+          ARTICLE DATA BEING SUBMITTED
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {previewFields.map((f, i) => (
+            <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '6px', padding: '10px 12px' }}>
+              <div style={{ fontSize: '0.6rem', color: 'rgba(0,240,255,0.6)', letterSpacing: '1px', marginBottom: '4px' }}>{f.label.toUpperCase()}</div>
+              <div style={{ fontSize: '0.75rem', color: f.value ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)', lineHeight: 1.4 }}>
+                {f.value || '—'}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function ArticleView() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
   const [isEditMode, setIsEditMode] = useState(false)
   const [isSplitView, setIsSplitView] = useState(false)
+  const [splitViewUrl, setSplitViewUrl] = useState('')
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [splitViewTab, setSplitViewTab] = useState('source') // 'source' or 'logs'
   const [editedStory, setEditedStory] = useState(null)
   const [actionLoading, setActionLoading] = useState(null)
 
@@ -85,6 +199,8 @@ export default function ArticleView() {
   useEffect(() => {
     if (story) setEditedStory({ ...story })
   }, [story])
+
+
 
   const actionMutation = useMutation({
     mutationFn: ({ action, params }) => NewsService.performAction(action, id, params),
@@ -121,6 +237,25 @@ export default function ArticleView() {
       setActionLoading(null)
     }
   })
+
+  // Automatically trigger publish if navigated here with target state
+  useEffect(() => {
+    if (location.state?.triggerPublish && story) {
+      // Clear location state immediately to avoid repeated triggers
+      window.history.replaceState({}, document.title)
+      
+      actionMutation.mutate({ action: 'publish_article' })
+      setIsPublishing(true)
+      setSplitViewTab('logs')
+      setSplitViewUrl('https://zapway.app/News/insert_news')
+      setIsSplitView(true)
+      
+      // Open the original source article in a new tab
+      if (story?.url) {
+        window.open(story.url, '_blank', 'noopener,noreferrer')
+      }
+    }
+  }, [location.state, story])
 
   const pollTaskStatus = async (taskId, action) => {
     let attempts = 0
@@ -255,10 +390,11 @@ export default function ArticleView() {
             {story.status?.toUpperCase() || 'UNKNOWN'}
           </span>
           <div className={`edit-toggle ${isSplitView ? 'active' : ''}`} onClick={() => {
-            const nextVal = !isSplitView;
-            setIsSplitView(nextVal);
-            if (nextVal && story?.url) {
-              window.open(story.url, '_blank', 'noopener,noreferrer');
+            const nextVal = !isSplitView
+            setIsSplitView(nextVal)
+            if (nextVal) {
+              setSplitViewTab('source')
+              setSplitViewUrl(story?.url || '')
             }
           }}>
              <Split size={14} />
@@ -279,11 +415,20 @@ export default function ArticleView() {
           {story.status !== 'Published' && (
             <button 
               className="btn btn-primary" 
-              style={{ background: 'var(--c-cyan)', color: '#000' }} 
-              onClick={() => actionMutation.mutate({ action: 'publish_article' })}
+              style={{ background: 'var(--c-cyan)', color: '#000', position: 'relative' }} 
+              onClick={() => {
+                actionMutation.mutate({ action: 'publish_article' })
+                setIsPublishing(true)
+                setSplitViewTab('logs')
+                setSplitViewUrl('https://zapway.app/News/insert_news')
+                setIsSplitView(true)
+                if (story?.url) {
+                  window.open(story.url, '_blank', 'noopener,noreferrer')
+                }
+              }}
               disabled={actionLoading === 'publish_article'}
             >
-              {actionLoading === 'publish_article' ? 'PUBLISHING...' : 'PUBLISH SIGNAL'}
+              {actionLoading === 'publish_article' ? '⚡ PUBLISHING...' : '🚀 PUBLISH TO ZAPWAY'}
             </button>
           )}
           {isEditMode && (
@@ -359,21 +504,6 @@ export default function ArticleView() {
             </div>
           )}
 
-          {/* AI SUMMARY BLOCK */}
-          <div className="control-block" style={{ marginBottom: '30px', borderLeft: '4px solid var(--c-cyan)', background: 'rgba(0, 240, 255, 0.02)' }}>
-            <div className="block-title" style={{ color: 'var(--c-cyan)' }}>AI CORE SUMMARY</div>
-            <h4 style={{ marginBottom: '10px', fontSize: '1.1rem' }}>{aiSummary.headline}</h4>
-            <p style={{ marginBottom: '16px' }}>{aiSummary.summary}</p>
-            {aiSummary.key_points && (
-              <ul style={{ paddingLeft: '20px', color: 'var(--text-secondary)' }}>
-                {aiSummary.key_points.map((p, i) => (
-                  <li key={i} style={{ marginBottom: '4px' }}>
-                    {typeof p === 'object' ? (p.fact || '') : p}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
 
           {/* DYNAMIC SECTIONS */}
           {sections.length > 0 ? (
@@ -499,30 +629,67 @@ export default function ArticleView() {
         </div>
 
         {isSplitView && (
-          <div className="terminal-content" style={{ flex: '0 0 50%', borderLeft: '1px solid var(--color-border)', background: '#fff', display: 'flex', flexDirection: 'column', padding: 0 }}>
-            <div className="block-title" style={{ margin: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ color: '#000' }}>ORIGINAL SOURCE SIGNAL</span>
-              <a 
-                href={story.url} 
-                target="_blank" 
-                rel="noreferrer" 
-                className="btn btn-ghost" 
-                style={{ fontSize: '0.75rem', padding: '4px 10px', color: 'var(--c-cyan)', background: '#000', border: '1px solid var(--c-cyan)' }}
-              >
-                OPEN IN NEW TAB ↗
-              </a>
+          <div className="terminal-content" style={{ flex: '0 0 50%', borderLeft: '1px solid var(--color-border)', background: '#080c10', display: 'flex', flexDirection: 'column', padding: 0 }}>
+            {/* Header bar */}
+            <div style={{ margin: '0', padding: '12px 16px', background: 'rgba(0,240,255,0.06)', borderBottom: '1px solid rgba(0,240,255,0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--c-cyan)', boxShadow: '0 0 8px var(--c-cyan)', animation: 'pulse 1.2s infinite' }} />
+                
+                {/* Tab Toggles */}
+                <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.05)', padding: '2px', borderRadius: '4px' }}>
+                  <button 
+                    onClick={() => setSplitViewTab('source')}
+                    style={{ fontSize: '0.65rem', padding: '4px 8px', border: 'none', borderRadius: '3px', cursor: 'pointer', background: splitViewTab === 'source' ? 'var(--c-cyan)' : 'transparent', color: splitViewTab === 'source' ? '#000' : 'var(--text-muted)', fontWeight: 700 }}
+                  >
+                    📰 ORIGINAL SOURCE
+                  </button>
+                  <button 
+                    onClick={() => setSplitViewTab('logs')}
+                    style={{ fontSize: '0.65rem', padding: '4px 8px', border: 'none', borderRadius: '3px', cursor: 'pointer', background: splitViewTab === 'logs' ? 'var(--c-cyan)' : 'transparent', color: splitViewTab === 'logs' ? '#000' : 'var(--text-muted)', fontWeight: 700 }}
+                  >
+                    ⚡ PUBLISH LOGS
+                  </button>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <a
+                  href="https://zapway.app/News/insert_news"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ fontSize: '0.7rem', padding: '4px 10px', color: 'var(--c-cyan)', background: 'transparent', border: '1px solid var(--c-cyan)', borderRadius: '4px', textDecoration: 'none', fontWeight: 700 }}
+                >
+                  OPEN ZAPWAY ↗
+                </a>
+                <button
+                  onClick={() => { setIsSplitView(false); setSplitViewUrl('') }}
+                  style={{ fontSize: '0.7rem', padding: '4px 10px', color: 'var(--text-muted)', background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '4px', cursor: 'pointer', fontWeight: 700 }}
+                >
+                  ✕ CLOSE
+                </button>
+              </div>
             </div>
-            {story.url ? (
-              <iframe 
-                src={`${API_BASE}/api/proxy?url=${encodeURIComponent(story.url)}`} 
-                title="Original Source Signal" 
-                style={{ width: '100%', flex: 1, border: 'none', background: '#fff' }} 
-              />
-            ) : (
-              <div style={{ padding: '20px', color: '#000' }}>No source URL available.</div>
-            )}
+
+            {/* Split View Content */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              {splitViewTab === 'logs' ? (
+                <PublishStatusPanel articleId={id} story={story} sections={sections} />
+              ) : (
+                story?.url ? (
+                  <iframe 
+                    src={story.url} 
+                    title="Original Source" 
+                    style={{ width: '100%', height: '100%', border: 'none', background: '#fff' }} 
+                  />
+                ) : (
+                  <div style={{ padding: '40px', color: 'var(--text-muted)', textAlign: 'center', fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                    No source URL available for this article.
+                  </div>
+                )
+              )}
+            </div>
           </div>
         )}
+
 
         <div className="terminal-sidebar">
            <div className="control-block">

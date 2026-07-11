@@ -12,6 +12,9 @@ import gtts
 
 from backend.db.queries import add_task
 
+# Global dict to track real-time Playwright publisher status per article
+PUBLISH_LOGS: dict = {}
+
 class NewsService:
     @staticmethod
     def _parse_item(item):
@@ -170,7 +173,56 @@ class NewsService:
             now_str = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
             queries.update_story(article_id, "status", "Published")
             queries.update_story(article_id, "published_date", now_str)
+
+            # ── Auto-publish to zapway.app via Playwright ──────────────────
+            import asyncio
+            import threading
+
+            # Reset log for this article
+            PUBLISH_LOGS[article_id] = [
+                {"step": "init", "msg": "Starting Playwright automation...", "status": "running"}
+            ]
+
+            def _log(step, msg, status="running"):
+                PUBLISH_LOGS.setdefault(article_id, []).append({"step": step, "msg": msg, "status": status})
+                print(f"[PUBLISHER] {msg}")
+
+            def _run_playwright_publisher(article_data):
+                """Run Playwright publisher in a background thread with its own event loop."""
+                try:
+                    _log("browser", "Launching headless browser...")
+                    from zapway_publisher import publish_to_zapway
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    _log("navigate", "Navigating to zapway.app/News/insert_news...")
+                    result = loop.run_until_complete(publish_to_zapway(article_data))
+                    loop.close()
+                    if result.get("success"):
+                        _log("done", f"✅ Successfully published to zapway.app!", "success")
+                    else:
+                        _log("error", f"❌ Failed: {result.get('error')}", "error")
+                except Exception as e:
+                    _log("error", f"❌ Exception: {str(e)}", "error")
+
+            # Build article dict with all fields needed by the publisher
+            article_data = {
+                "title": article.get("title", ""),
+                "sections": article.get("sections", []),
+                "original_content": article.get("original_content", ""),
+                "ai_summary": article.get("ai_summary", ""),
+                "meta_title": article.get("meta_title", ""),
+                "meta_description": article.get("meta_desc", article.get("meta_description", "")),
+                "keywords": article.get("keywords", []),
+                "source": article.get("source", "Zapway Newsroom"),
+                "url": article.get("url", ""),
+            }
+
+            t = threading.Thread(target=_run_playwright_publisher, args=(article_data,), daemon=True)
+            t.start()
+            print(f"[PUBLISHER] Background publish thread started for article {article_id}")
+
             return {"status": "Published", "published_at": now_str}
+
 
         elif action == "calculate_score":
             # Simple heuristic for the backend: based on title length and content presence

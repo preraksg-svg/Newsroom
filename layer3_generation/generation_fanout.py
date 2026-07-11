@@ -81,6 +81,9 @@ def validate_linguistic_closure(payload):
                 if open_count != close_count:
                     errors.append(f"{field_name} contains unbalanced brackets/parentheses: {open_delim} vs {close_delim}")
 
+    # Only validate text/prose fields — skip structural/metadata fields
+    TEXT_ONLY_FIELDS = {'title', 'heading', 'content', 'ai_summary', 'meta_description'}
+
     # Traverse dictionary to validate all string fields
     def traverse_dict(data, prefix=""):
         if isinstance(data, dict):
@@ -90,7 +93,10 @@ def validate_linguistic_closure(payload):
             for idx, item in enumerate(data):
                 traverse_dict(item, prefix + f"[{idx}]")
         elif isinstance(data, str):
-            check_integrity(data, prefix)
+            # Only check prose fields, not URLs/dates/source/alt etc.
+            leaf_key = prefix.split('.')[-1].split('[')[0]
+            if leaf_key in TEXT_ONLY_FIELDS:
+                check_integrity(data, prefix)
 
     traverse_dict(payload)
     return errors
@@ -175,39 +181,60 @@ async def run_microtask_a_with_retry(content, url=None, trace_id=None, title=Non
     else:
         traceparent = f"00-{trace_id}-{trace_id[:16]}-01"
     
-    system_prompt = """You are a light news spinner for ZAPWAY. Your goal is to lightly paraphrase raw EV news, changing only a few words and synonyms so it doesn't trigger duplicate content filters. Keep the formatting, meaning, length, and everything else EXACTLY the same as the original source.
+    system_prompt = """You are a faithful news paraphraser and editor for ZAPWAY. Your responsibility is to lightly paraphrase the raw source text and structure it into exactly 4 standardized sections.
 
-Follow these strict constraints:
-1. LIGHT PARAPHRASING ONLY: Do not completely rewrite the article. Keep the original paragraph structure and flow intact. Just change a few synonyms and sentence structures.
-2. LINGUISTIC CLOSURE: Every sentence must be grammatically complete and concluded.
-3. GROUNDING & DATA INTEGRITY: Do not use prior training knowledge to invent news, figures, or timelines. Only use facts present in the provided sources. CRITICAL: Do NOT alter, modify, translate, or round original prices (e.g. keep 'Rs 27.90 lakh' exactly as in the source), variant/trim names (e.g. keep 'Comfort' exactly as is), model names, specs, numbers, or specific brand figures. Keep all factual figures, names, and prices completely unchanged from the raw source.
-4. NO FLUFF/STUFFING: Do not add extra fluff or stuffing. Keep the article length nearly identical to the original input source. Do not expand it unnecessarily.
-5. SCHEMA: Your output must be a valid JSON object matching the structure below.
-6. HEADERS: Split the lightly paraphrased text into logical sections based on the input text structure.
+Your output must follow these rules strictly:
+1. TITLE: Keep the original article headline almost exactly. You may swap 1-2 words or fix a grammar issue, but DO NOT rewrite or reinvent it. The output title must be recognisably the same as the source title.
+2. SECTION STRUCTURE: You must output exactly 4 sections in this exact order:
+   - Section 1 Heading: A brief topic-based heading tailored specifically to the core news story (e.g. "Tata Motors Subsidies & Benefits" or "Charging Infrastructure Expansion" instead of a generic header like "Main Details" or "Overview").
+   - Section 2 Heading: "Key Developments"
+   - Section 3 Heading: "Why It Matters for EV Drivers"
+   - Section 4 Heading: "ZAPWAY Relevance"
+3. CONTENT PACKING: Distribute the lightly paraphrased source text across these 4 sections logically:
+   - Under the topic-based heading, place the general overview of the news.
+   - Under "Key Developments", list the specific facts, details, and numbers.
+   - Under "Why It Matters for EV Drivers", explain the direct impact on EV consumers or drivers in India.
+   - Under "ZAPWAY Relevance", explain how this connects to charging, route planning, or smart EV navigation.
+4. LIGHT PARAPHRASE ONLY: Swap at most 2-3 words per sentence with synonyms or minimally restructure. Do NOT rewrite sentences from scratch.
+5. DATA INTEGRITY: Keep ALL numbers, prices (e.g. 'Rs 27.90 lakh'), specs, model names, variant names, percentages, dates, and named entities EXACTLY as they appear in the source. Never round or translate them.
+6. LINGUISTIC CLOSURE: Every sentence must end with proper punctuation (., !, ?). No trailing conjunctions or incomplete sentences.
+7. NO INVENTED CONTENT: Do not add any information, context, or opinion not present in the source.
 
-JSON Structure to return:
+JSON Structure to return — fill every field exactly as described:
 {
-  "title": "...", // The Headline: Active-voice, metrics-driven, and purely objective. (e.g. 'Rivian Delivers 12,640 Vehicles in Q2, Exceeding Wall Street Estimates by 14%')
-  "meta_title": "...",
-  "meta_description": "...",
-  "keywords": ["k1", "k2"],
-  "ai_summary": "...", // The AI Summary: A high-density, 2-to-3 sentence executive brief. No fluff.
+  "title": "...",            // Near-identical to source headline. Max 2 word changes.
+  "meta_title": "...",        // SEO meta title: source headline + site name suffix, max 60 chars.
+  "meta_description": "...",  // 1-2 sentence summary of the article, max 155 chars, no ellipsis.
+  "keywords": ["k1", "k2"],   // 3-5 key EV-related terms from the article.
+  "ai_summary": "",           // MUST be empty string. No AI core summary or key points.
   "sections": [
     {
-      "heading": "...", // Dynamic heading (selected from the list above)
-      "content": "..." // Rich, detailed paragraph content.
+      "heading": "...",  // Section heading name as described in SECTION STRUCTURE.
+      "content": "..."   // Lightly paraphrased paragraph(s) from that section.
     }
   ],
-  "images": [
-    {"url": "", "alt": ""}
-  ],
-  "audio": { "url": "" },
+  "images": [{"url": "", "alt": ""}],
+  "audio": {"url": ""},
   "source": "ZAPWAY System",
   "published_at": ""
 }
 """
     
-    user_prompt = f"INPUT SOURCES:\n{content}"
+    # Clean raw content: strip HTML tags and excess whitespace to reduce noise
+    import re as _re
+    clean_content = (content or "")
+    clean_content = _re.sub(r'<[^>]+>', ' ', clean_content)          # strip HTML tags
+    clean_content = _re.sub(r'&[a-z]+;', ' ', clean_content)         # strip HTML entities
+    clean_content = _re.sub(r'[ \t]{2,}', ' ', clean_content)        # collapse spaces
+    clean_content = _re.sub(r'\n{3,}', '\n\n', clean_content)        # collapse blank lines
+    clean_content = clean_content.strip()
+    
+    # Truncate to avoid Groq 413 Payload Too Large errors
+    content_for_prompt = clean_content[:8000]
+    
+    # Include original title in user prompt as an explicit anchor
+    title_anchor = f"ORIGINAL TITLE: {title}\n\n" if title else ""
+    user_prompt = f"{title_anchor}SOURCE ARTICLE TO PARAPHRASE:\n{content_for_prompt}\n\nIMPORTANT: Your output title must be nearly identical to the ORIGINAL TITLE above. Your section headings must be copied verbatim from the source text above."
     
     if not client:
         print(f"[TRACE:{traceparent}] Groq client unavailable. Using fallback generation.")

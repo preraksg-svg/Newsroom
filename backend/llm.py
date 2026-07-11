@@ -1,6 +1,20 @@
 import os
+import re
 import json
 from backend.db.queries import log_groq_usage
+
+
+def clean_headline_garbage(title):
+    """Module-level helper to strip publisher suffixes and date patterns from headlines."""
+    if not title:
+        return title
+    # Clean publisher suffixes: e.g. " - Autocar India", " | CleanTechnica", " — Livemint"
+    cleaned = re.sub(r'\s+[\-\|\|\—\–\/]\s+([A-Za-z0-9\.\s]+)$', '', title)
+    # Clean date patterns at the end of headlines
+    cleaned = re.sub(r'\s+[\-\|\|\—\–\/]\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4}|[A-Za-z]+\s+\d{1,2},?\s+\d{4}|\d{4}-\d{2}-\d{2})$', '', cleaned)
+    cleaned = re.sub(r'\s*\(?\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\)?$', '', cleaned, flags=re.I)
+    return cleaned.strip()
+
 
 try:
     from dotenv import load_dotenv
@@ -58,10 +72,13 @@ def filter_article(title, content):
     if not has_ev_term:
         return {"relevant": False, "reason": "Heuristic match: No EV-related terminology found."}
 
+    # Truncate content to avoid Groq 413 Payload Too Large
+    content_truncated = (content or "")[:2000]
+    
     prompt = f"""
     Analyze the news snippet below to determine if it is strictly about Electric Vehicles (EVs) or EV infrastructure in INDIA.
     Title: {title}
-    Content: {content}
+    Content: {content_truncated}
 
     CRITICAL RULES:
     1. Only return "relevant": true if the MAIN focus of the article is explicitly about Electric Vehicles (EVs), EV launches, EV charging infrastructure, EV battery technology, EV policies, or major EV OEMs in INDIA (such as Tata Motors, Ola Electric, Mahindra, Ather Energy, BYD India, etc., or EV activities taking place within India).
@@ -202,16 +219,7 @@ def _rewrite_article_fallback(content, url=None, title=None):
             return text[:last_boundary+1].strip()
         return text
 
-    def clean_headline_garbage(title):
-        if not title:
-            return title
-        import re
-        # Clean publisher suffixes: e.g. " - Autocar India", " | CleanTechnica", " — Livemint"
-        cleaned = re.sub(r'\s+[\-\|\|\—\–\/]\s+([A-Za-z0-9\.\s]+)$', '', title)
-        # Clean date patterns at the end of headlines
-        cleaned = re.sub(r'\s+[\-\|\|\—\–\/]\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4}|[A-Za-z]+\s+\d{1,2},?\s+\d{4}|\d{4}-\d{2}-\d{2})$', '', cleaned)
-        cleaned = re.sub(r'\s*\(?\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\)?$', '', cleaned, flags=re.I)
-        return cleaned.strip()
+    # clean_headline_garbage is now a module-level function (see top of file)
 
     def clean_voice_manifest_violations(text):
         if not text:
@@ -486,9 +494,10 @@ def _rewrite_article_fallback(content, url=None, title=None):
     what_happened_text = additional_input_text if additional_input_text else headline
 
     sections = [
-        {"heading": "AI Summary", "content": ai_summary_text},
-        {"heading": "Key Points", "content": key_points_text},
-        {"heading": "What Happened", "content": what_happened_text}
+        {"heading": f"{topic} EV Market Update", "content": ai_summary_text},
+        {"heading": "Key Developments", "content": key_points_text.replace("Key Points", "Developments")},
+        {"heading": "Why It Matters for EV Drivers", "content": what_happened_text},
+        {"heading": "ZAPWAY Relevance", "content": f"These grid and infrastructure expansions in the {topic} segment support cleaner highway navigation and route planning."}
     ]
 
     # Construct complete sentences for SEO metadata to avoid trailing dots or cut-off sentences

@@ -1,17 +1,18 @@
 import os
 import time
-import aiohttp
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from dateutil import parser
 import logging
 
 logger = logging.getLogger("newsapi_worker")
+_executor = ThreadPoolExecutor(max_workers=4)
+
 
 async def scrape_newsapi(domain_or_query: str):
     """
-    Worker using News API to fetch clean, structured EV news.
-    domain_or_query can be a domain (e.g. 'techcrunch.com') or a search query.
-    If it's empty, defaults to 'electric vehicle OR EV'.
+    Worker using NewsAPI.ai to fetch clean, structured EV news.
+    Uses the newsapi.ai endpoint which matches the UUID-format key in .env.
     """
     results = []
     
@@ -26,75 +27,79 @@ async def scrape_newsapi(domain_or_query: str):
     else:
         is_global = True
 
-    # Determine if we are querying a specific domain or general topics
-    if domain_or_query and "." in domain_or_query and " " not in domain_or_query:
-        params = {
-            "domains": domain_or_query,
-            "q": "electric vehicle OR EV",
-            "sortBy": "publishedAt",
-            "language": "en",
-            "apiKey": api_key,
-            "pageSize": 30
-        }
+    # Use India-focused query for non-global sources
+    if is_global:
+        query = "electric vehicle OR EV"
     else:
-        if is_global:
-            query = "electric vehicle OR EV"
-        else:
-            query = "electric vehicle India OR EV India"
-            
-        params = {
-            "q": query,
-            "sortBy": "publishedAt",
-            "language": "en",
-            "apiKey": api_key,
-            "pageSize": 30
-        }
+        query = "electric vehicle India OR EV India OR Tata EV OR Ola Electric OR Ather Energy"
 
-    url = "https://newsapi.org/v2/everything"
+    # newsapi.ai endpoint — matches UUID-format keys
+    url = "https://eventregistry.org/api/v1/article/getArticles"
+    payload = {
+        "query": {
+            "$query": {
+                "$and": [
+                    {"$or": [
+                        {"conceptUri": "http://en.wikipedia.org/wiki/Electric_vehicle"},
+                        {"keyword": query, "keywordLoc": "title,body"}
+                    ]},
+                    {"lang": "eng"}
+                ]
+            },
+            "$filter": {"forceMaxDataTimeWindow": "31"}
+        },
+        "resultType": "articles",
+        "articlesSortBy": "date",
+        "articlesCount": 10,
+        "articleBodyLen": -1,
+        "apiKey": api_key
+    }
     
+    # Add country filter for India-focused queries
+    if not is_global:
+        payload["query"]["$query"]["$and"].append({"locationUri": "http://en.wikipedia.org/wiki/India"})
+
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=10)) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    articles = data.get("articles", [])
+        import requests
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(_executor, lambda: requests.post(url, json=payload, timeout=25))
+        if response.status_code == 200:
+            data = response.json()
+            articles = data.get("articles", {}).get("results", [])
+            
+            for article in articles:
+                content = article.get("body") or article.get("title", "")
+                if not content:
+                    continue
                     
-                    for article in articles:
-                        # Require content
-                        content = article.get("content") or article.get("description")
-                        if not content:
-                            continue
-                            
-                        title = article.get("title", "")
-                        link = article.get("url", "")
-                        source_name = article.get("source", {}).get("name", "NewsAPI")
-                        author = article.get("author") or source_name
-                        
-                        dt_str = article.get("publishedAt", "")
-                        try:
-                            timestamp = int(parser.parse(dt_str).timestamp()) if dt_str else int(time.time())
-                        except:
-                            timestamp = int(time.time())
-                            
-                        results.append({
-                            "title": title,
-                            "content_raw": content,
-                            "source": source_name,
-                            "source_type": "newsapi",
-                            "author": author,
-                            "timestamp": timestamp,
-                            "url": link,
-                            "engagement": {
-                                "likes": 0,
-                                "comments": 0,
-                                "shares": 0
-                            }
-                        })
-                else:
-                    text = await response.text()
-                    logger.error(f"[NewsAPI] Error fetching data: {response.status} {text}")
+                title = article.get("title", "")
+                link = article.get("url", "")
+                source_name = article.get("source", {}).get("title", "NewsAPI")
+                author = article.get("authors", [{}])[0].get("name", source_name) if article.get("authors") else source_name
+                
+                dt_str = article.get("dateTimePub", "")
+                try:
+                    timestamp = int(parser.parse(dt_str).timestamp()) if dt_str else int(time.time())
+                except Exception:
+                    timestamp = int(time.time())
+                    
+                results.append({
+                    "title": title,
+                    "content_raw": content,
+                    "source": source_name,
+                    "source_type": "newsapi",
+                    "author": author,
+                    "timestamp": timestamp,
+                    "url": link,
+                    "engagement": {
+                        "likes": 0,
+                        "comments": 0,
+                        "shares": 0
+                    }
+                })
+        else:
+            logger.error(f"[NewsAPI] Error fetching data: {response.status_code} {response.text[:300]}")
     except Exception as e:
         logger.error(f"[NewsAPI] Exception during fetch: {e}")
 
     return results
-

@@ -105,13 +105,13 @@ class NewsroomOrchestrator:
                         elif stype == "facebook":
                             results = await asyncio.wait_for(scrape_facebook(domain), timeout=2.0)
                         elif stype == "newsapi":
-                            results = await asyncio.wait_for(scrape_newsapi(source_id), timeout=15.0)
+                            results = await asyncio.wait_for(scrape_newsapi(source_id), timeout=60.0)
                         elif stype == "newsdata":
-                            results = await asyncio.wait_for(scrape_newsdata(source_id), timeout=15.0)
+                            results = await asyncio.wait_for(scrape_newsdata(source_id), timeout=60.0)
                         elif stype == "gnews":
-                            results = await asyncio.wait_for(scrape_gnews(source_id), timeout=15.0)
+                            results = await asyncio.wait_for(scrape_gnews(source_id), timeout=60.0)
                         else:
-                            results = await asyncio.wait_for(scrape_website(domain), timeout=15.0)
+                            results = await asyncio.wait_for(scrape_website(domain), timeout=30.0)
                     except Exception as scrape_err:
                         import traceback
                         print(f"[PIPELINE] Error fetching {source_id}: {scrape_err}")
@@ -270,6 +270,11 @@ class NewsroomOrchestrator:
         filter_res = await asyncio.to_thread(filter_article, signal.get('title', ''), signal.get('content', ''))
         if not filter_res.get('relevant', True):
              print(f"[FILTER] Signal rejected by AI Gatekeeper: {filter_res.get('reason', 'Irrelevant content')}")
+             # Mark as clustered=2 so it is never reprocessed
+             with get_db() as conn:
+                 cur = conn.cursor()
+                 cur.execute("UPDATE scraped_raw SET clustered = 2 WHERE id = ?", (signal['id'],))
+                 conn.commit()
              return
 
         # 9-11: Content Generation (Article, Summary, Media)

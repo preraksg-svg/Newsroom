@@ -389,6 +389,16 @@ body {
   to { opacity: 1; }
 }
 
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--c-cyan); }
+  50% { opacity: 0.6; box-shadow: 0 0 14px var(--c-cyan); }
+}
+
 .text-cyan { color: var(--c-cyan); }
 .text-green { color: var(--c-green); }
 .text-magenta { color: var(--c-magenta); }

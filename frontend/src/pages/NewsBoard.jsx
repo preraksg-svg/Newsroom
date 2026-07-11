@@ -7,6 +7,7 @@ import { NewsService } from '../services/api'
 import { Loader, EmptyState, ErrorState } from '../components/StatusStates'
 
 function ArticleCard({ item, onClick, onReject, onRestore, onAction, isRecycleBin }) {
+  const navigate = useNavigate()
   const fields = item.fields || item
   const status = fields.status || fields.Status || item.status || 'Draft'
   const score = fields.final_score || fields.finalScore || fields['Final Score'] || 0
@@ -36,7 +37,8 @@ function ArticleCard({ item, onClick, onReject, onRestore, onAction, isRecycleBi
 
   const handlePublish = (e) => {
     e.stopPropagation()
-    onAction('publish_article', item.id)
+    // Navigate to the article detail view first, passing state so ArticleView knows to trigger the publishing and open the split view
+    navigate(`/article/${item.id}`, { state: { triggerPublish: true } })
   }
 
   return (
@@ -131,10 +133,9 @@ export default function NewsBoard({ isRecycleBin }) {
   const columns = useMemo(() => {
     if (isRecycleBin) return { 'Rejected': items }
     
-    // Define the canonical order of columns
+    // Define the canonical order of columns — no "In Review" column
     const base = {
       'Draft':     [],
-      'In Review': [],
       'Approved':  [],
       'Published': []
     }
@@ -142,7 +143,10 @@ export default function NewsBoard({ isRecycleBin }) {
     // Distribute items into columns
     items.forEach(item => {
       const f = item.fields || item
-      const s = f.status || f.Status || item.status || 'Draft'
+      let s = f.status || f.Status || item.status || 'Draft'
+
+      // Remap any legacy "In Review" items directly into Approved
+      if (s === 'In Review') s = 'Approved'
         
       // Drafts section should only show news fetched in the last 48 hours
       if (s === 'Draft') {

@@ -2,10 +2,13 @@ import os
 import time
 import aiohttp
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from dateutil import parser
 import logging
 
 logger = logging.getLogger("newsdata_worker")
+_executor = ThreadPoolExecutor(max_workers=4)
+
 
 async def scrape_newsdata(domain_or_query: str):
     """
@@ -25,12 +28,12 @@ async def scrape_newsdata(domain_or_query: str):
         is_global = True
 
     # Determine if we are querying a specific domain or general topics
-    query = f"site:{domain_or_query}" if (domain_or_query and "." in domain_or_query and " " not in domain_or_query) else "electric vehicle OR EV"
+    query = f"site:{domain_or_query}" if (domain_or_query and "." in domain_or_query and " " not in domain_or_query) else ("electric vehicle India OR EV India" if not is_global else "electric vehicle OR EV")
     params = {
         "apikey": api_key,
         "q": query,
         "language": "en",
-        "size": 30
+        "size": 10  # Free tier max is 10
     }
     if not is_global:
         params["country"] = "in"
@@ -38,46 +41,46 @@ async def scrape_newsdata(domain_or_query: str):
     url = "https://newsdata.io/api/1/news"
     
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=10)) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    articles = data.get("results", [])
+        import requests
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(_executor, lambda: requests.get(url, params=params, timeout=25))
+        if response.status_code == 200:
+            data = response.json()
+            articles = data.get("results", [])
+            
+            for article in articles:
+                content = article.get("content") or article.get("description")
+                if not content:
+                    continue
                     
-                    for article in articles:
-                        content = article.get("content") or article.get("description")
-                        if not content:
-                            continue
-                            
-                        title = article.get("title", "")
-                        link = article.get("link", "")
-                        source_name = article.get("source_id", "NewsData")
-                        author = article.get("creator") 
-                        author = author[0] if author and isinstance(author, list) else source_name
-                        
-                        dt_str = article.get("pubDate", "")
-                        try:
-                            timestamp = int(parser.parse(dt_str).timestamp()) if dt_str else int(time.time())
-                        except:
-                            timestamp = int(time.time())
-                            
-                        results.append({
-                            "title": title,
-                            "content_raw": content,
-                            "source": source_name,
-                            "source_type": "newsdata",
-                            "author": author,
-                            "timestamp": timestamp,
-                            "url": link,
-                            "engagement": {
-                                "likes": 0,
-                                "comments": 0,
-                                "shares": 0
-                            }
-                        })
-                else:
-                    text = await response.text()
-                    logger.error(f"[NewsData] Error fetching data: {response.status} {text}")
+                title = article.get("title", "")
+                link = article.get("link", "")
+                source_name = article.get("source_id", "NewsData")
+                author = article.get("creator") 
+                author = author[0] if author and isinstance(author, list) else source_name
+                
+                dt_str = article.get("pubDate", "")
+                try:
+                    timestamp = int(parser.parse(dt_str).timestamp()) if dt_str else int(time.time())
+                except:
+                    timestamp = int(time.time())
+                    
+                results.append({
+                    "title": title,
+                    "content_raw": content,
+                    "source": source_name,
+                    "source_type": "newsdata",
+                    "author": author,
+                    "timestamp": timestamp,
+                    "url": link,
+                    "engagement": {
+                        "likes": 0,
+                        "comments": 0,
+                        "shares": 0
+                    }
+                })
+        else:
+            logger.error(f"[NewsData] Error fetching data: {response.status_code} {response.text}")
     except Exception as e:
         logger.error(f"[NewsData] Exception during fetch: {e}")
 
