@@ -44,6 +44,64 @@ async def _login(page):
     print(f"[PUBLISHER] Post-login URL: {page.url}")
 
 
+def fetch_main_image_url(url: str) -> str:
+    """Fetches the og:image or twitter:image metadata from the original source URL."""
+    if not url:
+        return ""
+    try:
+        import requests
+        from bs4 import BeautifulSoup
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+        }
+        res = requests.get(url, headers=headers, timeout=10)
+        if res.status_code == 200:
+            soup = BeautifulSoup(res.text, "html.parser")
+            
+            # 1. og:image
+            og_img = soup.find("meta", property="og:image")
+            if og_img and og_img.get("content"):
+                return og_img.get("content")
+                
+            # 2. twitter:image
+            tw_img = soup.find("meta", name="twitter:image")
+            if tw_img and tw_img.get("content"):
+                return tw_img.get("content")
+                
+            # 3. link[rel="image_src"]
+            img_src = soup.find("link", rel="image_src")
+            if img_src and img_src.get("href"):
+                return img_src.get("href")
+    except Exception as e:
+        print(f"[PUBLISHER] WARNING: Could not fetch image URL from original source: {e}")
+    return ""
+
+
+def extract_bullets_from_content(content: str):
+    """
+    Parses section content and extracts lines that represent bullet points.
+    Returns (cleaned_content, bullet_list).
+    """
+    if not content:
+        return "", []
+    
+    lines = content.split("\n")
+    bullet_list = []
+    cleaned_lines = []
+    
+    for line in lines:
+        stripped = line.strip()
+        # Match standard markdown bullets (*, -, •, or digits followed by dot)
+        match = re.match(r"^([\*\-\u2022]|(?:\d+\.))\s+(.*)$", stripped)
+        if match:
+            bullet_list.append(match.group(2).strip())
+        else:
+            cleaned_lines.append(line)
+            
+    cleaned_content = "\n".join(cleaned_lines).strip()
+    return cleaned_content, bullet_list
+
+
 async def publish_to_zapway(article: dict) -> dict:
     """
     Logs into zapway.app and submits the article via the insert_news form.
@@ -184,6 +242,19 @@ async def publish_to_zapway(article: dict) -> dict:
             await fill_partial("Senior correspondent", "EV News Correspondent", "author_bio")
             await fill_exact("4 min read", read_time, "read_time")
 
+            # Fill Main Image URL (crawled dynamically from the original source)
+            try:
+                main_image_url = fetch_main_image_url(article.get("url", ""))
+                if main_image_url:
+                    img_el = page.locator('input[placeholder="images/hero.jpg"]').first
+                    if await img_el.count() > 0:
+                        await img_el.scroll_into_view_if_needed()
+                        await img_el.fill(main_image_url)
+                        print(f"[PUBLISHER] Filled Main Image URL: {main_image_url}")
+            except Exception as img_err:
+                print(f"[PUBLISHER] WARNING: Could not fill main image URL: {img_err}")
+
+
             # C. Toggle checkmarks (First toggle = Add to Top Stories, set to True)
             try:
                 cbs = page.locator('input[type="checkbox"]')
@@ -229,13 +300,42 @@ async def publish_to_zapway(article: dict) -> dict:
                 except Exception as e:
                     print(f"[PUBLISHER] ERROR filling section #{idx} heading: {e}")
 
+                # Extract bullets from content
+                cleaned_body, bullets = extract_bullets_from_content(sec_content)
+
                 # Fill body content
                 try:
                     body_el = page.locator('textarea[placeholder*="Section body text"]').nth(idx)
                     await body_el.scroll_into_view_if_needed()
-                    await body_el.fill(sec_content)
+                    await body_el.fill(cleaned_body if cleaned_body.strip() else "Detailed updates provided in the source.")
                 except Exception as e:
                     print(f"[PUBLISHER] ERROR filling section #{idx} body: {e}")
+
+                # Fill bullet points if they exist
+                if bullets:
+                    print(f"[PUBLISHER] Section #{idx} has {len(bullets)} bullets to fill...")
+                    for b_idx, bullet_text in enumerate(bullets):
+                        try:
+                            # Locate the + Bullet button inside the current section container
+                            add_bullet_btn = page.locator('.na-sec').nth(idx).locator('.na-bullets-head .na-add-btn')
+                            if await add_bullet_btn.count() > 0:
+                                await add_bullet_btn.scroll_into_view_if_needed()
+                                await add_bullet_btn.click()
+                                await asyncio.sleep(0.3)  # Wait for bullet field to render in UI
+                            else:
+                                print(f"[PUBLISHER] WARNING: + Bullet button not found in section #{idx}")
+                                break
+
+                            # Locate the newly added input field under .na-bullet-row
+                            bullet_inputs = page.locator('.na-sec').nth(idx).locator('.na-bullet-row input')
+                            if await bullet_inputs.count() > b_idx:
+                                input_field = bullet_inputs.nth(b_idx)
+                                await input_field.scroll_into_view_if_needed()
+                                await input_field.fill(bullet_text)
+                                print(f"[PUBLISHER] Filled bullet #{b_idx+1} in section #{idx}")
+                        except Exception as bullet_err:
+                            print(f"[PUBLISHER] ERROR filling bullet #{b_idx} in section #{idx}: {bullet_err}")
+
 
             # -- Step 4: Click the "Publish Story" submit button -------------
             print("[PUBLISHER] Submitting form...")
