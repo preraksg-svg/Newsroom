@@ -479,26 +479,81 @@ def _rewrite_article_fallback(content, url=None, title=None):
         words = [w for w in re.findall(r'\b\w+\b', headline) if len(w) > 4 and w.lower() not in ['electric', 'vehicle', 'vehicles', 'market', 'witnessing', 'massive', 'surge', 'significant', 'growth', 'about', 'regarding']]
         topic = " ".join(words[:2]).title() if words else "Global"
 
-    # Distribute unique sentences across sections to prevent repetition
-    body_sentences = unique_sentences[1:] if len(unique_sentences) > 1 else []
-    additional_input_text = " ".join(body_sentences)
+    # Parse original content for headings (starting with #, ##, or ###)
+    parsed_sections = []
+    if content:
+        lines = content.split('\n')
+        current_heading = None
+        current_content_lines = []
+        
+        for line in lines:
+            line_str = line.strip()
+            if not line_str:
+                continue
+            
+            # Check for header indicator
+            if line_str.startswith('#') or line_str.startswith('##') or line_str.startswith('###'):
+                # Save previous section if it exists
+                if current_heading or current_content_lines:
+                    heading_text = current_heading if current_heading else (title or "Overview")
+                    content_text = " ".join(current_content_lines)
+                    if len(content_text.strip()) > 10:
+                        parsed_sections.append({
+                            "heading": clean_voice_manifest_violations(heading_text),
+                            "content": clean_voice_manifest_violations(content_text)
+                        })
+                # Start new section
+                current_heading = line_str.lstrip('#').strip()
+                current_content_lines = []
+            else:
+                current_content_lines.append(line_str)
+                
+        # Append the last section
+        if current_heading or current_content_lines:
+            heading_text = current_heading if current_heading else (title or "Overview")
+            content_text = " ".join(current_content_lines)
+            if len(content_text.strip()) > 10:
+                parsed_sections.append({
+                    "heading": clean_voice_manifest_violations(heading_text),
+                    "content": clean_voice_manifest_violations(content_text)
+                })
 
-    if additional_input_text:
-        ai_summary_text = additional_input_text[:300]
-        last_b = max(ai_summary_text.rfind('.'), ai_summary_text.rfind('!'), ai_summary_text.rfind('?'))
-        if last_b != -1 and last_b > 50:
-            ai_summary_text = ai_summary_text[:last_b+1].strip()
+    # If no headings parsed, fall back to the generic 4-section layout
+    if len(parsed_sections) > 0:
+        sections = parsed_sections
+        ai_summary_text = sections[0]["content"][:300]
     else:
-        ai_summary_text = headline
-    key_points_text = f"* {headline}\n* Detailed updates provided in the source."
-    what_happened_text = additional_input_text if additional_input_text else headline
+        # Distribute unique sentences across sections to prevent repetition
+        body_sentences = unique_sentences[1:] if len(unique_sentences) > 1 else []
+        additional_input_text = " ".join(body_sentences)
 
-    sections = [
-        {"heading": f"{topic} EV Market Update", "content": ai_summary_text},
-        {"heading": "Key Developments", "content": key_points_text.replace("Key Points", "Developments")},
-        {"heading": "Why It Matters for EV Drivers", "content": what_happened_text},
-        {"heading": "ZAPWAY Relevance", "content": f"These grid and infrastructure expansions in the {topic} segment support cleaner highway navigation and route planning."}
-    ]
+        if additional_input_text:
+            ai_summary_text = additional_input_text[:300]
+            last_b = max(ai_summary_text.rfind('.'), ai_summary_text.rfind('!'), ai_summary_text.rfind('?'))
+            if last_b != -1 and last_b > 50:
+                ai_summary_text = ai_summary_text[:last_b+1].strip()
+        else:
+            ai_summary_text = headline
+        key_points_text = f"* {headline}\n* Detailed updates provided in the source."
+        what_happened_text = additional_input_text if additional_input_text else headline
+
+        sections = [
+            {"heading": f"{topic} EV Market Update", "content": ai_summary_text},
+            {"heading": "Key Developments", "content": key_points_text.replace("Key Points", "Developments")},
+            {"heading": "Why It Matters for EV Drivers", "content": what_happened_text},
+            {"heading": "ZAPWAY Relevance", "content": f"These grid and infrastructure expansions in the {topic} segment support cleaner highway navigation and route planning."}
+        ]
+
+    # Crawl main image url dynamically for fallback
+    fallback_images = []
+    if url:
+        try:
+            from zapway_publisher import fetch_main_image_url
+            img_url = fetch_main_image_url(url)
+            if img_url:
+                fallback_images = [img_url]
+        except Exception:
+            pass
 
     # Construct complete sentences for SEO metadata to avoid trailing dots or cut-off sentences
     seo_title = f"{topic} EV News & Market Analysis | ZAPWAY"
@@ -517,11 +572,12 @@ def _rewrite_article_fallback(content, url=None, title=None):
         "keywords": ["EV Charging", f"{topic} EV", "Electric Vehicles", "EV Infrastructure"],
         "sections": sections,
         "ai_summary": ai_summary_text,
-        "images": [],
+        "images": fallback_images,
         "audio": {},
         "source": "ZAPWAY System",
         "published_at": ""
     }
+
     
     return result
 
