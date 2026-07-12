@@ -676,10 +676,11 @@ export default function ArticleView() {
               ) : (
                 story?.url ? (
                   <iframe 
-                    src={story.url} 
+                    src={`${API_BASE}/api/proxy?url=${encodeURIComponent(story.url)}`} 
                     title="Original Source" 
                     style={{ width: '100%', height: '100%', border: 'none', background: '#fff' }} 
                   />
+
                 ) : (
                   <div style={{ padding: '40px', color: 'var(--text-muted)', textAlign: 'center', fontFamily: 'monospace', fontSize: '0.8rem' }}>
                     No source URL available for this article.

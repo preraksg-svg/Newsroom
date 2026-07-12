@@ -66,7 +66,22 @@ class NewsService:
         article = queries.fetch_story_by_id(article_id)
         if not article:
             raise Exception("Article not found")
-        return NewsService._parse_item(article)
+        item = NewsService._parse_item(article)
+        
+        # On-the-fly dynamic image crawling fallback for existing articles
+        if (not item.get("images") or len(item["images"]) == 0) and item.get("url"):
+            try:
+                from zapway_publisher import fetch_main_image_url
+                img_url = fetch_main_image_url(item["url"])
+                if img_url:
+                    item["images"] = [img_url]
+                    # Persist it to DB so we don't have to crawl again
+                    queries.update_story(article_id, "images", json.dumps([img_url]))
+            except Exception as e:
+                print(f"[DYNAMIC IMAGE] Failed to crawl: {e}")
+                
+        return item
+
 
     @staticmethod
     def update_article(article_id, data):
