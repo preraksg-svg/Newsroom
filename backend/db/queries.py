@@ -451,6 +451,17 @@ def create_draft(url, title, original_content, meta_title, meta_desc, keywords, 
                 sections = json.dumps(scores_dict["sections"])
             if "social_bundle" in scores_dict:
                 social_bundle = json.dumps(scores_dict["social_bundle"])
+            if "images" in scores_dict:
+                raw_imgs = scores_dict["images"]
+                if isinstance(raw_imgs, list):
+                    urls = []
+                    for item in raw_imgs:
+                        if isinstance(item, dict) and item.get("url"):
+                            urls.append(item.get("url"))
+                        elif isinstance(item, str):
+                            urls.append(item)
+                    images = json.dumps(urls)
+
 
         cur.execute('''
             INSERT INTO stories (

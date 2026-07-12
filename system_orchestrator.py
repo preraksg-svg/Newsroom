@@ -333,8 +333,10 @@ class NewsroomOrchestrator:
                 scores_dict={
                     "final_score": score_res['content_score'],
                     "sections": content_pkg['sections'],
-                    "ai_summary": content_pkg['summary']
+                    "ai_summary": content_pkg['summary'],
+                    "images": content_pkg.get("images", [])
                 },
+
                 seo_strategy=json.dumps(seo_pkg.get('strategy', {})),
                 seo_faq=json.dumps(seo_faq)
             )

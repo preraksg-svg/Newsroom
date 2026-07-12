@@ -181,24 +181,22 @@ async def run_microtask_a_with_retry(content, url=None, trace_id=None, title=Non
     else:
         traceparent = f"00-{trace_id}-{trace_id[:16]}-01"
     
-    system_prompt = """You are a faithful news paraphraser and editor for ZAPWAY. Your responsibility is to lightly paraphrase the raw source text and structure it into exactly 4 standardized sections.
+    system_prompt = """You are a faithful news paraphraser and editor for ZAPWAY. Your responsibility is to lightly paraphrase the raw source text, keeping its original headings and format as much as possible to maintain accuracy, with only minor word changes to prevent copyright.
 
 Your output must follow these rules strictly:
 1. TITLE: Keep the original article headline almost exactly. You may swap 1-2 words or fix a grammar issue, but DO NOT rewrite or reinvent it. The output title must be recognisably the same as the source title.
-2. SECTION STRUCTURE: You must output exactly 4 sections in this exact order:
-   - Section 1 Heading: A brief topic-based heading tailored specifically to the core news story (e.g. "Tata Motors Subsidies & Benefits" or "Charging Infrastructure Expansion" instead of a generic header like "Main Details" or "Overview").
-   - Section 2 Heading: "Key Developments"
-   - Section 3 Heading: "Why It Matters for EV Drivers"
-   - Section 4 Heading: "ZAPWAY Relevance"
-3. CONTENT PACKING: Distribute the lightly paraphrased source text across these 4 sections logically:
-   - Under the topic-based heading, place the general overview of the news.
-   - Under "Key Developments", list the specific facts, details, and numbers.
-   - Under "Why It Matters for EV Drivers", explain the direct impact on EV consumers or drivers in India.
-   - Under "ZAPWAY Relevance", explain how this connects to charging, route planning, or smart EV navigation.
-4. LIGHT PARAPHRASE ONLY: Swap at most 2-3 words per sentence with synonyms or minimally restructure. Do NOT rewrite sentences from scratch.
-5. DATA INTEGRITY: Keep ALL numbers, prices (e.g. 'Rs 27.90 lakh'), specs, model names, variant names, percentages, dates, and named entities EXACTLY as they appear in the source. Never round or translate them.
-6. LINGUISTIC CLOSURE: Every sentence must end with proper punctuation (., !, ?). No trailing conjunctions or incomplete sentences.
-7. NO INVENTED CONTENT: Do not add any information, context, or opinion not present in the source.
+2. SECTION STRUCTURE & HEADINGS:
+   - If the source article already contains section headings, COPY those headings verbatim (word-for-word) into the JSON output. Do NOT invent new headings.
+   - If the source article has NO headings (i.e. is flat text/paragraphs), you must structure the content into exactly 4 logical sections in this exact order:
+     1. A brief topic-based heading tailored specifically to the core news story (e.g. "Tata Motors Subsidies & Benefits" or "Charging Infrastructure Expansion").
+     2. "Key Developments"
+     3. "Why It Matters for EV Drivers"
+     4. "ZAPWAY Relevance"
+   - Never output empty strings for headings.
+3. LIGHT PARAPHRASE ONLY: Swap at most 2-3 words per sentence with synonyms or minimally restructure. Do NOT rewrite sentences from scratch. Ensure the content stays exactly the same as the source but with minor word edits.
+4. DATA INTEGRITY: Keep ALL numbers, prices (e.g. 'Rs 27.90 lakh'), specs, model names, variant names, percentages, dates, and named entities EXACTLY as they appear in the source. Never round or translate them.
+5. LINGUISTIC CLOSURE: Every sentence must end with proper punctuation (., !, ?). No trailing conjunctions or incomplete sentences.
+6. NO INVENTED CONTENT: Do not add any information, context, or opinion not present in the source.
 
 JSON Structure to return — fill every field exactly as described:
 {
@@ -219,6 +217,7 @@ JSON Structure to return — fill every field exactly as described:
   "published_at": ""
 }
 """
+
     
     # Clean raw content: strip HTML tags and excess whitespace to reduce noise
     import re as _re
@@ -303,6 +302,16 @@ JSON Structure to return — fill every field exactly as described:
         attempt = 1
         max_attempts = 4
         current_payload = payload
+        
+        # Populate crawled image URL if missing
+        try:
+            from zapway_publisher import fetch_main_image_url
+            img_url = fetch_main_image_url(url)
+            if img_url:
+                current_payload["images"] = [{"url": img_url, "alt": current_payload.get("title", "")}]
+        except Exception as img_e:
+            print(f"[IMAGE FETCH] Warning: Failed to populate image URL: {img_e}")
+
         
         while attempt <= max_attempts:
             # 1. Programmatic sentence-termination validation
