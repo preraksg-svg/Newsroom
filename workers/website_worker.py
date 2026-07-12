@@ -76,7 +76,12 @@ async def scrape_website(url: str):
                         for tag in soup.find_all(['h1', 'h2', 'h3', 'p']):
                             txt = tag.get_text(" ", strip=True)
                             if len(txt) > 30 and not bool(re.search(r'(subscribe|cookie|privacy|advertisement)', txt, re.I)):
-                                extracted_text.append(txt)
+                                if tag.name in ['h1', 'h2']:
+                                    extracted_text.append(f"## {txt}")
+                                elif tag.name == 'h3':
+                                    extracted_text.append(f"### {txt}")
+                                else:
+                                    extracted_text.append(txt)
                         if len(extracted_text) > 0:
                             article_content = "\n".join(extracted_text)
                 except:
@@ -152,7 +157,12 @@ async def scrape_website(url: str):
                             for tag in a_soup.find_all(['h1', 'h2', 'h3', 'p']):
                                 txt = tag.get_text(" ", strip=True)
                                 if len(txt) > 30 and not bool(re.search(r'(subscribe|cookie|privacy|advertisement)', txt, re.I)):
-                                    extracted_text.append(txt)
+                                    if tag.name in ['h1', 'h2']:
+                                        extracted_text.append(f"## {txt}")
+                                    elif tag.name == 'h3':
+                                        extracted_text.append(f"### {txt}")
+                                    else:
+                                        extracted_text.append(txt)
                             
                             if len(extracted_text) > 0:
                                 article_content = "\n".join(extracted_text)

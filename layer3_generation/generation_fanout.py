@@ -221,7 +221,31 @@ JSON Structure to return — fill every field exactly as described:
     
     # Clean raw content: strip HTML tags and excess whitespace to reduce noise
     import re as _re
+    # Reconstruct JSON structured content as markdown with headings/bullets
+    if isinstance(content, str) and content.strip().startswith('['):
+        try:
+            import json as _json
+            structured = _json.loads(content)
+            if isinstance(structured, list):
+                reconstructed = []
+                for item in structured:
+                    if isinstance(item, dict):
+                        tag = item.get("tag", "p")
+                        text = item.get("text", "")
+                        if tag in ["h1", "h2"]:
+                            reconstructed.append(f"## {text}")
+                        elif tag == "h3":
+                            reconstructed.append(f"### {text}")
+                        elif tag == "li":
+                            reconstructed.append(f"* {text}")
+                        else:
+                            reconstructed.append(text)
+                content = "\n\n".join(reconstructed)
+        except Exception:
+            pass
+            
     clean_content = (content or "")
+
     clean_content = _re.sub(r'<[^>]+>', ' ', clean_content)          # strip HTML tags
     clean_content = _re.sub(r'&[a-z]+;', ' ', clean_content)         # strip HTML entities
     clean_content = _re.sub(r'[ \t]{2,}', ' ', clean_content)        # collapse spaces
