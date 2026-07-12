@@ -75,11 +75,16 @@ async def scrape_website(url: str):
                         extracted_text = []
                         for tag in soup.find_all(['h1', 'h2', 'h3', 'p']):
                             txt = tag.get_text(" ", strip=True)
-                            if len(txt) > 30 and not bool(re.search(r'(subscribe|cookie|privacy|advertisement)', txt, re.I)):
-                                if tag.name in ['h1', 'h2']:
-                                    extracted_text.append(f"## {txt}")
-                                elif tag.name == 'h3':
-                                    extracted_text.append(f"### {txt}")
+                            if not txt:
+                                continue
+                            is_heading = tag.name in ['h1', 'h2', 'h3']
+                            min_len = 3 if is_heading else 30
+                            if len(txt) >= min_len and not bool(re.search(r'(subscribe|cookie|privacy|advertisement)', txt, re.I)):
+                                if is_heading:
+                                    if tag.name in ['h1', 'h2']:
+                                        extracted_text.append(f"## {txt}")
+                                    else:
+                                        extracted_text.append(f"### {txt}")
                                 else:
                                     extracted_text.append(txt)
                         if len(extracted_text) > 0:
@@ -156,11 +161,16 @@ async def scrape_website(url: str):
                             extracted_text = []
                             for tag in a_soup.find_all(['h1', 'h2', 'h3', 'p']):
                                 txt = tag.get_text(" ", strip=True)
-                                if len(txt) > 30 and not bool(re.search(r'(subscribe|cookie|privacy|advertisement)', txt, re.I)):
-                                    if tag.name in ['h1', 'h2']:
-                                        extracted_text.append(f"## {txt}")
-                                    elif tag.name == 'h3':
-                                        extracted_text.append(f"### {txt}")
+                                if not txt:
+                                    continue
+                                is_heading = tag.name in ['h1', 'h2', 'h3']
+                                min_len = 3 if is_heading else 30
+                                if len(txt) >= min_len and not bool(re.search(r'(subscribe|cookie|privacy|advertisement)', txt, re.I)):
+                                    if is_heading:
+                                        if tag.name in ['h1', 'h2']:
+                                            extracted_text.append(f"## {txt}")
+                                        else:
+                                            extracted_text.append(f"### {txt}")
                                     else:
                                         extracted_text.append(txt)
                             

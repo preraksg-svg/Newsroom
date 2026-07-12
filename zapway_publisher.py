@@ -242,9 +242,23 @@ async def publish_to_zapway(article: dict) -> dict:
             await fill_partial("Senior correspondent", "EV News Correspondent", "author_bio")
             await fill_exact("4 min read", read_time, "read_time")
 
-            # Fill Main Image URL (crawled dynamically from the original source)
+            # Fill Main Image URL (use stored image if available, fallback to crawl)
             try:
-                main_image_url = fetch_main_image_url(article.get("url", ""))
+                main_image_url = ""
+                stored_images = article.get("images", [])
+                if isinstance(stored_images, str):
+                    import json
+                    try:
+                        stored_images = json.loads(stored_images)
+                    except Exception:
+                        pass
+                
+                if isinstance(stored_images, list) and len(stored_images) > 0:
+                    main_image_url = stored_images[0]
+                    
+                if not main_image_url:
+                    main_image_url = fetch_main_image_url(article.get("url", ""))
+
                 if main_image_url:
                     img_el = page.locator('input[placeholder="images/hero.jpg"]').first
                     if await img_el.count() > 0:
