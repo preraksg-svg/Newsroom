@@ -34,6 +34,31 @@ class NewsService:
                         item[field] = {}
             elif val is None:
                 item[field] = [] if field in ['sections', 'images'] else {}
+                
+        # Reconstruct original content if it is JSON structured content
+        orig = item.get("original_content")
+        if isinstance(orig, str) and orig.strip().startswith('['):
+            try:
+                import json as _json
+                structured = _json.loads(orig)
+                if isinstance(structured, list):
+                    reconstructed = []
+                    for s_item in structured:
+                        if isinstance(s_item, dict):
+                            tag = s_item.get("tag", "p")
+                            text = s_item.get("text", "")
+                            if tag in ["h1", "h2"]:
+                                reconstructed.append(f"## {text}")
+                            elif tag == "h3":
+                                reconstructed.append(f"### {text}")
+                            elif tag == "li":
+                                reconstructed.append(f"* {text}")
+                            else:
+                                reconstructed.append(text)
+                    item["original_content"] = "\n\n".join(reconstructed)
+            except Exception:
+                pass
+                
         return item
 
     @staticmethod

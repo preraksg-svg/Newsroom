@@ -28,6 +28,28 @@ async def regenerate_all_drafts():
         title = row['title']
         content = row['original_content']
         
+        # Reconstruct JSON structured content if applicable
+        if isinstance(content, str) and content.strip().startswith('['):
+            try:
+                structured = json.loads(content)
+                if isinstance(structured, list):
+                    reconstructed = []
+                    for item in structured:
+                        if isinstance(item, dict):
+                            tag = item.get("tag", "p")
+                            text = item.get("text", "")
+                            if tag in ["h1", "h2"]:
+                                reconstructed.append(f"## {text}")
+                            elif tag == "h3":
+                                reconstructed.append(f"### {text}")
+                            elif tag == "li":
+                                reconstructed.append(f"* {text}")
+                            else:
+                                reconstructed.append(text)
+                    content = "\n\n".join(reconstructed)
+            except Exception:
+                pass
+        
         print(f"\n[REGEN] ({idx+1}/{len(drafts)}) Regenerating: {title[:50]}...")
         try:
             # Re-run LLM generation using the updated rules
@@ -57,9 +79,9 @@ async def regenerate_all_drafts():
                 # Update database
                 cur.execute("""
                     UPDATE stories 
-                    SET sections = ?, images = ?, meta_title = ?, meta_desc = ?, keywords = ?
+                    SET sections = ?, images = ?, meta_title = ?, meta_desc = ?, keywords = ?, original_content = ?
                     WHERE id = ?
-                """, (sections, images, meta_title, meta_desc, keywords, story_id))
+                """, (sections, images, meta_title, meta_desc, keywords, content, story_id))
                 conn.commit()
                 print(f"[REGEN] Successfully updated story ID: {story_id}")
             else:
