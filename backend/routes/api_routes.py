@@ -73,6 +73,19 @@ async def run_fast_scrape_background():
     except Exception as global_err:
         print(f"[FAST-SCRAPE] Error in fast scrape background task: {global_err}")
 
+@router.get("/migrate-drafts")
+async def api_migrate_drafts():
+    try:
+        import os
+        import sys
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from scratch.regenerate_drafts import regenerate_all_drafts
+        import asyncio
+        asyncio.create_task(regenerate_all_drafts())
+        return {"status": "success", "message": "Drafts regeneration migration started in the background."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 @router.get("/news")
 def get_news(
     background_tasks: BackgroundTasks,
