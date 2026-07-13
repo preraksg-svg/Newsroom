@@ -245,9 +245,30 @@ class NewsService:
                     _log("error", f"❌ Exception: {str(e)}", "error")
 
             # Build article dict with all fields needed by the publisher
+            import json as _json
+            raw_sections = article.get("sections")
+            sections_list = []
+            if isinstance(raw_sections, str) and raw_sections.strip():
+                try:
+                    sections_list = _json.loads(raw_sections)
+                except Exception:
+                    pass
+            elif isinstance(raw_sections, list):
+                sections_list = raw_sections
+
+            raw_images = article.get("images")
+            images_list = []
+            if isinstance(raw_images, str) and raw_images.strip():
+                try:
+                    images_list = _json.loads(raw_images)
+                except Exception:
+                    pass
+            elif isinstance(raw_images, list):
+                images_list = raw_images
+
             article_data = {
                 "title": article.get("title", ""),
-                "sections": article.get("sections", []),
+                "sections": sections_list,
                 "original_content": article.get("original_content", ""),
                 "ai_summary": article.get("ai_summary", ""),
                 "meta_title": article.get("meta_title", ""),
@@ -255,7 +276,9 @@ class NewsService:
                 "keywords": article.get("keywords", []),
                 "source": article.get("source", "Zapway Newsroom"),
                 "url": article.get("url", ""),
+                "images": images_list,
             }
+
 
             t = threading.Thread(target=_run_playwright_publisher, args=(article_data,), daemon=True)
             t.start()
