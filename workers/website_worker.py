@@ -126,6 +126,7 @@ async def scrape_single_article_page(url: str) -> str:
                 is_ordered = list_tag.name == 'ol'
                 list_items = []
                 for idx, li in enumerate(list_tag.find_all('li')):
+                    # Extract text from li, ignoring inner paragraphs returning empty or heading treats
                     li_txt = li.get_text(" ", strip=True)
                     if li_txt:
                         prefix = f"{idx+1}." if is_ordered else "*"
@@ -134,6 +135,10 @@ async def scrape_single_article_page(url: str) -> str:
                     # Create a new paragraph node containing the full list block
                     new_p = soup.new_tag("p")
                     new_p.string = "\n".join(list_items)
+                    # Decompose children inside list_tag first to avoid double parsing if any nested p tags exist
+                    for child in list(list_tag.children):
+                        if hasattr(child, 'decompose'):
+                            child.decompose()
                     list_tag.replace_with(new_p)
 
             for tag in soup.find_all(['h1', 'h2', 'h3', 'p', 'table']):
@@ -327,6 +332,10 @@ async def scrape_website(url: str):
                                 if list_items:
                                     new_p = a_soup.new_tag("p")
                                     new_p.string = "\n".join(list_items)
+                                    # Decompose children inside list_tag first to avoid double parsing if any nested p tags exist
+                                    for child in list(list_tag.children):
+                                        if hasattr(child, 'decompose'):
+                                            child.decompose()
                                     list_tag.replace_with(new_p)
 
                             extracted_text = []
