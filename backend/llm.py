@@ -154,9 +154,10 @@ Return ONLY the post content. No explanations."""
             log_groq_usage(completion.usage.total_tokens)
         return completion.choices[0].message.content.strip()
     except Exception as e:
-        if "rate_limit_exceeded" in str(e):
-            print(f"[LLM] Primary model rate limited in social post. Falling back to 8b-instant.")
-            try:
+        print(f"[LLM] Error or rate limit in generate_social_post: {e}")
+        try:
+            if "rate_limit_exceeded" in str(e):
+                print(f"[LLM] Primary model rate limited in social post. Falling back to 8b-instant.")
                 completion = client.chat.completions.create(
                     model="llama-3.1-8b-instant",
                     messages=[
@@ -167,11 +168,14 @@ Return ONLY the post content. No explanations."""
                     max_completion_tokens=1200
                 )
                 return completion.choices[0].message.content.strip()
-            except Exception as e2:
-                print(f"Error in generate_social_post fallback: {e2}")
-        else:
-            print(f"Error in generate_social_post: {e}")
-        return "Failed to generate social post. Please try again."
+        except Exception as e2:
+            print(f"[LLM] Fallback model failed: {e2}")
+            
+        # Return a robust local heuristic fallback if both Groq calls fail
+        clean_title = clean_headline_garbage(headline)
+        truncated_title = (clean_title[:180] + '...') if len(clean_title) > 180 else clean_title
+        link_str = f" Read more: {url}" if url else ""
+        return f"⚡ {truncated_title}\n\nExplore this story and stay ahead with the premier EV intelligence network.{link_str}\n\n#EVNews #Zapway #ElectricVehicles"
 
 def check_duplicate_news(new_title, existing_titles):
     """Uses LLM to detect if a news event has already been covered recently."""
