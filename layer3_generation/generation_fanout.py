@@ -331,14 +331,23 @@ JSON Structure to return — fill every field exactly as described:
         max_attempts = 4
         current_payload = payload
         
-        # Populate crawled image URLs if missing
+        # Extract cover image from inline ![alt](url) markers in sections,
+        # instead of re-scraping the source which causes duplicate images.
+        # Images are already embedded inline in sections — images[] is used
+        # only as the single cover/thumbnail for SEO og:image etc.
         try:
-            from zapway_publisher import fetch_all_image_urls
-            img_urls = fetch_all_image_urls(url)
-            if img_urls:
-                current_payload["images"] = [{"url": img_url, "alt": current_payload.get("title", "")} for img_url in img_urls]
+            import re as _img_re
+            cover_url = None
+            for sec in (current_payload.get("sections") or []):
+                sec_content = sec.get("content", "") if isinstance(sec, dict) else str(sec)
+                match = _img_re.search(r'!\[.*?\]\((https?://[^\)]+)\)', str(sec_content))
+                if match:
+                    cover_url = match.group(1)
+                    break
+            if cover_url:
+                current_payload["images"] = [{"url": cover_url, "alt": current_payload.get("title", "")}]
         except Exception as img_e:
-            print(f"[IMAGE FETCH] Warning: Failed to populate image URLs: {img_e}")
+            print(f"[IMAGE FETCH] Warning: Failed to extract cover image from sections: {img_e}")
 
         
         while attempt <= max_attempts:
