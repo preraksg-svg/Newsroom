@@ -83,9 +83,23 @@ def fetch_all_image_urls(url: str) -> list:
                 images.append(img_src.get("href"))
                 
             # 4. Crawl all <img> tags inside potential body/main wrappers or just generally
-            avoid_keywords = ['logo', 'avatar', 'icon', 'sprite', 'banner', 'spacer', 'loader', 'spinner', 'pixel', 'ad-', 'advertisement', 'widget', 'theme', 'header', 'footer']
+            avoid_keywords = [
+                'logo', 'avatar', 'icon', 'sprite', 'banner', 'spacer', 'loader', 'spinner', 
+                'pixel', 'ad-', 'advertisement', 'widget', 'theme', 'header', 'footer', 
+                'button', 'badge', 'menu', 'nav', 'placeholder', 'social', 'bg', 'background',
+                'thumb', 'author', 'profile', 'comment', 'search', 'arrow', 'newsletter', 'adchoices'
+            ]
             
             for img in soup.find_all("img"):
+                # Filter out small UI/icon images by checking width/height attributes if available
+                try:
+                    w = int(img.get("width", 200))
+                    h = int(img.get("height", 200))
+                    if w < 120 or h < 120:
+                        continue
+                except (ValueError, TypeError):
+                    pass
+                    
                 src = img.get("src") or img.get("data-src") or img.get("data-lazy-src") or img.get("data-original")
                 if not src:
                     continue
@@ -101,10 +115,16 @@ def fetch_all_image_urls(url: str) -> list:
     except Exception as e:
         print(f"[PUBLISHER] WARNING: Could not fetch all image URLs from original source: {e}")
         
+    # Strictly validate that we only keep image URLs that end with proper extensions or have image traits
+    # and exclude trackers/dynamic analytics pixels.
+    valid_exts = ('.jpg', '.jpeg', '.png', '.webp', '.gif')
     seen = set()
     unique_images = []
     for img in images:
-        if img not in seen:
+        img_lower = img.lower()
+        # Ensure it has a typical image extension, or is from an upload/media folder
+        has_img_trait = any(ext in img_lower for ext in valid_exts) or 'wp-content/uploads' in img_lower or 'media/' in img_lower
+        if has_img_trait and img not in seen:
             seen.add(img)
             unique_images.append(img)
     return unique_images
