@@ -641,7 +641,7 @@ body {
   
   .terminal-body {
     flex-direction: column !important;
-    overflow: visible !important;
+    overflow-y: auto !important;
     height: auto !important;
   }
   
@@ -649,11 +649,16 @@ body {
     padding: 24px 16px !important;
     overflow: visible !important;
     height: auto !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
   
   .split-view-panel {
     height: 500px !important;
-    overflow: hidden !important;
+    border-top: 1px solid var(--color-border) !important;
+    border-left: none !important;
+    flex: 0 0 500px !important;
   }
   
   .terminal-sidebar {
