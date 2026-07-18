@@ -70,12 +70,13 @@ def filter_article(title, content):
     t_lower = (title or "").lower()
     c_lower = (content or "").lower()
     
-    # 1. Heuristic Blacklist
+    # 1. Heuristic Blacklist (using exact word match boundary-anchoring)
     blacklist = ["phone", "smartphone", "mobile recharge", "ipl points", "orange cap", "purple cap", 
                  "cricket score", "recharge plan", "realme", "redmi", "galaxy", "oneplus", 
                  "xiaomi", "motorola", "iphone", "under 30000", "under 20000", "under 15000", "under 10000"]
     for word in blacklist:
-        if word in t_lower or word in c_lower:
+        pattern = r'\b' + re.escape(word) + r'\b'
+        if re.search(pattern, t_lower) or re.search(pattern, c_lower):
             return {"relevant": False, "reason": f"Heuristic match: Blacklisted term '{word}' found."}
             
     # 2. Heuristic Whitelist requirement
