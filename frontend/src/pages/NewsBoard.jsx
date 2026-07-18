@@ -84,9 +84,14 @@ function ArticleCard({ item, onClick, onReject, onRestore, onAction, isRecycleBi
           ) : (
             <>
               {status === 'Draft' && (
-                <button className="btn btn-primary" style={{ height: '32px', padding: '0 12px', fontSize: '0.65rem', background: 'var(--c-green)', color: '#000' }} onClick={handleApprove}>
-                  <Star size={12} /> APPROVE
-                </button>
+                <>
+                  <button className="btn btn-primary" style={{ height: '32px', padding: '0 12px', fontSize: '0.65rem', background: 'var(--c-green)', color: '#000' }} onClick={handleApprove}>
+                    <Star size={12} /> APPROVE
+                  </button>
+                  <button className="btn btn-primary" style={{ height: '32px', padding: '0 12px', fontSize: '0.65rem', marginLeft: '8px' }} onClick={handlePublish}>
+                    <ExternalLink size={12} /> PUBLISH
+                  </button>
+                </>
               )}
               {status === 'Approved' && (
                 <button className="btn btn-primary" style={{ height: '32px', padding: '0 12px', fontSize: '0.65rem' }} onClick={handlePublish}>
