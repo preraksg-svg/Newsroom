@@ -63,17 +63,42 @@ async def scrape_single_article_page(url: str) -> str:
         if req.status_code == 200:
             soup = BeautifulSoup(req.text, 'html.parser')
             extracted_text = []
+            skip_until_next_heading = False
             for tag in soup.find_all(['h1', 'h2', 'h3', 'p', 'li', 'table']):
                 if tag.name == 'table':
-                    table_md = table_to_markdown(tag)
-                    if table_md:
-                        extracted_text.append(table_md)
+                    if not skip_until_next_heading:
+                        table_md = table_to_markdown(tag)
+                        if table_md:
+                            extracted_text.append(table_md)
                     continue
                 txt = tag.get_text(" ", strip=True)
                 if not txt:
                     continue
                 is_heading = tag.name in ['h1', 'h2', 'h3']
                 is_li = tag.name == 'li'
+                
+                txt_lower = txt.lower()
+                if is_heading:
+                    # Ignore generic layout navigation headings
+                    layout_noise = ["top stories", "latest videos", "network18 updates", "recent posts", "popular tags", "related content", "recommended stories", "trending", "must read", "popular videos", "latest news", "overdrive sites", "better photography", "better interiors", "moneycontrol", "firstpost", "news18", "copyright", "follow the market", "follow us", "latest updates"]
+                    
+                    is_date = False
+                    try:
+                        from dateutil import parser as date_parser
+                        date_parser.parse(txt)
+                        is_date = True
+                    except:
+                        pass
+                    
+                    if is_date or txt_lower.startswith("by ") or (len(txt.split()) <= 3 and any(pub in txt_lower for pub in ["autocar", "overdrive", "evo", "news", "date", "author", "published", "correspondent", "team"])) or any(kw in txt_lower for kw in layout_noise):
+                        skip_until_next_heading = True
+                        continue
+                    else:
+                        skip_until_next_heading = False
+                
+                if skip_until_next_heading:
+                    continue
+                    
                 min_len = 3 if is_heading else (1 if is_li else 30)
                 
                 SOCIAL_NAV_NOISE = re.compile(
@@ -86,6 +111,11 @@ async def scrape_single_article_page(url: str) -> str:
                     (len(txt.split()) <= 2 and not any(c.isdigit() for c in txt))
                 )
                 if is_nav_noise:
+                    continue
+                
+                # Check for footer/copyright text noise
+                general_noise = ["copyright ©", "all rights reserved", "india’s largest auto media", "better photography", "better interiors", "moneycontrol", "firstpost", "news18"]
+                if any(noise in txt_lower for noise in general_noise):
                     continue
                     
                 if len(txt) >= min_len and not bool(re.search(r'(subscribe|cookie|privacy|advertisement)', txt, re.I)):
@@ -231,33 +261,51 @@ async def scrape_website(url: str):
                         if article_req.status_code == 200:
                             a_soup = BeautifulSoup(article_req.text, 'html.parser')
                             extracted_text = []
+                            skip_until_next_heading = False
                             for tag in a_soup.find_all(['h1', 'h2', 'h3', 'p', 'li', 'table']):
                                 if tag.name == 'table':
-                                    table_md = table_to_markdown(tag)
-                                    if table_md:
-                                        extracted_text.append(table_md)
+                                    if not skip_until_next_heading:
+                                        table_md = table_to_markdown(tag)
+                                        if table_md:
+                                            extracted_text.append(table_md)
                                     continue
                                 txt = tag.get_text(" ", strip=True)
                                 if not txt:
                                     continue
                                 is_heading = tag.name in ['h1', 'h2', 'h3']
                                 is_li = tag.name == 'li'
+                                
+                                txt_lower = txt.lower()
+                                if is_heading:
+                                    # Ignore generic layout navigation headings
+                                    layout_noise = ["top stories", "latest videos", "network18 updates", "recent posts", "popular tags", "related content", "recommended stories", "trending", "must read", "popular videos", "latest news", "overdrive sites", "better photography", "better interiors", "moneycontrol", "firstpost", "news18", "copyright", "follow the market", "follow us", "latest updates"]
+                                    
+                                    is_date = False
+                                    try:
+                                        from dateutil import parser as date_parser
+                                        date_parser.parse(txt)
+                                        is_date = True
+                                    except:
+                                        pass
+                                    
+                                    if is_date or txt_lower.startswith("by ") or (len(txt.split()) <= 3 and any(pub in txt_lower for pub in ["autocar", "overdrive", "evo", "news", "date", "author", "published", "correspondent", "team"])) or any(kw in txt_lower for kw in layout_noise):
+                                        skip_until_next_heading = True
+                                        continue
+                                    else:
+                                        skip_until_next_heading = False
+                                
+                                if skip_until_next_heading:
+                                    continue
+                                    
                                 min_len = 3 if is_heading else (1 if is_li else 30)
+                                
+                                # Check for footer/copyright text noise
+                                general_noise = ["copyright ©", "all rights reserved", "india’s largest auto media", "better photography", "better interiors", "moneycontrol", "firstpost", "news18"]
+                                if any(noise in txt_lower for noise in general_noise):
+                                    continue
+                                    
                                 if len(txt) >= min_len and not bool(re.search(r'(subscribe|cookie|privacy|advertisement)', txt, re.I)):
                                     if is_heading:
-                                        # Ignore publication dates, authors, and publisher signatures from layout headings
-                                        txt_lower = txt.lower()
-                                        is_date = False
-                                        try:
-                                            from dateutil import parser as date_parser
-                                            date_parser.parse(txt)
-                                            is_date = True
-                                        except:
-                                            pass
-                                        
-                                        if is_date or txt_lower.startswith("by ") or (len(txt.split()) <= 3 and any(pub in txt_lower for pub in ["autocar", "overdrive", "evo", "news", "date", "author", "published", "correspondent", "team"])):
-                                            continue
-
                                         if tag.name in ['h1', 'h2']:
                                             extracted_text.append(f"## {txt}")
                                         else:
