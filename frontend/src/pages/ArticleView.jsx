@@ -581,7 +581,20 @@ export default function ArticleView() {
                           })}
                         </div>
                       ) : (
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{textValue}</p>
+                        <div style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.6' }}>
+                          {textValue.split('\n').map((line, lineIdx) => {
+                            const trimmed = line.trim();
+                            const match = trimmed.match(/^([\*\-\u2022]|(?:\d+\.))\s+(.*)$/);
+                            if (match) {
+                              return (
+                                <ul key={lineIdx} style={{ margin: '4px 0 4px 20px', paddingLeft: '0', listStyleType: 'disc' }}>
+                                  <li style={{ color: 'var(--text-secondary)' }}>{match[2]}</li>
+                                </ul>
+                              );
+                            }
+                            return <p key={lineIdx} style={{ margin: '0 0 8px 0', whiteSpace: 'pre-wrap' }}>{line}</p>;
+                          })}
+                        </div>
                       )}
                     </>
                   )}
@@ -641,6 +654,37 @@ export default function ArticleView() {
                   </div>
                 ))}
               </div>
+              {isEditMode && (
+                <div style={{ display: 'flex', gap: '12px', marginTop: '16px', marginBottom: '24px' }}>
+                  <input 
+                    id="new-image-url-input"
+                    type="text" 
+                    placeholder="Enter new image URL..." 
+                    style={{ flex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)', borderRadius: '6px', padding: '10px 14px', color: '#fff', outline: 'none' }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.target.value.trim()) {
+                        const newImages = [...images, e.target.value.trim()]
+                        handleInputChange('images', JSON.stringify(newImages))
+                        e.target.value = ''
+                      }
+                    }}
+                  />
+                  <button 
+                    className="btn btn-primary" 
+                    style={{ height: 'auto', padding: '0 20px', fontSize: '0.75rem' }}
+                    onClick={() => {
+                      const input = document.getElementById('new-image-url-input')
+                      if (input && input.value.trim()) {
+                        const newImages = [...images, input.value.trim()]
+                        handleInputChange('images', JSON.stringify(newImages))
+                        input.value = ''
+                      }
+                    }}
+                  >
+                    ADD IMAGE
+                  </button>
+                </div>
+              )}
               {audio.url && (
                 <div className="control-block" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                   <Music className="text-cyan" />
