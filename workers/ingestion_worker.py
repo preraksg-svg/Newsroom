@@ -18,9 +18,9 @@ from scraper_manager import global_queue
 # Setup logging
 logger = logging.getLogger("ingestion_daemon")
 
-# Circuit breaker config
-MAX_CONSECUTIVE_FAILURES = 3
-QUARANTINE_DURATION = 1800  # 30 minutes
+# Circuit breaker config — lenient thresholds to prevent over-quarantine
+MAX_CONSECUTIVE_FAILURES = 5   # was 3; sources need 5 consecutive fails before quarantine
+QUARANTINE_DURATION = 300      # was 1800 (30min); now 5 minutes — sources recover quickly
 
 # In-memory circuit breaker status mapping
 # Format: { source_id: { "state": "CLOSED"/"OPEN"/"HALF-OPEN", "failures": int, "quarantined_until": float } }

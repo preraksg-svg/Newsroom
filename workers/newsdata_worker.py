@@ -56,9 +56,15 @@ async def scrape_newsdata(domain_or_query: str):
                 # Enforce full news scraping
                 from workers.website_worker import scrape_single_article_page
                 content = await scrape_single_article_page(link)
-                if not content.strip() or len(content.split()) < 120 or content.strip().endswith("...") or content.strip().endswith("…"):
-                    logger.warning(f"[NewsData] Skipping truncated or half-news: {link}")
-                    continue
+                if not content.strip() or len(content.split()) < 50 or content.strip().endswith("...") or content.strip().endswith("…"):
+                    # Accept the article body from NewsData as fallback if available
+                    body_fallback = article.get("content", "") or article.get("description", "")
+                    body_fallback = body_fallback.strip() if body_fallback else ""
+                    if body_fallback and len(body_fallback.split()) >= 20:
+                        content = body_fallback
+                    else:
+                        logger.warning(f"[NewsData] Skipping too-short/truncated entry: {link}")
+                        continue
                     
                 title = article.get("title", "")
                 source_name = article.get("source_id", "NewsData")

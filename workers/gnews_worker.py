@@ -55,9 +55,14 @@ async def scrape_gnews(domain_or_query: str):
                 # Enforce full news scraping
                 from workers.website_worker import scrape_single_article_page
                 content = await scrape_single_article_page(link)
-                if not content.strip() or len(content.split()) < 120 or content.strip().endswith("...") or content.strip().endswith("…"):
-                    logger.warning(f"[GNews] Skipping truncated or half-news: {link}")
-                    continue
+                if not content.strip() or len(content.split()) < 50 or content.strip().endswith("...") or content.strip().endswith("…"):
+                    # Short summary still accepted as fallback if it is the only content
+                    summary_fallback = article.get("description", "").strip()
+                    if summary_fallback and len(summary_fallback.split()) >= 20:
+                        content = summary_fallback
+                    else:
+                        logger.warning(f"[GNews] Skipping too-short/truncated entry: {link}")
+                        continue
                     
                 title = article.get("title", "")
                 source_name = article.get("source", {}).get("name", "GNews")

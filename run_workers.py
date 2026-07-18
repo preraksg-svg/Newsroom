@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from backend.db.queries import init_db
 from bandit_engine import initialize_bandit_engine
 from learning_engine import initialize_learning_engine
@@ -19,6 +20,23 @@ async def main():
     print("[INIT] Starting ZAPWAY Production-Grade Worker Engine...")
 
     init_db()
+    
+    # AUTO-RESET: clear circuit breakers on every startup so stale quarantine state
+    # from a previous crash/deploy never blocks scraping indefinitely.
+    try:
+        import json, sqlite3
+        _db_path = os.path.join(os.path.dirname(__file__), 'newsroom.db')
+        _cb_path = os.path.join(os.path.dirname(__file__), 'scratch', 'circuit_breakers.json')
+        _conn = sqlite3.connect(_db_path)
+        _conn.execute("UPDATE source_scores SET failure_count=0 WHERE activity_status='active'")
+        _conn.commit()
+        _conn.close()
+        if os.path.exists(_cb_path):
+            with open(_cb_path, 'w') as _f:
+                json.dump({}, _f)
+        print("[INIT] Circuit breakers reset. All active sources unblocked.")
+    except Exception as _ce:
+        print(f"[INIT] Warning: circuit breaker reset failed: {_ce}")
     
     # Upsert/Sync sources on start to update domains and sync registry changes
     try:
