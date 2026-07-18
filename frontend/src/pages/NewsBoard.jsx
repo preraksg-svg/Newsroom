@@ -75,8 +75,8 @@ function ArticleCard({ item, onClick, onReject, onRestore, onAction, isRecycleBi
         </span>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
-        <div style={{ display: 'flex', gap: '8px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid var(--color-border)', gap: '12px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           {isRecycleBin ? (
             <button className="btn btn-ghost" style={{ height: '32px', padding: '0 12px', fontSize: '0.65rem' }} onClick={handleRestore}>
               <RotateCcw size={12} /> RESTORE

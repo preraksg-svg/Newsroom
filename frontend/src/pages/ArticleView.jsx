@@ -391,7 +391,7 @@ export default function ArticleView() {
   return (
     <div className="intelligence-terminal">
       <div className="terminal-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           <button className="btn btn-ghost" onClick={() => navigate('/news')}>&lt;- GO TO KANBAN</button>
           <div className={`edit-toggle ${isEditMode ? 'active' : ''}`} onClick={() => setIsEditMode(!isEditMode)}>
             {isEditMode ? <Save size={14} /> : <Edit2 size={14} />}
