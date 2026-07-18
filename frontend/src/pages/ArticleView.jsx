@@ -250,8 +250,8 @@ export default function ArticleView() {
       setSplitViewUrl('https://zapway.app/News/insert_news')
       setIsSplitView(true)
       
-      // Open the original source article in a new tab
-      if (story?.url) {
+      // Open the original source article in a new tab (only on desktop)
+      if (story?.url && window.innerWidth > 768) {
         window.open(story.url, '_blank', 'noopener,noreferrer')
       }
     }
@@ -431,7 +431,7 @@ export default function ArticleView() {
                 setSplitViewTab('logs')
                 setSplitViewUrl('https://zapway.app/News/insert_news')
                 setIsSplitView(true)
-                if (story?.url) {
+                if (story?.url && window.innerWidth > 768) {
                   window.open(story.url, '_blank', 'noopener,noreferrer')
                 }
               }}
@@ -463,7 +463,7 @@ export default function ArticleView() {
       </div>
 
       <div className="terminal-body">
-        <div className="terminal-content" style={{ flex: isSplitView ? '0 0 50%' : '1' }}>
+        <div className="terminal-content" style={{ flex: isSplitView && window.innerWidth > 768 ? '0 0 50%' : '1' }}>
           {/* SEO META BLOCK ABOVE HEADLINE */}
           <div style={{ background: 'rgba(0, 240, 255, 0.03)', border: '1px dashed rgba(0, 240, 255, 0.2)', borderRadius: '8px', padding: '16px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -652,7 +652,7 @@ export default function ArticleView() {
         </div>
 
         {isSplitView && (
-          <div className="terminal-content" style={{ flex: '0 0 50%', borderLeft: '1px solid var(--color-border)', background: '#080c10', display: 'flex', flexDirection: 'column', padding: 0 }}>
+          <div className="terminal-content" style={{ flex: window.innerWidth > 768 ? '0 0 50%' : '1 1 auto', borderLeft: window.innerWidth > 768 ? '1px solid var(--color-border)' : 'none', borderTop: window.innerWidth > 768 ? 'none' : '1px solid var(--color-border)', background: '#080c10', display: 'flex', flexDirection: 'column', padding: 0 }}>
             {/* Header bar */}
             <div style={{ margin: '0', padding: '12px 16px', background: 'rgba(0,240,255,0.06)', borderBottom: '1px solid rgba(0,240,255,0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
