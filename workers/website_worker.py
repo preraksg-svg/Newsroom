@@ -176,8 +176,8 @@ async def scrape_website(url: str):
                 except:
                     timestamp = int(time.time())
                 
-                # Check if news is older than 24 hours (86400 seconds)
-                if int(time.time()) - timestamp > 86400:
+                # Check if news is older than 48 hours (172800 seconds)
+                if int(time.time()) - timestamp > 172800:
                     continue
 
                 results.append({
@@ -272,8 +272,8 @@ async def scrape_website(url: str):
                                     except:
                                         pass
                                 
-                                # Check if news is older than 24 hours
-                                if int(time.time()) - timestamp > 86400:
+                                # Check if news is older than 48 hours
+                                if int(time.time()) - timestamp > 172800:
                                     continue
 
                                 results.append({
