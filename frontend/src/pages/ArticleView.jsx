@@ -305,6 +305,12 @@ export default function ArticleView() {
     onSuccess: () => {
       setIsEditMode(false)
       refetch()
+      if (story?.status === 'Published') {
+        setIsPublishing(true)
+        setSplitViewTab('logs')
+        setSplitViewUrl('https://zapway.app/News/insert_news')
+        setIsSplitView(true)
+      }
     }
   })
 
@@ -370,7 +376,10 @@ export default function ArticleView() {
 
   const normalizeUrl = (url) => {
     if (!url) return ''
-    if (url.startsWith('http') || url.startsWith('data:')) return url
+    if (url.startsWith('http://')) {
+      return url.replace('http://', 'https://')
+    }
+    if (url.startsWith('https://') || url.startsWith('data:')) return url
     return `${API_BASE}${url}`
   }
 
@@ -429,6 +438,20 @@ export default function ArticleView() {
               disabled={actionLoading === 'publish_article'}
             >
               {actionLoading === 'publish_article' ? '⚡ PUBLISHING...' : '🚀 PUBLISH TO ZAPWAY'}
+            </button>
+          )}
+          {story.status === 'Published' && (
+            <button 
+              className="btn btn-ghost" 
+              style={{ color: 'var(--c-magenta)', border: '1px solid var(--c-magenta)' }}
+              onClick={() => {
+                if (confirm('Move this article back to Drafts?')) {
+                  actionMutation.mutate({ action: 'revert_to_draft' })
+                }
+              }}
+              disabled={actionLoading === 'revert_to_draft'}
+            >
+              {actionLoading === 'revert_to_draft' ? 'REVERTING...' : 'REVERT TO DRAFT'}
             </button>
           )}
           {isEditMode && (
@@ -678,9 +701,9 @@ export default function ArticleView() {
                   <iframe 
                     src={`${API_BASE}/api/proxy?url=${encodeURIComponent(story.url)}`} 
                     title="Original Source" 
+                    sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
                     style={{ width: '100%', height: '100%', border: 'none', background: '#fff' }} 
                   />
-
                 ) : (
                   <div style={{ padding: '40px', color: 'var(--text-muted)', textAlign: 'center', fontFamily: 'monospace', fontSize: '0.8rem' }}>
                     No source URL available for this article.

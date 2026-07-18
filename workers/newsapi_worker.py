@@ -68,12 +68,22 @@ async def scrape_newsapi(domain_or_query: str):
             articles = data.get("articles", {}).get("results", [])
             
             for article in articles:
-                content = article.get("body") or article.get("title", "")
-                if not content:
+                link = article.get("url", "")
+                if not link:
                     continue
                     
+                content = article.get("body") or ""
+                # Check if body is truncated or too short, if so try to scrape the full article
+                if not content.strip() or len(content.split()) < 120 or content.strip().endswith("...") or content.strip().endswith("…"):
+                    from workers.website_worker import scrape_single_article_page
+                    scraped = await scrape_single_article_page(link)
+                    if scraped.strip() and len(scraped.split()) >= 120 and not (scraped.strip().endswith("...") or scraped.strip().endswith("…")):
+                        content = scraped
+                    else:
+                        logger.warning(f"[NewsAPI] Skipping truncated or half-news: {link}")
+                        continue
+                    
                 title = article.get("title", "")
-                link = article.get("url", "")
                 source_name = article.get("source", {}).get("title", "NewsAPI")
                 author = article.get("authors", [{}])[0].get("name", source_name) if article.get("authors") else source_name
                 

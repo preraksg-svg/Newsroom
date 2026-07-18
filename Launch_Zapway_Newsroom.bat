@@ -14,6 +14,10 @@ start "" cmd /k "python -m backend.main"
 echo 1.5. Starting Background Workers...
 start "" cmd /k "python run_workers.py"
 
+:: Start the watchdog self-healing monitor
+echo 1.8. Starting Watchdog Monitor...
+start "" cmd /k "python scripts/watchdog.py"
+
 :: Wait for server to boot
 timeout /t 3 /nobreak >nul
 

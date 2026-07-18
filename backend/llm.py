@@ -51,6 +51,20 @@ def get_groq_client():
         print(f"[LLM] ERROR: Failed to initialize Groq client: {e}")
         return None
 
+def is_india_relevant(title, content):
+    """Helper to verify if the text is relevant to India."""
+    text = f"{title or ''} {content or ''}".lower()
+    india_keywords = [
+        "india", "indian", "delhi", "mumbai", "bengaluru", "bangalore", "pune", "hyderabad", 
+        "chennai", "kolkata", "gujarat", "maharashtra", "karnataka", "tamil nadu", "haryana",
+        "tata", "mahindra", "ola electric", "ather", "tvs motor", "vida", "bajaj", "revolt", 
+        "yulu", "statiq", "chargezone", "zeon", "ola s1", "chetak", "amg", "hero motocorp", 
+        "fame-ii", "fame-iii", "fame scheme", "niti aayog", "gadkari", "road transport", 
+        "arai", "byd india", "mg motor india", "mg zs ev", "comet ev", "tiago ev", "nexon ev", 
+        "punch ev", "xuv400", "windsor ev"
+    ]
+    return any(kw in text for kw in india_keywords)
+
 def filter_article(title, content):
     """Returns dict with 'relevant' boolean and 'reason' using Llama 3 8B."""
     t_lower = (title or "").lower()
@@ -90,7 +104,9 @@ def filter_article(title, content):
     """
     client = get_groq_client()
     if not client:
-        return {"relevant": True, "reason": "AI services unavailable, defaulting to relevant."}
+        if is_india_relevant(title, content):
+            return {"relevant": True, "reason": "AI services unavailable, but has strong India EV keywords."}
+        return {"relevant": False, "reason": "AI services unavailable, and no strong India EV keywords."}
     try:
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
@@ -103,8 +119,10 @@ def filter_article(title, content):
             log_groq_usage(response.usage.total_tokens)
         return json.loads(response.choices[0].message.content)
     except Exception as e:
-        print(f"Filtering error (Failing OPEN): {e}")
-        return {"relevant": True, "reason": "Error parsing Groq response (Failed Open)"}
+        print(f"Filtering error (Failing CLOSED): {e}")
+        if is_india_relevant(title, content):
+            return {"relevant": True, "reason": f"Error parsing Groq response ({e}), but has strong India EV keywords."}
+        return {"relevant": False, "reason": f"Error parsing Groq response ({e}), failing closed."}
 
 def generate_social_post(headline: str, summary: str, url: str = "") -> str:
     """Generates a viral social media post (Twitter/LinkedIn style) based on the article."""
@@ -283,11 +301,14 @@ def _rewrite_article_fallback(content, url=None, title=None):
     content_lower = (content or "").lower()
     matched_company = None
     min_index = len(content_lower) + 1
+    import re
     for company in ev_companies:
-        idx = content_lower.find(company.lower())
-        if idx != -1 and idx < min_index:
-            min_index = idx
-            matched_company = company
+        match = re.search(r'\b' + re.escape(company.lower()) + r'\b', content_lower)
+        if match:
+            idx = match.start()
+            if idx < min_index:
+                min_index = idx
+                matched_company = company
             
     # Deterministic variation using hash of content
     import hashlib
@@ -479,7 +500,7 @@ def _rewrite_article_fallback(content, url=None, title=None):
         words = [w for w in re.findall(r'\b\w+\b', headline) if len(w) > 4 and w.lower() not in ['electric', 'vehicle', 'vehicles', 'market', 'witnessing', 'massive', 'surge', 'significant', 'growth', 'about', 'regarding']]
         topic = " ".join(words[:2]).title() if words else "Global"
 
-    # Parse original content for headings (starting with #, ##, or ###)
+    # Parse original content for headings (starting with #, ##, or ###, or short lines acting as headings)
     parsed_sections = []
     if content:
         lines = content.split('\n')
@@ -491,8 +512,18 @@ def _rewrite_article_fallback(content, url=None, title=None):
             if not line_str:
                 continue
             
-            # Check for header indicator
-            if line_str.startswith('#') or line_str.startswith('##') or line_str.startswith('###'):
+            # Smart heading check:
+            # 1. Starts with markdown heading marker (#, ##, ###)
+            # 2. Or is a short line without ending punctuation and not starting with bullet point marker (*, -, 1.)
+            is_md_heading = line_str.startswith('#') or line_str.startswith('##') or line_str.startswith('###')
+            is_plain_heading = (
+                len(line_str) < 70 
+                and len(line_str) > 3
+                and not line_str.endswith(('.', '!', '?', ',', ';'))
+                and not line_str.startswith(('*', '-', '+', '•', '1.', '2.', '3.'))
+            )
+            
+            if is_md_heading or is_plain_heading:
                 # Save previous section if it exists
                 if current_heading or current_content_lines:
                     heading_text = current_heading if current_heading else (title or "Overview")

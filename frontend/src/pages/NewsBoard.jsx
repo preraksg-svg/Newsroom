@@ -35,6 +35,13 @@ function ArticleCard({ item, onClick, onReject, onRestore, onAction, isRecycleBi
     onAction('approve_article', item.id)
   }
 
+  const handleRevertToDraft = (e) => {
+    e.stopPropagation()
+    if (confirm('Move this article back to Drafts?')) {
+      onAction('revert_to_draft', item.id)
+    }
+  }
+
   const handlePublish = (e) => {
     e.stopPropagation()
     // Navigate to the article detail view first, passing state so ArticleView knows to trigger the publishing and open the split view
@@ -92,7 +99,12 @@ function ArticleCard({ item, onClick, onReject, onRestore, onAction, isRecycleBi
                 </button>
               )}
               {status === 'Published' && (
-                <span className="badge badge-cyan" style={{ border: 'none', background: 'rgba(0,240,255,0.05)' }}>LIVE ON PORTAL</span>
+                <>
+                  <span className="badge badge-cyan" style={{ border: 'none', background: 'rgba(0,240,255,0.05)' }}>LIVE ON PORTAL</span>
+                  <button className="btn btn-ghost" style={{ height: '32px', padding: '0 12px', fontSize: '0.65rem', marginLeft: '8px' }} onClick={handleRevertToDraft}>
+                    <RotateCcw size={12} /> REVERT TO DRAFT
+                  </button>
+                </>
               )}
             </>
           )}

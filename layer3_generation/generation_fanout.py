@@ -197,6 +197,7 @@ Your output must follow these rules strictly:
 4. DATA INTEGRITY: Keep ALL numbers, prices (e.g. 'Rs 27.90 lakh'), specs, model names, variant names, percentages, dates, and named entities EXACTLY as they appear in the source. Never round or translate them.
 5. LINGUISTIC CLOSURE: Every sentence must end with proper punctuation (., !, ?). No trailing conjunctions or incomplete sentences.
 6. NO INVENTED CONTENT: Do not add any information, context, or opinion not present in the source.
+7. PRESERVE LISTS & TABLES: If the source text contains bullet points, lists, or tables (in markdown format, e.g. lines starting with * or structured as | cell |), you MUST preserve their structure, formatting, and layout in the paraphrased sections. Do NOT convert tables or lists into regular prose paragraphs. Keep tables as markdown tables, and list items as bulleted list items.
 
 JSON Structure to return — fill every field exactly as described:
 {
@@ -238,6 +239,8 @@ JSON Structure to return — fill every field exactly as described:
                             reconstructed.append(f"### {text}")
                         elif tag == "li":
                             reconstructed.append(f"* {text}")
+                        elif tag == "table":
+                            reconstructed.append(text)
                         else:
                             reconstructed.append(text)
                 content = "\n\n".join(reconstructed)
@@ -327,14 +330,14 @@ JSON Structure to return — fill every field exactly as described:
         max_attempts = 4
         current_payload = payload
         
-        # Populate crawled image URL if missing
+        # Populate crawled image URLs if missing
         try:
-            from zapway_publisher import fetch_main_image_url
-            img_url = fetch_main_image_url(url)
-            if img_url:
-                current_payload["images"] = [{"url": img_url, "alt": current_payload.get("title", "")}]
+            from zapway_publisher import fetch_all_image_urls
+            img_urls = fetch_all_image_urls(url)
+            if img_urls:
+                current_payload["images"] = [{"url": img_url, "alt": current_payload.get("title", "")} for img_url in img_urls]
         except Exception as img_e:
-            print(f"[IMAGE FETCH] Warning: Failed to populate image URL: {img_e}")
+            print(f"[IMAGE FETCH] Warning: Failed to populate image URLs: {img_e}")
 
         
         while attempt <= max_attempts:

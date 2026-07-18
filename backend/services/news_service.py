@@ -53,12 +53,32 @@ class NewsService:
                                 reconstructed.append(f"### {text}")
                             elif tag == "li":
                                 reconstructed.append(f"* {text}")
+                            elif tag == "table":
+                                reconstructed.append(text)
                             else:
                                 reconstructed.append(text)
                     item["original_content"] = "\n\n".join(reconstructed)
             except Exception:
                 pass
                 
+        # Table fallback injection mechanism
+        orig_content = item.get("original_content") or ""
+        sections = item.get("sections") or []
+        if isinstance(sections, list) and sections and isinstance(orig_content, str):
+            has_table_in_sections = any('|' in str(s.get('content', '')) and '---' in str(s.get('content', '')) for s in sections)
+            if not has_table_in_sections and '|' in orig_content and '---' in orig_content:
+                import re as _re
+                # Match consecutive lines starting and ending with |
+                table_pattern = _re.compile(r'((?:^\|[^\n]+\|\r?\n?)+)', _re.MULTILINE)
+                table_matches = table_pattern.findall(orig_content)
+                if table_matches:
+                    table_md = "\n\n" + table_matches[0].strip() + "\n\n"
+                    # Append table to the last section's content
+                    last_sec = sections[-1]
+                    if isinstance(last_sec, dict):
+                        last_sec['content'] = (last_sec.get('content') or "") + table_md
+                        item["sections"] = sections
+                        
         return item
 
     @staticmethod
@@ -96,12 +116,12 @@ class NewsService:
         # On-the-fly dynamic image crawling fallback for existing articles
         if (not item.get("images") or len(item["images"]) == 0) and item.get("url"):
             try:
-                from zapway_publisher import fetch_main_image_url
-                img_url = fetch_main_image_url(item["url"])
-                if img_url:
-                    item["images"] = [img_url]
+                from zapway_publisher import fetch_all_image_urls
+                img_urls = fetch_all_image_urls(item["url"])
+                if img_urls:
+                    item["images"] = img_urls
                     # Persist it to DB so we don't have to crawl again
-                    queries.update_story(article_id, "images", json.dumps([img_url]))
+                    queries.update_story(article_id, "images", json.dumps(img_urls))
             except Exception as e:
                 print(f"[DYNAMIC IMAGE] Failed to crawl: {e}")
                 
@@ -126,6 +146,9 @@ class NewsService:
             "seo_faq": "seo_faq"
         }
         
+        article = queries.fetch_story_by_id(article_id)
+        is_already_published = article and article.get("status") == "Published"
+
         for key, value in data.items():
             db_key = FIELD_MAP.get(key)
             if not db_key:
@@ -134,6 +157,14 @@ class NewsService:
             if isinstance(value, (dict, list)):
                 value = json.dumps(value)
             queries.update_story(article_id, db_key, value)
+
+        if is_already_published:
+            import asyncio
+            try:
+                loop = asyncio.get_running_loop()
+                loop.create_task(NewsService.handle_action("publish_article", article_id))
+            except RuntimeError:
+                pass
         return True
 
     @staticmethod
@@ -204,6 +235,10 @@ class NewsService:
         elif action == "reject_article":
             queries.update_story(article_id, "status", "Rejected")
             return {"status": "Rejected"}
+
+        elif action == "revert_to_draft":
+            queries.update_story(article_id, "status", "Draft")
+            return {"status": "Draft"}
 
         elif action == "approve_article":
             queries.update_story(article_id, "status", "Approved")

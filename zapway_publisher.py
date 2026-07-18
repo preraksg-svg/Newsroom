@@ -39,42 +39,81 @@ async def _login(page):
         except Exception:
             continue
 
-    await page.wait_for_load_state("networkidle", timeout=20000)
+    try:
+        await page.wait_for_load_state("load", timeout=20000)
+    except Exception:
+        pass
+    try:
+        await page.wait_for_selector('input[placeholder*="headline"], input[placeholder*="Headline"]', timeout=15000)
+    except Exception:
+        pass
     await asyncio.sleep(1)
     print(f"[PUBLISHER] Post-login URL: {page.url}")
 
 
-def fetch_main_image_url(url: str) -> str:
-    """Fetches the og:image or twitter:image metadata from the original source URL."""
+def fetch_all_image_urls(url: str) -> list:
+    """Fetches all high-quality image URLs from the original source URL."""
     if not url:
-        return ""
+        return []
+    images = []
     try:
         import requests
         from bs4 import BeautifulSoup
+        from urllib.parse import urljoin
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
         }
-        res = requests.get(url, headers=headers, timeout=3)
+        res = requests.get(url, headers=headers, timeout=5)
         if res.status_code == 200:
             soup = BeautifulSoup(res.text, "html.parser")
             
-            # 1. og:image
+            # 1. Look for og:image
             og_img = soup.find("meta", property="og:image")
             if og_img and og_img.get("content"):
-                return og_img.get("content")
+                images.append(og_img.get("content"))
                 
-            # 2. twitter:image
+            # 2. Look for twitter:image
             tw_img = soup.find("meta", name="twitter:image")
             if tw_img and tw_img.get("content"):
-                return tw_img.get("content")
+                images.append(tw_img.get("content"))
                 
-            # 3. link[rel="image_src"]
+            # 3. Look for link[rel="image_src"]
             img_src = soup.find("link", rel="image_src")
             if img_src and img_src.get("href"):
-                return img_src.get("href")
+                images.append(img_src.get("href"))
+                
+            # 4. Crawl all <img> tags inside potential body/main wrappers or just generally
+            avoid_keywords = ['logo', 'avatar', 'icon', 'sprite', 'banner', 'spacer', 'loader', 'spinner', 'pixel', 'ad-', 'advertisement', 'widget', 'theme', 'header', 'footer']
+            
+            for img in soup.find_all("img"):
+                src = img.get("src") or img.get("data-src") or img.get("data-lazy-src") or img.get("data-original")
+                if not src:
+                    continue
+                abs_src = urljoin(url, src)
+                
+                src_lower = abs_src.lower()
+                if not src_lower.startswith("http"):
+                    continue
+                if any(kw in src_lower for kw in avoid_keywords):
+                    continue
+                if abs_src not in images:
+                    images.append(abs_src)
     except Exception as e:
-        print(f"[PUBLISHER] WARNING: Could not fetch image URL from original source: {e}")
-    return ""
+        print(f"[PUBLISHER] WARNING: Could not fetch all image URLs from original source: {e}")
+        
+    seen = set()
+    unique_images = []
+    for img in images:
+        if img not in seen:
+            seen.add(img)
+            unique_images.append(img)
+    return unique_images
+
+
+def fetch_main_image_url(url: str) -> str:
+    """Fetches the og:image or twitter:image metadata from the original source URL."""
+    urls = fetch_all_image_urls(url)
+    return urls[0] if urls else ""
 
 
 def extract_bullets_from_content(content: str):
@@ -128,7 +167,7 @@ async def publish_to_zapway(article: dict) -> dict:
 
         try:
             print(f"[PUBLISHER] Opening {ZAPWAY_INSERT_URL}...")
-            await page.goto(ZAPWAY_INSERT_URL, wait_until="load", timeout=30000)
+            await page.goto(ZAPWAY_INSERT_URL, wait_until="load", timeout=60000)
             await asyncio.sleep(1)
 
             # -- Step 1: Login -----------------------------------------------
@@ -136,7 +175,7 @@ async def publish_to_zapway(article: dict) -> dict:
             if await email_el.count() > 0 and await email_el.is_visible():
                 await _login(page)
                 if "insert_news" not in page.url:
-                    await page.goto(ZAPWAY_INSERT_URL, wait_until="load", timeout=30000)
+                    await page.goto(ZAPWAY_INSERT_URL, wait_until="load", timeout=60000)
                     await asyncio.sleep(1)
 
             # -- Step 2: Prepare article data ---------------------------------
@@ -179,8 +218,19 @@ async def publish_to_zapway(article: dict) -> dict:
                 excerpt = m.group(0) if m else body_text[:200]
             excerpt = excerpt.strip()
 
-            # Read time estimate
-            word_count = sum(len(s.get("content", "").split()) for s in sections_list if isinstance(s, dict))
+            # Read time estimate according to full news length (headings, content, bullets)
+            word_count = 0
+            for s in sections_list:
+                if isinstance(s, dict):
+                    word_count += len(s.get("heading", "").split())
+                    word_count += len(s.get("content", "").split())
+                    bullets = s.get("bullets", [])
+                    if isinstance(bullets, list):
+                        for b in bullets:
+                            if isinstance(b, str):
+                                word_count += len(b.split())
+                    elif isinstance(bullets, str):
+                        word_count += len(bullets.split())
             read_time = f"{max(1, round(word_count / 200))} min read"
 
             # -- Step 3: Fill form fields ------------------------------------
@@ -240,20 +290,21 @@ async def publish_to_zapway(article: dict) -> dict:
             await fill_exact("Jane Doe", "Zapway Team", "author_name")
             await fill_exact("JD", "ZT", "author_initials")
             await fill_partial("Senior correspondent", "EV News Correspondent", "author_bio")
-            await fill_exact("4 min read", read_time, "read_time")
+            await fill_partial("read", read_time, "read_time")
 
             # Fill Main Image URL (use stored image if available, fallback to crawl)
+            stored_images = article.get("images", [])
+            if isinstance(stored_images, str):
+                try:
+                    stored_images = json.loads(stored_images)
+                except Exception:
+                    pass
+            if not isinstance(stored_images, list):
+                stored_images = [stored_images] if stored_images else []
+
             try:
                 main_image_url = ""
-                stored_images = article.get("images", [])
-                if isinstance(stored_images, str):
-                    import json
-                    try:
-                        stored_images = json.loads(stored_images)
-                    except Exception:
-                        pass
-                
-                if isinstance(stored_images, list) and len(stored_images) > 0:
+                if len(stored_images) > 0:
                     main_image_url = stored_images[0]
                     
                 if not main_image_url:
@@ -269,19 +320,21 @@ async def publish_to_zapway(article: dict) -> dict:
                 print(f"[PUBLISHER] WARNING: Could not fill main image URL: {img_err}")
 
 
-            # C. Toggle checkmarks (First toggle = Add to Top Stories, set to True)
+            # C. Toggle checkmarks (First toggle = Add to Top Stories, set to False/OFF)
             try:
                 cbs = page.locator('input[type="checkbox"]')
                 if await cbs.count() > 0:
                     cb = cbs.first
-                    if not await cb.is_checked():
+                    if await cb.is_checked():
                         # Click the parent label/div wrapper to change React state correctly
                         wrapper = page.locator('span:has-text("ADD TO TOP STORIES")').first
                         if await wrapper.count() > 0:
                             await wrapper.click()
                         else:
                             await cb.click()
-                        print("[PUBLISHER] Enabled 'ADD TO TOP STORIES' checkbox")
+                        print("[PUBLISHER] Disabled 'ADD TO TOP STORIES' checkbox")
+                    else:
+                        print("[PUBLISHER] 'ADD TO TOP STORIES' checkbox is already OFF")
             except Exception as e:
                 print(f"[PUBLISHER] WARNING: Could not toggle checkboxes: {e}")
 
@@ -317,6 +370,10 @@ async def publish_to_zapway(article: dict) -> dict:
                 # Extract bullets from content
                 cleaned_body, bullets = extract_bullets_from_content(sec_content)
 
+                # Append source attribution to the last section's body text
+                if idx == len(sections_list) - 1:
+                    cleaned_body = f"{cleaned_body}\n\nsource : {source_name}"
+
                 # Fill body content
                 try:
                     body_el = page.locator('textarea[placeholder*="Section body text"]').nth(idx)
@@ -324,6 +381,17 @@ async def publish_to_zapway(article: dict) -> dict:
                     await body_el.fill(cleaned_body if cleaned_body.strip() else "Detailed updates provided in the source.")
                 except Exception as e:
                     print(f"[PUBLISHER] ERROR filling section #{idx} body: {e}")
+
+                # Fill section image field if there are multiple images
+                if len(stored_images) > idx:
+                    try:
+                        sec_img_el = page.locator('.na-sec').nth(idx).locator('input[placeholder*="images/news/photo.jpg"]')
+                        if await sec_img_el.count() > 0:
+                            await sec_img_el.first.scroll_into_view_if_needed()
+                            await sec_img_el.first.fill(stored_images[idx])
+                            print(f"[PUBLISHER] Filled section #{idx} image: {stored_images[idx]}")
+                    except Exception as sec_img_err:
+                        print(f"[PUBLISHER] WARNING: Could not fill section #{idx} image: {sec_img_err}")
 
                 # Fill bullet points if they exist
                 if bullets:

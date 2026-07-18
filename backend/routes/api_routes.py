@@ -20,9 +20,7 @@ async def run_fast_scrape_background():
         targets = [
             ("evo_india_ev", "https://www.evoindia.com/news"),
             ("autocar_india_website", "https://www.autocarindia.com/car-news"),
-            ("overdrive_india_website", "https://www.overdrive.in/news-cars"),
-            ("electrek", "https://electrek.co"),
-            ("cleantechnica", "https://cleantechnica.com")
+            ("overdrive_india_website", "https://www.overdrive.in/news-cars")
         ]
         
         print("[FAST-SCRAPE] Starting fast-path background scrape...")
@@ -210,7 +208,12 @@ async def proxy_url(
             url = "https://" + url
             
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}, timeout=10) as resp:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept-Encoding': 'gzip, deflate, identity',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+            }
+            async with session.get(url, headers=headers, timeout=10) as resp:
                 if resp.status in (401, 403, 406, 503):
                     # Fallback to public CORS proxy if blocked (e.g. Cloudflare)
                     fallback_url = f"https://api.allorigins.win/raw?url={url}"
@@ -224,6 +227,11 @@ async def proxy_url(
                 if "text/html" in content_type.lower():
                     try:
                         content_str = content_bytes.decode('utf-8', errors='ignore')
+                        
+                        # Neutralize frame-busting scripts
+                        content_str = re.sub(r'top\.location', 'self.location', content_str, flags=re.IGNORECASE)
+                        content_str = re.sub(r'window\.top', 'window.self', content_str, flags=re.IGNORECASE)
+                        content_str = re.sub(r'window\.frameElement', 'null', content_str, flags=re.IGNORECASE)
                         
                         # Rewrite relative asset paths to absolute zapway.app paths so SPA resources load correctly
                         content_str = content_str.replace('src="/assets/', 'src="https://zapway.app/assets/')
@@ -255,6 +263,11 @@ async def proxy_url(
                                         full_body_parts.append(s["heading"])
                                     if s.get("content"):
                                         full_body_parts.append(s["content"])
+                                    bullets = s.get("bullets", [])
+                                    if isinstance(bullets, list):
+                                        full_body_parts.extend([b for b in bullets if isinstance(b, str)])
+                                    elif isinstance(bullets, str):
+                                        full_body_parts.append(bullets)
                             full_body = "\n\n".join(full_body_parts)
                             
                             if parsed_sections and isinstance(parsed_sections[0], dict):

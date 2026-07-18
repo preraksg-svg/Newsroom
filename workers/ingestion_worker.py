@@ -55,11 +55,11 @@ def get_active_registry_sources():
     try:
         with get_db() as conn:
             cur = conn.cursor()
-            # Fetch only active sources in source_scores registry
+            # Fetch only active sources in source_scores registry with country = 'IN'
             cur.execute("""
                 SELECT source_id, domain, type, access_method, failure_count 
                 FROM source_scores 
-                WHERE activity_status = 'active'
+                WHERE activity_status = 'active' AND COALESCE(country, 'IN') = 'IN'
             """)
             return [dict(row) for row in cur.fetchall()]
     except Exception as e:
@@ -210,6 +210,10 @@ async def process_task_safe(worker_id, src, traceparent):
                     continue
             except (ValueError, TypeError):
                 pass
+
+            from backend.llm import is_india_relevant
+            if not is_india_relevant(r.get('title', ''), r.get('content_raw', '')):
+                continue
 
             url_hash = hashlib.md5(r['url'].encode()).hexdigest()
             rid = f"raw_{url_hash}"

@@ -49,12 +49,18 @@ async def scrape_newsdata(domain_or_query: str):
             articles = data.get("results", [])
             
             for article in articles:
-                content = article.get("content") or article.get("description")
-                if not content:
+                link = article.get("link", "")
+                if not link:
+                    continue
+                
+                # Enforce full news scraping
+                from workers.website_worker import scrape_single_article_page
+                content = await scrape_single_article_page(link)
+                if not content.strip() or len(content.split()) < 120 or content.strip().endswith("...") or content.strip().endswith("…"):
+                    logger.warning(f"[NewsData] Skipping truncated or half-news: {link}")
                     continue
                     
                 title = article.get("title", "")
-                link = article.get("link", "")
                 source_name = article.get("source_id", "NewsData")
                 author = article.get("creator") 
                 author = author[0] if author and isinstance(author, list) else source_name

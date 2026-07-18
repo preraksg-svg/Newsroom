@@ -48,12 +48,18 @@ async def scrape_gnews(domain_or_query: str):
             articles = data.get("articles", [])
             
             for article in articles:
-                content = article.get("content") or article.get("description")
-                if not content:
+                link = article.get("url", "")
+                if not link:
+                    continue
+                
+                # Enforce full news scraping
+                from workers.website_worker import scrape_single_article_page
+                content = await scrape_single_article_page(link)
+                if not content.strip() or len(content.split()) < 120 or content.strip().endswith("...") or content.strip().endswith("…"):
+                    logger.warning(f"[GNews] Skipping truncated or half-news: {link}")
                     continue
                     
                 title = article.get("title", "")
-                link = article.get("url", "")
                 source_name = article.get("source", {}).get("name", "GNews")
                 author = source_name
                 

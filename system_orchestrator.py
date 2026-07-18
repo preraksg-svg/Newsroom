@@ -62,7 +62,7 @@ class NewsroomOrchestrator:
             
             with get_db() as conn:
                 cur = conn.cursor()
-                cur.execute("SELECT source_id, domain, type FROM sources WHERE activity_status = 'active'")
+                cur.execute("SELECT source_id, domain, type FROM sources WHERE activity_status = 'active' AND COALESCE(country, 'IN') = 'IN'")
                 all_sources = [dict(row) for row in cur.fetchall()]
             
             sources_to_scrape = all_sources
@@ -119,7 +119,12 @@ class NewsroomOrchestrator:
                         
                     saved_count = 0
                     if results:
+                        from backend.llm import is_india_relevant
                         for r in results:
+                            # Reject non-India news at scraping/ingestion layer
+                            if not is_india_relevant(r.get('title', ''), r.get('content_raw', '')):
+                                continue
+
                             url_hash = hashlib.md5(r['url'].encode()).hexdigest()
                             rid = f"raw_{url_hash}"
                             
@@ -245,13 +250,23 @@ class NewsroomOrchestrator:
         signal['title'] = title
         print(f"[SIGNAL] Processing: {title[:50]}...")
         
-        # Verify raw content is present and is at least 150 words (or 15 words for social media channels)
+        # Verify raw content is present and is at least 120 words (or 15 words for social media channels)
         raw_content = signal.get('content', '') or ''
+        
+        # Enforce no half-news (no trailing ellipses or truncated suffixes)
+        if raw_content.strip().endswith("...") or raw_content.strip().endswith("…"):
+            print(f"[OBSERVABILITY][{self.traceparent}] [GROUNDING_GATE_BLOCK] Signal is truncated (ends in ellipsis). Aborting.")
+            with get_db() as conn:
+                cur = conn.cursor()
+                cur.execute("UPDATE scraped_raw SET clustered = 2 WHERE id = ?", (signal['id'],))
+                conn.commit()
+            return
+
         # Strip trailing ellipses, Read more links, and truncated junk suffixes
         import re
         raw_content = re.sub(r'(\.\.\.\s*|\[\.\.\.\]\s*|Read\s+More\s*\.\.\.\s*|\[Read\s+More\]\s*)$', '', raw_content.strip(), flags=re.IGNORECASE)
         word_count = len(raw_content.split())
-        min_words = 15 if signal.get('source_type') in ['twitter', 'reddit', 'instagram', 'facebook', 'youtube', 'Social', 'Video', 'newsapi', 'newsdata', 'gnews'] else 150
+        min_words = 15 if signal.get('source_type') in ['twitter', 'reddit', 'instagram', 'facebook', 'youtube', 'Social', 'Video'] else 120
         if not raw_content.strip() or word_count < min_words:
             print(f"[OBSERVABILITY][{self.traceparent}] [GROUNDING_GATE_BLOCK] Signal contains insufficient data ({word_count} words). Aborting.")
             with get_db() as conn:
