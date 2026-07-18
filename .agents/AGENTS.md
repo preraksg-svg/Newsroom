@@ -17,3 +17,7 @@
 ## 4. Complete Sentences Only & No Ellipses
 - **Rule**: The system must never output incomplete sentences or truncate any generated news content, headings, meta titles, or meta descriptions with trailing dots/ellipses (`...`).
 - **Action**: All truncation functions must only split at complete sentence boundaries (like periods, exclamation marks, or question marks) and must never append `...`.
+
+## 5. Strip Metadata Headings
+- **Rule**: The system must never ingest or generate publication dates, authors, or publisher signatures as news article headings.
+- **Action**: All web scrapers and LLM engines must explicitly filter out layout metadata (e.g., dates, author signatures, brand titles) to prevent them from becoming rewritten article sections.
