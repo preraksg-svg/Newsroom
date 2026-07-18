@@ -376,11 +376,16 @@ export default function ArticleView() {
 
   const normalizeUrl = (url) => {
     if (!url) return ''
-    if (url.startsWith('http://')) {
-      return url.replace('http://', 'https://')
+    let actualUrl = url
+    if (typeof url === 'object') {
+      actualUrl = url.url || url.src || ''
     }
-    if (url.startsWith('https://') || url.startsWith('data:')) return url
-    return `${API_BASE}${url}`
+    if (!actualUrl || typeof actualUrl !== 'string') return ''
+    if (actualUrl.startsWith('http://')) {
+      return actualUrl.replace('http://', 'https://')
+    }
+    if (actualUrl.startsWith('https://') || actualUrl.startsWith('data:')) return actualUrl
+    return `${API_BASE}${actualUrl}`
   }
 
   return (
