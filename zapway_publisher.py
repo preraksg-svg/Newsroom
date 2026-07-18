@@ -68,17 +68,17 @@ def fetch_all_image_urls(url: str) -> list:
             soup = BeautifulSoup(res.text, "html.parser")
             
             # 1. Look for og:image
-            og_img = soup.find("meta", property="og:image")
+            og_img = soup.find("meta", attrs={"property": "og:image"})
             if og_img and og_img.get("content"):
                 images.append(og_img.get("content"))
                 
             # 2. Look for twitter:image
-            tw_img = soup.find("meta", name="twitter:image")
+            tw_img = soup.find("meta", attrs={"name": "twitter:image"})
             if tw_img and tw_img.get("content"):
                 images.append(tw_img.get("content"))
                 
             # 3. Look for link[rel="image_src"]
-            img_src = soup.find("link", rel="image_src")
+            img_src = soup.find("link", attrs={"rel": "image_src"})
             if img_src and img_src.get("href"):
                 images.append(img_src.get("href"))
                 

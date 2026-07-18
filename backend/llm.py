@@ -584,7 +584,9 @@ def _rewrite_article_fallback(content, url=None, title=None):
     if url:
         try:
             from zapway_publisher import fetch_all_image_urls
-            fallback_images = fetch_all_image_urls(url)
+            img_urls = fetch_all_image_urls(url)
+            if img_urls:
+                fallback_images = [{"url": img, "alt": headline} for img in img_urls]
         except Exception:
             pass
 
