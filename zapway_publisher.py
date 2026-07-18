@@ -235,7 +235,13 @@ async def publish_to_zapway(article: dict) -> dict:
 
             meta_title = article.get("meta_title", title)
             meta_desc = article.get("meta_description", article.get("meta_desc", ""))
-            source_name = article.get("source", "Zapway Newsroom")
+            # 'publisher' is the actual DB column name; 'source' is a legacy alias
+            source_name = (
+                article.get("publisher") or
+                article.get("source") or
+                article.get("author") or
+                "Zapway Newsroom"
+            )
 
             # Excerpt/summary
             excerpt = meta_desc
@@ -399,7 +405,7 @@ async def publish_to_zapway(article: dict) -> dict:
 
                 # Append source attribution to the last section's body text
                 if idx == len(sections_list) - 1:
-                    cleaned_body = f"{cleaned_body}\n\nsource : {source_name}"
+                    cleaned_body = f'{cleaned_body}\n\nSource: "{source_name}"'
 
                 # Fill body content
                 try:
