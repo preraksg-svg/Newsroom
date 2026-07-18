@@ -198,6 +198,7 @@ Your output must follow these rules strictly:
 5. LINGUISTIC CLOSURE: Every sentence must end with proper punctuation (., !, ?). No trailing conjunctions or incomplete sentences.
 6. NO INVENTED CONTENT: Do not add any information, context, or opinion not present in the source.
 7. PRESERVE LISTS & TABLES: If the source text contains bullet points, lists, or tables (in markdown format, e.g. lines starting with * or structured as | cell |), you MUST preserve their structure, formatting, and layout in the paraphrased sections. Do NOT convert tables or lists into regular prose paragraphs. Keep tables as markdown tables, and list items as bulleted list items.
+8. STRIP METADATA HEADINGS: You MUST strip and ignore any headings or text from the source that represent publication dates (e.g. 'July 18, 2026' or '2026-07-18'), author names (e.g. 'By Jane Doe'), or publisher brand names (e.g. 'Autocar India'). They should NEVER be converted into article sections or headings.
 
 JSON Structure to return — fill every field exactly as described:
 {

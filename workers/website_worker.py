@@ -245,6 +245,19 @@ async def scrape_website(url: str):
                                 min_len = 3 if is_heading else (1 if is_li else 30)
                                 if len(txt) >= min_len and not bool(re.search(r'(subscribe|cookie|privacy|advertisement)', txt, re.I)):
                                     if is_heading:
+                                        # Ignore publication dates, authors, and publisher signatures from layout headings
+                                        txt_lower = txt.lower()
+                                        is_date = False
+                                        try:
+                                            from dateutil import parser as date_parser
+                                            date_parser.parse(txt)
+                                            is_date = True
+                                        except:
+                                            pass
+                                        
+                                        if is_date or txt_lower.startswith("by ") or (len(txt.split()) <= 3 and any(pub in txt_lower for pub in ["autocar", "overdrive", "evo", "news", "date", "author", "published", "correspondent", "team"])):
+                                            continue
+
                                         if tag.name in ['h1', 'h2']:
                                             extracted_text.append(f"## {txt}")
                                         else:
