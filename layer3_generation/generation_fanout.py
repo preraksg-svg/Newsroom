@@ -197,7 +197,7 @@ Your output must follow these rules strictly:
 4. DATA INTEGRITY: Keep ALL numbers, prices (e.g. 'Rs 27.90 lakh'), specs, model names, variant names, percentages, dates, and named entities EXACTLY as they appear in the source. Never round or translate them.
 5. LINGUISTIC CLOSURE: Every sentence must end with proper punctuation (., !, ?). No trailing conjunctions or incomplete sentences.
 6. NO INVENTED CONTENT: Do not add any information, context, or opinion not present in the source.
-7. PRESERVE LISTS & TABLES: If the source text contains bullet points, lists, or tables (in markdown format, e.g. lines starting with * or structured as | cell |), you MUST preserve their structure, formatting, and layout in the paraphrased sections. Do NOT convert tables or lists into regular prose paragraphs. Keep tables as markdown tables, and list items as bulleted list items.
+7. PRESERVE LISTS, TABLES & IMAGES: If the source text contains bullet points, lists, tables (in markdown format, e.g. lines starting with * or structured as | cell |), or inline markdown images (e.g. ![alt](url)), you MUST preserve their exact structure, formatting, and inline placement in the paraphrased sections. Do NOT convert tables/lists into regular prose, and do NOT remove or relocate any inline images. Keep them exactly where they are in the text.
 8. STRIP METADATA HEADINGS: You MUST strip and ignore any headings or text from the source that represent publication dates (e.g. 'July 18, 2026' or '2026-07-18'), author names (e.g. 'By Jane Doe'), or publisher brand names (e.g. 'Autocar India'). They should NEVER be converted into article sections or headings.
 
 JSON Structure to return — fill every field exactly as described:

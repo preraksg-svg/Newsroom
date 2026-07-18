@@ -427,6 +427,22 @@ export default function ArticleView() {
           </ul>
         )
       }
+      
+      // Check for inline markdown image ![alt](url)
+      const imgMatch = block.text.match(/^!\[(.*?)\]\((.*?)\)$/)
+      if (imgMatch) {
+        return (
+          <div key={idx} style={{ margin: '20px 0', textAlign: 'center' }}>
+            <img 
+              src={normalizeUrl(imgMatch[2])} 
+              alt={imgMatch[1]} 
+              style={{ maxWidth: '100%', maxHeight: '450px', borderRadius: '8px', border: '1px solid var(--color-border)', boxShadow: 'var(--glow-cyan)' }} 
+            />
+            {imgMatch[1] && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px' }}>{imgMatch[1]}</div>}
+          </div>
+        )
+      }
+
       return <p key={idx} style={{ margin: '0 0 12px 0', whiteSpace: 'pre-wrap' }}>{block.text}</p>
     })
   }

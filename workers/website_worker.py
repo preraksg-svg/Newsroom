@@ -141,12 +141,29 @@ async def scrape_single_article_page(url: str) -> str:
                             child.decompose()
                     list_tag.replace_with(new_p)
 
-            for tag in soup.find_all(['h1', 'h2', 'h3', 'p', 'table']):
+            for tag in soup.find_all(['h1', 'h2', 'h3', 'p', 'table', 'img']):
                 if tag.name == 'table':
                     if not skip_until_next_heading:
                         table_md = table_to_markdown(tag)
                         if table_md:
                             extracted_text.append(table_md)
+                    continue
+
+                if tag.name == 'img':
+                    if not skip_until_next_heading:
+                        src = tag.get('src') or tag.get('data-src') or tag.get('data-lazy-src') or ''
+                        alt = tag.get('alt') or ''
+                        if src and src.startswith('http'):
+                            # Reuse clean keywords logic from zapway_publisher.py to avoid layout items
+                            avoid_keywords = [
+                                "logo", "avatar", "profile", "banner", "advertisement", "ad-", "ads-",
+                                "popup", "insider", "authorplaceholder", "webinar", "sub-menu", "sharing",
+                                "share", "advert", "promo", "sign-up", "newsletter", "mail", "icon-", "subscribe"
+                            ]
+                            src_lower = src.lower()
+                            alt_lower = alt.lower()
+                            if not any(kw in src_lower or kw in alt_lower for kw in avoid_keywords):
+                                extracted_text.append(f"![{alt}]({src})")
                     continue
 
                 txt = tag.get_text(" ", strip=True)
@@ -340,12 +357,28 @@ async def scrape_website(url: str):
 
                             extracted_text = []
                             skip_until_next_heading = False
-                            for tag in a_soup.find_all(['h1', 'h2', 'h3', 'p', 'table']):
+                            for tag in a_soup.find_all(['h1', 'h2', 'h3', 'p', 'table', 'img']):
                                 if tag.name == 'table':
                                     if not skip_until_next_heading:
                                         table_md = table_to_markdown(tag)
                                         if table_md:
                                             extracted_text.append(table_md)
+                                    continue
+                                if tag.name == 'img':
+                                    if not skip_until_next_heading:
+                                        src = tag.get('src') or tag.get('data-src') or tag.get('data-lazy-src') or ''
+                                        alt = tag.get('alt') or ''
+                                        if src and src.startswith('http'):
+                                            # Reuse clean keywords logic from zapway_publisher.py to avoid layout items
+                                            avoid_keywords = [
+                                                "logo", "avatar", "profile", "banner", "advertisement", "ad-", "ads-",
+                                                "popup", "insider", "authorplaceholder", "webinar", "sub-menu", "sharing",
+                                                "share", "advert", "promo", "sign-up", "newsletter", "mail", "icon-", "subscribe"
+                                            ]
+                                            src_lower = src.lower()
+                                            alt_lower = alt.lower()
+                                            if not any(kw in src_lower or kw in alt_lower for kw in avoid_keywords):
+                                                extracted_text.append(f"![{alt}]({src})")
                                     continue
                                 txt = tag.get_text(" ", strip=True)
                                 if not txt:
