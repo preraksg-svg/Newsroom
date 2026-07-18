@@ -387,6 +387,49 @@ export default function ArticleView() {
     if (actualUrl.startsWith('https://') || actualUrl.startsWith('data:')) return actualUrl
     return `${API_BASE}${actualUrl}`
   }
+  const renderFormattedContent = (text) => {
+    if (!text) return null
+    const lines = text.split('\n')
+    const blocks = []
+    let currentList = null
+
+    lines.forEach((line) => {
+      const trimmed = line.trim()
+      const bulletMatch = trimmed.match(/^([\*\-\u2022]|(?:\d+\.))\s+(.*)$/)
+      
+      if (bulletMatch) {
+        if (!currentList) {
+          currentList = []
+        }
+        currentList.push(bulletMatch[2])
+      } else {
+        if (currentList) {
+          blocks.push({ type: 'list', items: currentList })
+          currentList = null
+        }
+        if (trimmed) {
+          blocks.push({ type: 'p', text: line })
+        }
+      }
+    });
+
+    if (currentList) {
+      blocks.push({ type: 'list', items: currentList })
+    }
+
+    return blocks.map((block, idx) => {
+      if (block.type === 'list') {
+        return (
+          <ul key={idx} style={{ margin: '8px 0 8px 24px', paddingLeft: '0', listStyleType: 'disc' }}>
+            {block.items.map((item, liIdx) => (
+              <li key={liIdx} style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>{item}</li>
+            ))}
+          </ul>
+        )
+      }
+      return <p key={idx} style={{ margin: '0 0 12px 0', whiteSpace: 'pre-wrap' }}>{block.text}</p>
+    })
+  }
 
   return (
     <div className="intelligence-terminal">
@@ -587,18 +630,7 @@ export default function ArticleView() {
                         </div>
                       ) : (
                         <div style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.6' }}>
-                          {textValue.split('\n').map((line, lineIdx) => {
-                            const trimmed = line.trim();
-                            const match = trimmed.match(/^([\*\-\u2022]|(?:\d+\.))\s+(.*)$/);
-                            if (match) {
-                              return (
-                                <ul key={lineIdx} style={{ margin: '4px 0 4px 20px', paddingLeft: '0', listStyleType: 'disc' }}>
-                                  <li style={{ color: 'var(--text-secondary)' }}>{match[2]}</li>
-                                </ul>
-                              );
-                            }
-                            return <p key={lineIdx} style={{ margin: '0 0 8px 0', whiteSpace: 'pre-wrap' }}>{line}</p>;
-                          })}
+                          {renderFormattedContent(textValue)}
                         </div>
                       )}
                     </>

@@ -579,14 +579,12 @@ def _rewrite_article_fallback(content, url=None, title=None):
             {"heading": "ZAPWAY Relevance", "content": f"These grid and infrastructure expansions in the {topic} segment support cleaner highway navigation and route planning."}
         ]
 
-    # Crawl main image url dynamically for fallback
+    # Crawl all image urls dynamically for fallback
     fallback_images = []
     if url:
         try:
-            from zapway_publisher import fetch_main_image_url
-            img_url = fetch_main_image_url(url)
-            if img_url:
-                fallback_images = [img_url]
+            from zapway_publisher import fetch_all_image_urls
+            fallback_images = fetch_all_image_urls(url)
         except Exception:
             pass
 
