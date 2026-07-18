@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
-const isDev = window.location.port === '5173'
-export const API_BASE = isDev ? 'http://localhost:8000' : ''
+const isDev = window.location.port === '5173' || window.location.port === '5174'
+export const API_BASE = localStorage.getItem('API_BASE') || (isDev ? 'https://newsroom-1zapway-newsroom-cloud.onrender.com' : '')
 
 export const useStore = create((set) => ({
   // Edit State

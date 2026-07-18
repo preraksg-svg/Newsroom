@@ -1,5 +1,5 @@
 const isDev = window.location.port === '5173' || window.location.port === '5174'
-export const API_BASE = isDev ? 'http://localhost:8000' : ''
+export const API_BASE = localStorage.getItem('API_BASE') || (isDev ? 'https://newsroom-1zapway-newsroom-cloud.onrender.com' : '')
 
 const fetchApi = async (path, options = {}) => {
   try {
