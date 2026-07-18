@@ -1,4 +1,13 @@
-import requests
+"""
+Rewrites website_worker.py to:
+1. Strip duplicate/messy functions.
+2. Ensure both main loop and fallback scraping paths apply DOM-level nav/header/footer stripping.
+"""
+import os
+
+target = 'workers/website_worker.py'
+
+NEW_CONTENT = """import requests
 import feedparser
 import re
 import os
@@ -10,7 +19,7 @@ from groq import Groq
 
 last_web_memory = {}
 
-EV_REGEX = re.compile(r'(electric| ev |evs|zero emission|battery|charging|charge|tesla|rivian|lucid|byd|scooter|bike|motor|sierra|punch|ola|ather|tata|mahindra|windsor|curvv|volt|e-tron|eqs|eqe|eqa|eqb|enyaq|taycan|ioniq|nexon|tiago|tigor|xuv400|be\.05|comet|zs\s+ev|vida|chetak|iqube|roadster|motorcycle|scorpio\.e|thar\.e|altigreen|kinetic|euler|rv400|lithium|gigafactory|subsidy|subsidies|fame|zero-emission|electrified|electrification)', re.IGNORECASE)
+EV_REGEX = re.compile(r'(electric| ev |evs|zero emission|battery|charging|charge|tesla|rivian|lucid|byd|scooter|bike|motor|sierra|punch|ola|ather|tata|mahindra|windsor|curvv|volt|e-tron|eqs|eqe|eqa|eqb|enyaq|taycan|ioniq|nexon|tiago|tigor|xuv400|be\\.05|comet|zs\\s+ev|vida|chetak|iqube|roadster|motorcycle|scorpio\\.e|thar\\.e|altigreen|kinetic|euler|rv400|lithium|gigafactory|subsidy|subsidies|fame|zero-emission|electrified|electrification)', re.IGNORECASE)
 
 def table_to_markdown(table_tag):
     rows = table_tag.find_all('tr')
@@ -47,29 +56,29 @@ def table_to_markdown(table_tag):
             row_data = row_data[:len(headers)]
         markdown_rows.append("| " + " | ".join(row_data) + " |")
         
-    return "\n" + "\n".join(markdown_rows) + "\n"
+    return "\\n" + "\\n".join(markdown_rows) + "\\n"
 
 def _strip_nav_from_soup(soup):
-    """Remove nav/header/footer/sidebar elements from a BeautifulSoup tree.
-    Uses negative lookbehind/lookahead (?<!-) and (?!-) to ensure that classes like
-    'single-no-sidebar' or 'site-content' are not false-positively decomposed.
-    """
+    \"\"\"Remove nav/header/footer/sidebar elements from a BeautifulSoup tree.
+    This is the ONLY correct way to prevent nav menu content from leaking
+    into article text — text-matching approaches are always fragile.
+    \"\"\"
     import re as _re
 
     NAV_TAGS = ['nav', 'header', 'footer', 'aside']
     NAV_CLASS_RE = _re.compile(
-        r'(?<!-)\b(nav|navbar|navigation|menu|header|footer|sidebar|breadcrumb|'
+        r'\\b(nav|navbar|navigation|menu|header|footer|sidebar|breadcrumb|'
         r'topbar|top-bar|bottom-bar|dropdown|flyout|mega-menu|off-canvas|'
         r'site-header|site-footer|page-header|page-footer|widget|'
         r'advertisement|promo|social-share|share-bar|related|recommended|'
         r'trending|popular-posts|tag-cloud|author-bio|comment|pagination|'
-        r'cookie|gdpr|newsletter|subscribe|sticky|fixed-bar)\b(?!-)',
+        r'cookie|gdpr|newsletter|subscribe|sticky|fixed-bar)\\b',
         _re.IGNORECASE
     )
     NAV_ID_RE = _re.compile(
-        r'(?<!-)\b(nav|header|footer|sidebar|menu|topnav|mainnav|sidenav|'
+        r'\\b(nav|header|footer|sidebar|menu|topnav|mainnav|sidenav|'
         r'breadcrumb|top-bar|bottom-bar|social|share|related|trending|'
-        r'popular|tags|comments|pagination|cookie|newsletter|subscribe)\b(?!-)',
+        r'popular|tags|comments|pagination|cookie|newsletter|subscribe)\\b',
         _re.IGNORECASE
     )
 
@@ -79,16 +88,9 @@ def _strip_nav_from_soup(soup):
 
     for el in list(soup.find_all(True)):
         try:
-            if not hasattr(el, 'attrs') or el.attrs is None:
-                continue
-            classes = ' '.join(el.get('class', [])) if el.get('class') else ''
-            id_val = el.get('id', '') if el.get('id') else ''
-            
-            # Preserve the main post content container
-            if 'entry-content' in classes or 'post-content' in classes or id_val == 'content':
-                continue
-                
-            if NAV_CLASS_RE.search(classes) or NAV_ID_RE.search(id_val):
+            el_classes = ' '.join(el.get('class', []))
+            el_id = el.get('id', '')
+            if NAV_CLASS_RE.search(el_classes) or NAV_ID_RE.search(el_id):
                 el.decompose()
         except Exception:
             pass
@@ -98,12 +100,11 @@ def _strip_nav_from_soup(soup):
 
     return soup
 
-
 async def scrape_single_article_page(url: str) -> str:
-    """Direct HTML parser for a single article page.
+    \"\"\"Direct HTML parser for a single article page.
     Strips nav/header/footer/sidebar from the DOM BEFORE parsing
     so navigation menus can NEVER appear as article content.
-    """
+    \"\"\"
     import requests
     from bs4 import BeautifulSoup
     import re
@@ -179,11 +180,10 @@ async def scrape_single_article_page(url: str) -> str:
                         extracted_text.append(txt)
 
             if extracted_text:
-                return "\n".join(extracted_text)
+                return "\\n".join(extracted_text)
     except Exception as e:
         print(f"Error scraping single page {url}: {e}")
     return ""
-
 
 def llm_filter_website(text: str) -> str:
     api_key = os.environ.get("GROQ_API_KEY")
@@ -349,7 +349,7 @@ async def scrape_website(url: str):
                                         extracted_text.append(txt)
                             
                             if len(extracted_text) > 0:
-                                article_content = "\n".join(extracted_text)
+                                article_content = "\\n".join(extracted_text)
                                 final_content = article_content
                                 
                                 meta_date = a_soup.find("meta", property="article:published_time")
@@ -381,3 +381,9 @@ async def scrape_website(url: str):
         print(f"Website Scraping Error for {url}: {e}")
         
     return results
+"""
+
+with open(target, 'w', encoding='utf-8') as f:
+    f.write(NEW_CONTENT)
+
+print("SUCCESS: Cleaned website_worker.py and enabled complete DOM-level stripping.")
