@@ -18,7 +18,7 @@ async def run_fast_scrape_background():
         from backend.db.queries import get_db
         
         targets = [
-            ("evo_india_ev", "https://www.evoindia.com/news"),
+            ("motorbeam_rss", "https://www.motorbeam.com/feed/"),
             ("autocar_india_website", "https://www.autocarindia.com/car-news"),
             ("overdrive_india_website", "https://www.overdrive.in/news-cars")
         ]

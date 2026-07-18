@@ -79,14 +79,23 @@ async def scrape_single_article_page(url: str) -> str:
                 
                 txt_lower = txt.lower()
                 
-                # Filter out header/sidebar navigation menu lists
-                menu_keywords = [
-                    "find cars", "compare cars", "car reviews", "car photos", "car videos", "car brands", "just launched cars", "upcoming cars", "popular cars",
-                    "find bikes", "compare bikes", "bike reviews", "bike photos", "bike videos", "bike brands", "just launched bikes", "upcoming bikes", "popular bikes",
-                    "all reviews", "first drive", "road test", "comparo", "news & features", "opinions", "motorsport", "press releases", "all photos", "get app"
-                ]
-                if any(kw in txt_lower for kw in menu_keywords) or (len(txt.split()) <= 4 and any(kw in txt_lower for kw in ["find", "compare", "reviews", "photos", "videos", "upcoming", "launched", "popular", "brands"])):
-                    continue
+                # Filter nav menu items only when inside <li> tags
+                if is_li:
+                    nav_menu_phrases = [
+                        "find cars", "compare cars", "car reviews", "car photos", "car videos", "car brands",
+                        "just launched cars", "upcoming cars", "popular cars",
+                        "find bikes", "compare bikes", "bike reviews", "bike photos", "bike videos", "bike brands",
+                        "just launched bikes", "upcoming bikes", "popular bikes",
+                        "all reviews", "news & features", "all photos", "get app",
+                        "contact the market", "sell car", "about the market", "terms and conditions",
+                        "advertise with the market", "car loan calculator", "bike loan calculator",
+                        "ask autocar anything", "sitemap", "car news", "bike news",
+                    ]
+                    # Only discard if the ENTIRE li text is a nav phrase OR it's a dump of multiple nav items
+                    is_nav_dump = sum(1 for kw in nav_menu_phrases if kw in txt_lower) >= 2
+                    is_exact_nav = any(txt_lower.strip() == kw for kw in nav_menu_phrases)
+                    if is_nav_dump or is_exact_nav:
+                        continue
                     
                 if is_heading:
                     # Ignore generic layout navigation headings
@@ -199,10 +208,10 @@ async def scrape_website(url: str):
                 
                 # Try fetching native URL to avoid half-news
                 article_content = await scrape_single_article_page(link)
-                if not article_content.strip() or len(article_content.split()) < 120 or article_content.strip().endswith("...") or article_content.strip().endswith("…"):
+                if not article_content.strip() or len(article_content.split()) < 50 or article_content.strip().endswith("...") or article_content.strip().endswith("…"):
                     # Fallback to summary ONLY if it is complete and long enough
                     summary = entry.get("summary", "")
-                    if summary and not (summary.strip().endswith("...") or summary.strip().endswith("…")) and len(summary.split()) >= 120:
+                    if summary and not (summary.strip().endswith("...") or summary.strip().endswith("…")) and len(summary.split()) >= 50:
                         article_content = summary
                     else:
                         print(f"[SCRAPER] Skipping half-news or truncated entry: {link}")
@@ -287,14 +296,22 @@ async def scrape_website(url: str):
                                 
                                 txt_lower = txt.lower()
                                 
-                                # Filter out header/sidebar navigation menu lists
-                                menu_keywords = [
-                                    "find cars", "compare cars", "car reviews", "car photos", "car videos", "car brands", "just launched cars", "upcoming cars", "popular cars",
-                                    "find bikes", "compare bikes", "bike reviews", "bike photos", "bike videos", "bike brands", "just launched bikes", "upcoming bikes", "popular bikes",
-                                    "all reviews", "first drive", "road test", "comparo", "news & features", "opinions", "motorsport", "press releases", "all photos", "get app"
-                                ]
-                                if any(kw in txt_lower for kw in menu_keywords) or (len(txt.split()) <= 4 and any(kw in txt_lower for kw in ["find", "compare", "reviews", "photos", "videos", "upcoming", "launched", "popular", "brands"])):
-                                    continue
+                                # Filter nav menu items only when inside <li> tags
+                                if is_li:
+                                    nav_menu_phrases = [
+                                        "find cars", "compare cars", "car reviews", "car photos", "car videos", "car brands",
+                                        "just launched cars", "upcoming cars", "popular cars",
+                                        "find bikes", "compare bikes", "bike reviews", "bike photos", "bike videos", "bike brands",
+                                        "just launched bikes", "upcoming bikes", "popular bikes",
+                                        "all reviews", "news & features", "all photos", "get app",
+                                        "contact the market", "sell car", "about the market", "terms and conditions",
+                                        "advertise with the market", "car loan calculator", "bike loan calculator",
+                                        "ask autocar anything", "sitemap", "car news", "bike news",
+                                    ]
+                                    is_nav_dump = sum(1 for kw in nav_menu_phrases if kw in txt_lower) >= 2
+                                    is_exact_nav = any(txt_lower.strip() == kw for kw in nav_menu_phrases)
+                                    if is_nav_dump or is_exact_nav:
+                                        continue
                                     
                                 if is_heading:
                                     # Ignore generic layout navigation headings
