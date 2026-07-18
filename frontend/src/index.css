@@ -641,6 +641,11 @@ body {
     height: auto !important;
   }
   
+  .split-view-panel {
+    height: 500px !important;
+    overflow: hidden !important;
+  }
+  
   .terminal-sidebar {
     width: 100% !important;
     border-left: none !important;
