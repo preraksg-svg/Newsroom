@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { Edit2, Save, Trash2, Split, Image as ImageIcon, Music, Zap, RefreshCw, Layers, Share2, Search, X } from 'lucide-react'
+import { Edit2, Save, Trash2, Split, Image as ImageIcon, Music, Zap, RefreshCw, Layers, Share2, Search } from 'lucide-react'
 import { NewsService, API_BASE } from '../services/api'
 import { Loader, ErrorState } from '../components/StatusStates'
 
@@ -685,74 +685,13 @@ export default function ArticleView() {
             </div>
           )}
 
-          {/* MEDIA SECTION */}
-          {(images.length > 0 || audio.url) && (
-            <div style={{ marginTop: '40px', borderTop: '1px solid var(--color-border)', paddingTop: '40px' }}>
-              <div className="block-title">MEDIA ASSETS</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-                {images.map((img, i) => (
-                  <div key={i} style={{ position: 'relative' }}>
-                    <img src={normalizeUrl(img)} style={{ width: '100%', borderRadius: '8px', border: '1px solid var(--color-border)' }} />
-                    <button 
-                      style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--c-magenta)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.5)', transition: 'all 0.2s' }}
-                      title="Delete this image"
-                      onClick={() => {
-                        if (confirm('Delete this image from media assets?')) {
-                          const newImages = images.filter((_, idx) => idx !== i)
-                          if (isEditMode) {
-                            handleInputChange('images', JSON.stringify(newImages))
-                          } else {
-                            // Update immediately in db
-                            const updatedStory = { ...story, images: newImages }
-                            queryClient.setQueryData(['article', id], updatedStory)
-                            setEditedStory(updatedStory)
-                            saveMutation.mutate({ ...story, images: JSON.stringify(newImages) })
-                          }
-                        }
-                      }}
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ))}
+          {/* AUDIO SECTION — Images are now displayed inline within article content */}
+          {audio.url && (
+            <div style={{ marginTop: '40px', borderTop: '1px solid var(--color-border)', paddingTop: '24px' }}>
+              <div className="control-block" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <Music className="text-cyan" />
+                <audio controls src={normalizeUrl(audio.url)} style={{ flex: 1, height: '32px' }} />
               </div>
-              {isEditMode && (
-                <div style={{ display: 'flex', gap: '12px', marginTop: '16px', marginBottom: '24px' }}>
-                  <input 
-                    id="new-image-url-input"
-                    type="text" 
-                    placeholder="Enter new image URL..." 
-                    style={{ flex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)', borderRadius: '6px', padding: '10px 14px', color: '#fff', outline: 'none' }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && e.target.value.trim()) {
-                        const newImages = [...images, e.target.value.trim()]
-                        handleInputChange('images', JSON.stringify(newImages))
-                        e.target.value = ''
-                      }
-                    }}
-                  />
-                  <button 
-                    className="btn btn-primary" 
-                    style={{ height: 'auto', padding: '0 20px', fontSize: '0.75rem' }}
-                    onClick={() => {
-                      const input = document.getElementById('new-image-url-input')
-                      if (input && input.value.trim()) {
-                        const newImages = [...images, input.value.trim()]
-                        handleInputChange('images', JSON.stringify(newImages))
-                        input.value = ''
-                      }
-                    }}
-                  >
-                    ADD IMAGE
-                  </button>
-                </div>
-              )}
-              {audio.url && (
-                <div className="control-block" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                  <Music className="text-cyan" />
-                  <audio controls src={normalizeUrl(audio.url)} style={{ flex: 1, height: '32px' }} />
-                </div>
-              )}
             </div>
           )}
         </div>
