@@ -15,6 +15,12 @@ layout_noise = [
     "news18", "copyright", "follow the market", "follow us", "latest updates"
 ]
 
+menu_keywords = [
+    "find cars", "compare cars", "car reviews", "car photos", "car videos", "car brands", "just launched cars", "upcoming cars", "popular cars",
+    "find bikes", "compare bikes", "bike reviews", "bike photos", "bike videos", "bike brands", "just launched bikes", "upcoming bikes", "popular bikes",
+    "all reviews", "first drive", "road test", "comparo", "news & features", "opinions", "motorsport", "press releases", "all photos", "get app", "better photography"
+]
+
 def clean_sections():
     if not os.path.exists(db_path):
         print(f"Database {db_path} does not exist locally.")
@@ -33,7 +39,6 @@ def clean_sections():
         title = row["title"] or ""
         sections_raw = row["sections"]
         
-        # Clean title print for windows terminal
         title_safe = title.encode('ascii', 'ignore').decode('ascii')
         
         if not sections_raw:
@@ -48,7 +53,7 @@ def clean_sections():
         if not isinstance(sections, list):
             continue
             
-        original_len = len(sections)
+        original_sections_raw = json.dumps(sections)
         filtered_sections = []
         for sec in sections:
             heading = sec.get("heading", "") or ""
@@ -57,9 +62,22 @@ def clean_sections():
                 heading_safe = heading.encode('ascii', 'ignore').decode('ascii')
                 print(f"[CLEANUP] Removing layout noise section '{heading_safe}' from story {story_id}: {title_safe}")
                 continue
+                
+            content_text = sec.get("content", "") or ""
+            content_lines = content_text.split('\n')
+            filtered_lines = []
+            for line in content_lines:
+                line_lower = line.lower()
+                if any(kw in line_lower for kw in menu_keywords) or (len(line.split()) <= 4 and any(kw in line_lower for kw in ["find", "compare", "reviews", "photos", "videos", "upcoming", "launched", "popular", "brands"])):
+                    line_safe = line.encode('ascii', 'ignore').decode('ascii')
+                    print(f"[CLEANUP] Removing menu text line '{line_safe}' from story {story_id}: {title_safe}")
+                    continue
+                filtered_lines.append(line)
+            
+            sec["content"] = "\n".join(filtered_lines)
             filtered_sections.append(sec)
             
-        if len(filtered_sections) != original_len:
+        if json.dumps(filtered_sections) != original_sections_raw:
             cursor.execute(
                 "UPDATE stories SET sections = ? WHERE id = ?",
                 (json.dumps(filtered_sections), story_id)

@@ -78,6 +78,16 @@ async def scrape_single_article_page(url: str) -> str:
                 is_li = tag.name == 'li'
                 
                 txt_lower = txt.lower()
+                
+                # Filter out header/sidebar navigation menu lists
+                menu_keywords = [
+                    "find cars", "compare cars", "car reviews", "car photos", "car videos", "car brands", "just launched cars", "upcoming cars", "popular cars",
+                    "find bikes", "compare bikes", "bike reviews", "bike photos", "bike videos", "bike brands", "just launched bikes", "upcoming bikes", "popular bikes",
+                    "all reviews", "first drive", "road test", "comparo", "news & features", "opinions", "motorsport", "press releases", "all photos", "get app"
+                ]
+                if any(kw in txt_lower for kw in menu_keywords) or (len(txt.split()) <= 4 and any(kw in txt_lower for kw in ["find", "compare", "reviews", "photos", "videos", "upcoming", "launched", "popular", "brands"])):
+                    continue
+                    
                 if is_heading:
                     # Ignore generic layout navigation headings
                     layout_noise = ["top stories", "latest videos", "network18 updates", "recent posts", "popular tags", "related content", "recommended stories", "trending", "must read", "popular videos", "latest news", "overdrive sites", "better photography", "better interiors", "moneycontrol", "firstpost", "news18", "copyright", "follow the market", "follow us", "latest updates"]
@@ -276,6 +286,16 @@ async def scrape_website(url: str):
                                 is_li = tag.name == 'li'
                                 
                                 txt_lower = txt.lower()
+                                
+                                # Filter out header/sidebar navigation menu lists
+                                menu_keywords = [
+                                    "find cars", "compare cars", "car reviews", "car photos", "car videos", "car brands", "just launched cars", "upcoming cars", "popular cars",
+                                    "find bikes", "compare bikes", "bike reviews", "bike photos", "bike videos", "bike brands", "just launched bikes", "upcoming bikes", "popular bikes",
+                                    "all reviews", "first drive", "road test", "comparo", "news & features", "opinions", "motorsport", "press releases", "all photos", "get app"
+                                ]
+                                if any(kw in txt_lower for kw in menu_keywords) or (len(txt.split()) <= 4 and any(kw in txt_lower for kw in ["find", "compare", "reviews", "photos", "videos", "upcoming", "launched", "popular", "brands"])):
+                                    continue
+                                    
                                 if is_heading:
                                     # Ignore generic layout navigation headings
                                     layout_noise = ["top stories", "latest videos", "network18 updates", "recent posts", "popular tags", "related content", "recommended stories", "trending", "must read", "popular videos", "latest news", "overdrive sites", "better photography", "better interiors", "moneycontrol", "firstpost", "news18", "copyright", "follow the market", "follow us", "latest updates"]
