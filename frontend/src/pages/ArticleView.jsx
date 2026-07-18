@@ -395,7 +395,7 @@ export default function ArticleView() {
 
     lines.forEach((line) => {
       const trimmed = line.trim()
-      const bulletMatch = trimmed.match(/^([\*\-\u2022]|(?:\d+\.))\s+(.*)$/)
+      const bulletMatch = trimmed.match(/^([\*\-\u2022•]|\d+\.)\s+(.*)$/)
       
       if (bulletMatch) {
         if (!currentList) {
