@@ -677,17 +677,26 @@ export default function ArticleView() {
                 {images.map((img, i) => (
                   <div key={i} style={{ position: 'relative' }}>
                     <img src={normalizeUrl(img)} style={{ width: '100%', borderRadius: '8px', border: '1px solid var(--color-border)' }} />
-                    {isEditMode && (
-                      <button 
-                        style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--c-magenta)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', color: '#fff', cursor: 'pointer' }}
-                        onClick={() => {
+                    <button 
+                      style={{ position: 'absolute', top: '8px', right: '8px', background: 'var(--c-magenta)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.5)', transition: 'all 0.2s' }}
+                      title="Delete this image"
+                      onClick={() => {
+                        if (confirm('Delete this image from media assets?')) {
                           const newImages = images.filter((_, idx) => idx !== i)
-                          handleInputChange('images', JSON.stringify(newImages))
-                        }}
-                      >
-                        <X size={14} />
-                      </button>
-                    )}
+                          if (isEditMode) {
+                            handleInputChange('images', JSON.stringify(newImages))
+                          } else {
+                            // Update immediately in db
+                            const updatedStory = { ...story, images: newImages }
+                            queryClient.setQueryData(['article', id], updatedStory)
+                            setEditedStory(updatedStory)
+                            saveMutation.mutate({ ...story, images: JSON.stringify(newImages) })
+                          }
+                        }
+                      }}
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
                 ))}
               </div>
