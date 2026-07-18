@@ -524,3 +524,119 @@ body {
   gap: 16px;
 }
 
+/* ─── RESPONSIVE / MOBILE MEDIA QUERIES ─────────────────────── */
+@media (max-width: 1024px) {
+  .terminal-sidebar {
+    width: 320px;
+  }
+}
+
+@media (max-width: 768px) {
+  html, body {
+    overflow-y: auto;
+    height: auto;
+  }
+  
+  .terminal-layout {
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .data-matrix {
+    flex-direction: column;
+    overflow: visible;
+  }
+  
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    flex-direction: row;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 0 10px;
+    height: 55px;
+    position: sticky;
+    top: 50px; /* Under navbar */
+    backdrop-filter: blur(10px);
+    background: var(--color-panel);
+  }
+  
+  .sidebar-item {
+    padding: 10px 15px;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    font-size: 0.85rem;
+    display: inline-flex;
+    gap: 8px;
+  }
+  
+  .sidebar-item:hover {
+    padding-left: 15px;
+    background: transparent;
+  }
+  
+  .sidebar-item.active {
+    background: transparent;
+    border-bottom-color: var(--c-cyan);
+    border-left-color: transparent;
+  }
+  
+  .content-area {
+    overflow-y: visible;
+    height: auto;
+    padding-bottom: 40px;
+  }
+  
+  .kanban-board {
+    flex-direction: column;
+    padding: 16px;
+    gap: 16px;
+    overflow-x: visible;
+  }
+  
+  .kanban-column {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    max-height: none;
+  }
+
+  .column-content {
+    padding: 16px;
+  }
+  
+  .terminal-body {
+    flex-direction: column;
+    overflow: visible;
+  }
+  
+  .terminal-content {
+    padding: 24px 16px;
+  }
+  
+  .terminal-sidebar {
+    width: 100% !important;
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+    padding: 24px 16px;
+  }
+  
+  .terminal-header {
+    height: auto;
+    padding: 16px;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  /* Hide non-critical stats on narrow screens to fit navbar logo and clock */
+  header div:first-child div:last-child {
+    display: none !important;
+  }
+  header div:last-child div:first-child {
+    display: none !important;
+  }
+}
+

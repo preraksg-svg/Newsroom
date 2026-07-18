@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 # Ensure environment variables are loaded
 load_dotenv()
 
-def send_alert_email(new_article_title):
+def send_alert_email(subject_or_title, body_or_id=None):
     sender_email = os.getenv("ALERT_EMAIL") 
     sender_password = os.getenv("ALERT_EMAIL_APP_PASSWORD") 
     
@@ -22,17 +22,29 @@ def send_alert_email(new_article_title):
         print("Email alerts not configured in .env. Skipping email.")
         return
 
-    subject = f"Zapway Editorial Notification: {new_article_title}"
-    body = (
-        f"Zapway Newsroom Update\n"
-        f"---------------------\n\n"
-        f"A new industry article has been drafted: '{new_article_title}'\n\n"
-        f"This draft is pending review in your editorial queue.\n"
-        f"Please log in to the Zapway Newsroom to approve or edit the article:\n"
-        f"http://localhost:8000\n\n"
-        f"Regards,\n"
-        f"Zapway Editorial Agent"
-    )
+    # Check if this is a system alert or a new article notification
+    if body_or_id and len(body_or_id) > 50:  # It's a text body (e.g. system alert)
+        subject = subject_or_title
+        body = body_or_id
+    else:  # It's an article title & optional article_id
+        article_id = body_or_id
+        newsroom_url = os.getenv("NEWSROOM_URL", "https://newsroom-1zapway-newsroom-cloud.onrender.com")
+        if article_id:
+            link_url = f"{newsroom_url}/article/{article_id}"
+        else:
+            link_url = f"{newsroom_url}/news"
+            
+        subject = f"Zapway Editorial Notification: {subject_or_title}"
+        body = (
+            f"Zapway Newsroom Update\n"
+            f"---------------------\n\n"
+            f"A new industry article has been drafted: '{subject_or_title}'\n\n"
+            f"This draft is pending review in your editorial queue.\n"
+            f"Please click the link below to inspect, edit, or publish it from your phone or laptop:\n"
+            f"{link_url}\n\n"
+            f"Regards,\n"
+            f"Zapway Editorial Agent"
+        )
 
     try:
         server = smtplib.SMTP('smtp.gmail.com', 587)

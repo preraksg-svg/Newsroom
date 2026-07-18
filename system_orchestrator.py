@@ -370,7 +370,7 @@ class NewsroomOrchestrator:
             # Send Email Notification
             try:
                 from email_utils import send_alert_email
-                asyncio.create_task(asyncio.to_thread(send_alert_email, content_pkg['title']))
+                asyncio.create_task(asyncio.to_thread(send_alert_email, content_pkg['title'], story_id))
             except Exception as email_err:
                 print(f"[PIPELINE] Failed to send email notification: {email_err}")
             
