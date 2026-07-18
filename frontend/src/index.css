@@ -533,102 +533,137 @@ body {
 
 @media (max-width: 768px) {
   html, body {
-    overflow-y: auto;
-    height: auto;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
   }
   
   .terminal-layout {
-    height: auto;
-    min-height: 100vh;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
   }
   
   .data-matrix {
-    flex-direction: column;
-    overflow: visible;
+    flex-direction: column !important;
+    overflow: visible !important;
+    height: auto !important;
   }
   
   .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--color-border);
-    flex-direction: row;
-    overflow-x: auto;
-    white-space: nowrap;
-    padding: 0 10px;
-    height: 55px;
-    position: sticky;
-    top: 50px; /* Under navbar */
-    backdrop-filter: blur(10px);
-    background: var(--color-panel);
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding: 0 10px !important;
+    height: 55px !important;
+    position: sticky !important;
+    top: 50px !important; /* Under navbar */
+    backdrop-filter: blur(10px) !important;
+    background: var(--color-panel) !important;
+    z-index: 999 !important;
+  }
+  
+  /* Sidebar mobile clean-up */
+  .sidebar-header {
+    display: none !important;
+  }
+  .sidebar > div {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    padding: 0 !important;
+    align-items: center !important;
+  }
+  .sidebar > div > div:first-child,
+  .sidebar > div > div:last-child {
+    display: none !important;
   }
   
   .sidebar-item {
-    padding: 10px 15px;
-    border-left: none;
-    border-bottom: 2px solid transparent;
-    font-size: 0.85rem;
-    display: inline-flex;
-    gap: 8px;
+    padding: 10px 15px !important;
+    border-left: none !important;
+    border-bottom: 2px solid transparent !important;
+    font-size: 0.85rem !important;
+    display: inline-flex !important;
+    gap: 8px !important;
   }
   
   .sidebar-item:hover {
-    padding-left: 15px;
-    background: transparent;
+    padding-left: 15px !important;
+    background: transparent !important;
   }
   
   .sidebar-item.active {
-    background: transparent;
-    border-bottom-color: var(--c-cyan);
-    border-left-color: transparent;
+    background: transparent !important;
+    border-bottom-color: var(--c-cyan) !important;
+    border-left-color: transparent !important;
   }
   
   .content-area {
-    overflow-y: visible;
-    height: auto;
-    padding-bottom: 40px;
+    overflow: visible !important;
+    height: auto !important;
+    padding-bottom: 40px !important;
   }
   
   .kanban-board {
-    flex-direction: column;
-    padding: 16px;
-    gap: 16px;
-    overflow-x: visible;
+    flex-direction: column !important;
+    padding: 16px !important;
+    gap: 16px !important;
+    overflow: visible !important;
+    height: auto !important;
   }
   
   .kanban-column {
     width: 100% !important;
     min-width: 0 !important;
     max-width: none !important;
-    max-height: none;
+    max-height: none !important;
   }
 
   .column-content {
-    padding: 16px;
+    padding: 16px !important;
+    overflow: visible !important;
+    max-height: none !important;
   }
   
   .terminal-body {
-    flex-direction: column;
-    overflow: visible;
+    flex-direction: column !important;
+    overflow: visible !important;
+    height: auto !important;
   }
   
   .terminal-content {
-    padding: 24px 16px;
+    padding: 24px 16px !important;
+    overflow: visible !important;
+    height: auto !important;
   }
   
   .terminal-sidebar {
     width: 100% !important;
-    border-left: none;
-    border-top: 1px solid var(--color-border);
-    padding: 24px 16px;
+    border-left: none !important;
+    border-top: 1px solid var(--color-border) !important;
+    padding: 24px 16px !important;
+    overflow: visible !important;
+    height: auto !important;
   }
   
   .terminal-header {
-    height: auto;
-    padding: 16px;
-    flex-direction: column;
-    gap: 12px;
-    align-items: stretch;
-    text-align: center;
+    height: auto !important;
+    padding: 16px !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+    text-align: center !important;
+    border-bottom: 1px solid var(--color-border) !important;
+  }
+
+  .terminal-header > div {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 8px !important;
   }
 
   /* Hide non-critical stats on narrow screens to fit navbar logo and clock */
