@@ -87,7 +87,9 @@ def fetch_all_image_urls(url: str) -> list:
                 'logo', 'avatar', 'icon', 'sprite', 'banner', 'spacer', 'loader', 'spinner', 
                 'pixel', 'ad-', 'advertisement', 'widget', 'theme', 'header', 'footer', 
                 'button', 'badge', 'menu', 'nav', 'placeholder', 'social', 'bg', 'background',
-                'thumb', 'author', 'profile', 'comment', 'search', 'arrow', 'newsletter', 'adchoices'
+                'thumb', 'author', 'profile', 'comment', 'search', 'arrow', 'newsletter', 'adchoices',
+                'popup', 'insider', 'authorplaceholder', 'webinar', 'sub-menu', 'sharing', 'share',
+                'advert', 'promo', 'sign-up', 'newsletter', 'mail', 'icon-', 'subscribe'
             ]
             
             for img in soup.find_all("img"):
@@ -99,6 +101,11 @@ def fetch_all_image_urls(url: str) -> list:
                         continue
                 except (ValueError, TypeError):
                     pass
+                
+                # Check alt attribute text for layout/UI indicators
+                alt_text = (img.get("alt") or "").lower()
+                if any(kw in alt_text for kw in avoid_keywords):
+                    continue
                     
                 src = img.get("src") or img.get("data-src") or img.get("data-lazy-src") or img.get("data-original")
                 if not src:
