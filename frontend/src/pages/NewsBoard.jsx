@@ -217,10 +217,7 @@ export default function NewsBoard({ isRecycleBin }) {
   if (isLoading) return <Loader message="ACCESSING NEWS MATRIX..." />
   if (isError) return <ErrorState error={error.message} />
   
-  const totalItems = items.length
-  // Check if any of the columns have items to show
-  const hasVisibleItems = Object.values(columns).some(col => col.length > 0)
-  if (!hasVisibleItems) {
+  if (totalItems === 0) {
     if (isOrchestrating) {
       return <Loader message="ORCHESTRATING INGESTION PIPELINE... SCAPING & PROCESSING INDIAN EV NEWS..." />
     }
