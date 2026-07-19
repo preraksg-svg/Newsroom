@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { Edit2, Save, Trash2, Split, Image as ImageIcon, Music, Zap, RefreshCw, Layers, Share2, Search } from 'lucide-react'
+import { Edit2, Save, Trash2, Split, Image as ImageIcon, Music, Zap, RefreshCw, Layers, Share2, Search, X } from 'lucide-react'
 import { NewsService, API_BASE } from '../services/api'
 import { Loader, ErrorState } from '../components/StatusStates'
 
