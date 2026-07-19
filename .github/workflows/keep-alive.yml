@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Render App
-        run: curl -s https://zapway-newsroom.onrender.com/news > /dev/null
+        run: curl -s https://newsroom-1zapway-newsroom-cloud.onrender.com/api/news > /dev/null
