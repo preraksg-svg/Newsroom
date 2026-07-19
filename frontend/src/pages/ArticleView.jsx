@@ -527,7 +527,7 @@ export default function ArticleView() {
       </div>
 
       <div className="terminal-body">
-        <div className="terminal-content" style={{ flex: isSplitView && window.innerWidth > 768 ? '0 0 50%' : '1' }}>
+        <div className="terminal-content">
           {/* SEO META BLOCK ABOVE HEADLINE */}
           <div style={{ background: 'rgba(0, 240, 255, 0.03)', border: '1px dashed rgba(0, 240, 255, 0.2)', borderRadius: '8px', padding: '16px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -697,7 +697,7 @@ export default function ArticleView() {
         </div>
 
         {isSplitView && (
-          <div className="terminal-content split-view-panel" style={{ flex: window.innerWidth > 768 ? '0 0 50%' : '1 1 auto', height: window.innerWidth > 768 ? '100%' : '500px', borderLeft: window.innerWidth > 768 ? '1px solid var(--color-border)' : 'none', borderTop: window.innerWidth > 768 ? 'none' : '1px solid var(--color-border)', background: '#080c10', display: 'flex', flexDirection: 'column', padding: 0 }}>
+          <div className="terminal-content split-view-panel" style={{ background: '#080c10', display: 'flex', flexDirection: 'column', padding: 0 }}>
             {/* Header bar */}
             <div style={{ margin: '0', padding: '12px 16px', background: 'rgba(0,240,255,0.06)', borderBottom: '1px solid rgba(0,240,255,0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>

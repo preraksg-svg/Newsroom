@@ -231,7 +231,14 @@ body {
   padding: 80px;
   max-width: 1200px;
   margin: 0 auto;
+  transition: flex 0.3s ease;
 }
+
+/* If split-view is open next to it, scale to 50% on desktop */
+.terminal-body:has(.split-view-panel) .terminal-content:not(.split-view-panel) {
+  flex: 0 0 50%;
+}
+
 
 .terminal-sidebar {
   width: 420px;
@@ -659,6 +666,11 @@ body {
     border-top: 1px solid var(--color-border) !important;
     border-left: none !important;
     flex: 0 0 500px !important;
+  }
+
+  /* Override desktop scaling rule when on mobile screens */
+  .terminal-body:has(.split-view-panel) .terminal-content:not(.split-view-panel) {
+    flex: 1 1 auto !important;
   }
   
   .terminal-sidebar {
