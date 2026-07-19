@@ -429,7 +429,7 @@ export default function ArticleView() {
       }
       
       // Check for inline markdown image ![alt](url)
-      const imgMatch = block.text.match(/^!\[(.*?)\]\((.*?)\)$/)
+      const imgMatch = block.text.match(/!\[(.*?)\]\((.*?)\)/)
       if (imgMatch) {
         return (
           <div key={idx} style={{ margin: '20px 0', textAlign: 'center' }}>
