@@ -42,10 +42,20 @@ def generate_seo_metadata(title, content, news_type="EV"):
     from backend.llm import generate_meta_tags, get_groq_client
     if get_groq_client() is not None:
         try:
-            llm_meta = generate_meta_tags(primary, title, content[:200])
+            # Clean list symbols and markdown images from the content summary before passing to LLM
+            clean_content_summary = content[:500]
+            import re as _re
+            clean_content_summary = _re.sub(r'!\[.*?\]\(.*?\)', '', clean_content_summary)
+            clean_content_summary = _re.sub(r'^\s*[\*\-\u2022•]\s*', '', clean_content_summary, flags=_re.MULTILINE)
+            clean_content_summary = _re.sub(r'^\s*\d+\.\s*', '', clean_content_summary, flags=_re.MULTILINE)
+            
+            llm_meta = generate_meta_tags(primary, title, clean_content_summary[:200])
             if llm_meta and "meta_title" in llm_meta:
                 meta_title_val = clean_incomplete_ending(llm_meta["meta_title"])
-                meta_desc_val = clean_incomplete_ending(llm_meta.get("meta_description", llm_meta.get("meta_desc", "")))
+                meta_desc_raw = llm_meta.get("meta_description", llm_meta.get("meta_desc", ""))
+                meta_desc_raw = _re.sub(r'!\[.*?\]\(.*?\)', '', meta_desc_raw)
+                meta_desc_raw = _re.sub(r'^\s*[\*\-\u2022•]\s*', '', meta_desc_raw)
+                meta_desc_val = clean_incomplete_ending(meta_desc_raw.strip())
                 return {
                     "meta_title": meta_title_val,
                     "meta_desc": meta_desc_val,

@@ -395,20 +395,29 @@ export default function ArticleView() {
 
     lines.forEach((line) => {
       const trimmed = line.trim()
-      const bulletMatch = trimmed.match(/^([\*\-\u2022•]|\d+\.)\s+(.*)$/)
+      const imgMatch = trimmed.match(/!\[(.*?)\]\((.*?)\)/)
       
-      if (bulletMatch) {
-        if (!currentList) {
-          currentList = []
-        }
-        currentList.push(bulletMatch[2])
-      } else {
+      if (imgMatch) {
         if (currentList) {
           blocks.push({ type: 'list', items: currentList })
           currentList = null
         }
-        if (trimmed) {
-          blocks.push({ type: 'p', text: line })
+        blocks.push({ type: 'image', url: imgMatch[2], alt: imgMatch[1] })
+      } else {
+        const bulletMatch = trimmed.match(/^([\*\-\u2022•]|\d+\.)\s+(.*)$/)
+        if (bulletMatch) {
+          if (!currentList) {
+            currentList = []
+          }
+          currentList.push(bulletMatch[2])
+        } else {
+          if (currentList) {
+            blocks.push({ type: 'list', items: currentList })
+            currentList = null
+          }
+          if (trimmed) {
+            blocks.push({ type: 'p', text: line })
+          }
         }
       }
     });
@@ -428,8 +437,22 @@ export default function ArticleView() {
         )
       }
       
-      // Check for inline markdown image ![alt](url)
-      const imgMatch = block.text.match(/!\[(.*?)\]\((.*?)\)/)
+      if (block.type === 'image') {
+        return (
+          <div key={idx} style={{ margin: '20px 0', textAlign: 'center' }}>
+            <img 
+              src={normalizeUrl(block.url)} 
+              alt={block.alt} 
+              style={{ maxWidth: '100%', maxHeight: '450px', borderRadius: '8px', border: '1px solid var(--color-border)', boxShadow: 'var(--glow-cyan)' }} 
+            />
+            {block.alt && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px' }}>{block.alt}</div>}
+          </div>
+        )
+      }
+      
+      // Check for inline markdown image ![alt](url) on remaining text blocks
+      const textVal = block.text || ''
+      const imgMatch = textVal.match(/!\[(.*?)\]\((.*?)\)/)
       if (imgMatch) {
         return (
           <div key={idx} style={{ margin: '20px 0', textAlign: 'center' }}>
@@ -443,7 +466,7 @@ export default function ArticleView() {
         )
       }
 
-      return <p key={idx} style={{ margin: '0 0 12px 0', whiteSpace: 'pre-wrap' }}>{block.text}</p>
+      return <p key={idx} style={{ margin: '0 0 12px 0', whiteSpace: 'pre-wrap' }}>{textVal}</p>
     })
   }
 
