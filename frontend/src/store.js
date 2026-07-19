@@ -12,7 +12,7 @@ export const useStore = create((set) => ({
   searchQuery: '',
   setSearchQuery: (val) => set({ searchQuery: val }),
   
-  statusFilter: 'All',
+  statusFilter: 'Draft',
   setStatusFilter: (val) => set({ statusFilter: val }),
   
   calendarDate: '',

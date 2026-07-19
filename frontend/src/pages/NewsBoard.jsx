@@ -191,9 +191,15 @@ export default function NewsBoard({ isRecycleBin }) {
       }
     })
 
-    // If a specific filter is set, only show that column (if it has items)
+    // If a specific filter is set, filter out other statuses but keep the column mapping intact
     if (statusFilter && statusFilter !== 'All') {
-      return { [statusFilter]: base[statusFilter] || [] }
+      const filtered = {}
+      Object.keys(base).forEach(col => {
+        if (col === statusFilter) {
+          filtered[col] = base[col]
+        }
+      })
+      return filtered
     }
     
     return base
