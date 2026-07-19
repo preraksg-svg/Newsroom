@@ -155,6 +155,7 @@ export default function NewsBoard({ isRecycleBin }) {
   })
 
   const items = Array.isArray(res) ? res : (res?.items || [])
+  const totalItems = items.length
 
   const columns = useMemo(() => {
     if (isRecycleBin) return { 'Rejected': items }
