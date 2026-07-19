@@ -16,7 +16,16 @@ function ArticleCard({ item, onClick, onReject, onRestore, onAction, isRecycleBi
   const title = fields.title || fields.Title || fields.headline || 'UNTITLED SIGNAL'
   const publisher = fields.publisher || fields.Publisher || 'Global Node'
   const summary = fields.summary_preview || fields.summary || fields['Summary Preview'] || ''
-  const createdTime = fields.createdTime || fields.created_at || item.createdTime || new Date()
+  const getParsedTime = (timeStr) => {
+    if (!timeStr) return new Date()
+    let parseStr = String(timeStr).replace(' ', 'T')
+    if (!parseStr.includes('Z') && !parseStr.includes('+') && !parseStr.includes('-')) {
+      parseStr += 'Z'
+    }
+    return new Date(parseStr)
+  }
+
+  const createdTime = getParsedTime(fields.created_at || item.createdTime || fields.createdTime)
 
   const handleReject = (e) => {
     e.stopPropagation()
@@ -55,7 +64,7 @@ function ArticleCard({ item, onClick, onReject, onRestore, onAction, isRecycleBi
       </span>
 
       <div style={{ marginBottom: '16px', fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-data)', letterSpacing: '1px' }}>
-        {publisher.toUpperCase()} // {new Date(createdTime).toLocaleString()}
+        {publisher.toUpperCase()} // {createdTime.toLocaleString()}
       </div>
 
       <h3 className="card-title">{title}</h3>

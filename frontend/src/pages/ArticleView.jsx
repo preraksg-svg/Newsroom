@@ -827,7 +827,14 @@ export default function ArticleView() {
                </div>
                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                  <span>INGESTED:</span>
-                 <span>{new Date(story.created_at).toLocaleString()}</span>
+                  <span>{(() => {
+                    if (!story.created_at) return ''
+                    let parseStr = String(story.created_at).replace(' ', 'T')
+                    if (!parseStr.includes('Z') && !parseStr.includes('+') && !parseStr.includes('-')) {
+                      parseStr += 'Z'
+                    }
+                    return new Date(parseStr).toLocaleString()
+                  })()}</span>
                </div>
                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                  <span>STATUS:</span>
