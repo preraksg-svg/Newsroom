@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { Trash2, ExternalLink, Calendar, Star, AlertCircle, RefreshCw, RotateCcw } from 'lucide-react'
@@ -215,14 +215,43 @@ export default function NewsBoard({ isRecycleBin }) {
     return base
   }, [items, isRecycleBin, statusFilter])
 
+  // Start pipeline automatically if empty and not orchestrating
+  useEffect(() => {
+    if (totalItems === 0 && !isOrchestrating && !isRecycleBin && !isLoading) {
+      NewsService.performAction('orchestrate', '').catch(() => {})
+    }
+  }, [totalItems, isOrchestrating, isRecycleBin, isLoading])
+
   if (isLoading) return <Loader message="ACCESSING NEWS MATRIX..." />
   if (isError) return <ErrorState error={error.message} />
   
   if (totalItems === 0) {
     if (isOrchestrating) {
-      return <Loader message="ORCHESTRATING INGESTION PIPELINE... SCAPING & PROCESSING INDIAN EV NEWS..." />
+      return <Loader message="ORCHESTRATING INGESTION PIPELINE... SCRAPING & PROCESSING INDIAN EV NEWS..." />
     }
-    return <EmptyState title={isRecycleBin ? "RECYCLE BIN EMPTY" : "NO SIGNALS FOUND"} subtitle="START PIPELINE TO INGEST INTELLIGENCE" />
+    return (
+      <div className="flex-center" style={{ flex: 1, height: '100%', textAlign: 'center', padding: '40px', flexDirection: 'column' }}>
+        <div style={{ fontSize: '3.5rem', marginBottom: '24px' }}>📁</div>
+        <div style={{ fontWeight: 900, color: '#fff', marginBottom: '12px', fontSize: '1.4rem' }}>{isRecycleBin ? "RECYCLE BIN EMPTY" : "NO SIGNALS FOUND"}</div>
+        <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '24px' }}>START PIPELINE TO INGEST INTELLIGENCE</div>
+        {!isRecycleBin && (
+          <button 
+            className="btn btn-primary" 
+            style={{ padding: '12px 24px', fontSize: '0.8rem', background: 'var(--c-cyan)', color: '#000', fontWeight: 900 }}
+            onClick={async () => {
+              try {
+                // Invalidate query to trigger loading spinner
+                queryClient.setQueryData(['news', isRecycleBin, searchQuery, statusFilter], null)
+                refetch()
+                await NewsService.performAction('orchestrate', '')
+              } catch (e) {}
+            }}
+          >
+            ⚡ INGEST NEWS PIPELINE NOW
+          </button>
+        )}
+      </div>
+    )
   }
 
   return (
