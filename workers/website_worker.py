@@ -62,6 +62,7 @@ def _strip_nav_from_soup(soup):
         r'topbar|top-bar|bottom-bar|dropdown|flyout|mega-menu|off-canvas|'
         r'site-header|site-footer|page-header|page-footer|widget|'
         r'advertisement|promo|social-share|share-bar|related|recommended|'
+        r'suggested|suggested-news|upcoming-cars|latest-cars|'
         r'trending|popular-posts|tag-cloud|author-bio|comment|pagination|'
         r'cookie|gdpr|newsletter|subscribe|sticky|fixed-bar)\b(?!-)',
         _re.IGNORECASE
@@ -69,6 +70,7 @@ def _strip_nav_from_soup(soup):
     NAV_ID_RE = _re.compile(
         r'(?<!-)\b(nav|header|footer|sidebar|menu|topnav|mainnav|sidenav|'
         r'breadcrumb|top-bar|bottom-bar|social|share|related|trending|'
+        r'suggested|upcoming|latest|'
         r'popular|tags|comments|pagination|cookie|newsletter|subscribe)\b(?!-)',
         _re.IGNORECASE
     )
@@ -178,6 +180,8 @@ async def scrape_single_article_page(url: str) -> str:
                         "top stories", "latest videos", "network18 updates", "recent posts",
                         "popular tags", "related content", "recommended stories", "trending",
                         "must read", "popular videos", "latest news", "overdrive sites",
+                        "suggested news", "upcoming cars", "latest cars", "latest launches",
+                        "questions after reading",
                         "better photography", "better interiors", "moneycontrol", "firstpost",
                         "news18", "copyright", "follow the market", "follow us", "latest updates"
                     ]
