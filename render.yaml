@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: zapway-newsroom
+    runtime: docker
+    plan: starter
+    healthCheckPath: /api/analytics
+    envVars:
+      - key: PORT
+        value: "8000"
+      - key: ZAPWAY_AUTO_START_WORKERS
+        value: "true"
+      - key: DATABASE_URL
+        value: sqlite:////app/db/newsroom.db
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ALERT_EMAIL
+        sync: false
+      - key: ALERT_EMAIL_APP_PASSWORD
+        sync: false
+    disk:
+      name: newsroom-data
+      mountPath: /app/db
+      sizeGB: 1

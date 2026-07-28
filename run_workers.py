@@ -24,13 +24,12 @@ async def main():
     # AUTO-RESET: clear circuit breakers on every startup so stale quarantine state
     # from a previous crash/deploy never blocks scraping indefinitely.
     try:
-        import json, sqlite3
-        _db_path = os.path.join(os.path.dirname(__file__), 'newsroom.db')
+        import json
+        from backend.db.queries import get_db
         _cb_path = os.path.join(os.path.dirname(__file__), 'scratch', 'circuit_breakers.json')
-        _conn = sqlite3.connect(_db_path)
-        _conn.execute("UPDATE source_scores SET failure_count=0 WHERE activity_status='active'")
-        _conn.commit()
-        _conn.close()
+        with get_db() as _conn:
+            _conn.execute("UPDATE source_scores SET failure_count=0 WHERE activity_status='active'")
+            _conn.commit()
         if os.path.exists(_cb_path):
             with open(_cb_path, 'w') as _f:
                 json.dump({}, _f)

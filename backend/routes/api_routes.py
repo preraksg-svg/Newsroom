@@ -7,10 +7,6 @@ from backend.services.news_service import NewsService, AnalyticsService, Intelli
 
 router = APIRouter(prefix="/api")
 
-import time
-
-LAST_FAST_SCRAPE_TIME = 0.0
-
 async def run_fast_scrape_background():
     try:
         from workers.website_worker import scrape_website
@@ -86,19 +82,12 @@ async def api_migrate_drafts():
 
 @router.get("/news")
 def get_news(
-    background_tasks: BackgroundTasks,
     status: Optional[str] = None, 
     search: Optional[str] = None, 
     limit: int = 100,
     page: int = 1
 ):
-    global LAST_FAST_SCRAPE_TIME
     try:
-        current_time = time.time()
-        if current_time - LAST_FAST_SCRAPE_TIME > 21600.0:
-            LAST_FAST_SCRAPE_TIME = current_time
-            background_tasks.add_task(run_fast_scrape_background)
-            
         data = NewsService.get_news(status, search, limit, page)
         return {"success": True, "data": data}
     except Exception as e:

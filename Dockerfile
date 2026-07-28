@@ -2,7 +2,7 @@
 FROM node:18-alpine AS frontend-builder
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
-RUN npm install
+RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
@@ -35,4 +35,7 @@ ENV PORT=8000
 ENV ZAPWAY_AUTO_START_WORKERS=true
 EXPOSE 8000
 
-CMD sh -c "python scratch/cleanup_existing_stories.py && uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}"
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 CMD curl -fsS http://127.0.0.1:${PORT:-8000}/api/analytics || exit 1
+
+# Database cleanup is an operator action, never a deployment-time side effect.
+CMD sh -c "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}"
