@@ -230,6 +230,17 @@ def init_db():
                 weight REAL
             )
         ''')
+        cur.execute("SELECT COUNT(*) FROM model_weights")
+        if cur.fetchone()[0] == 0:
+            default_weights = [
+                ("headline.length", 0.01),
+                ("headline.power_words_score", 0.15),
+                ("headline.curiosity_score", 0.2),
+                ("content.readability", 0.1),
+                ("topic.trend_score", 0.3),
+                ("media.visual_score", 0.15)
+            ]
+            cur.executemany("INSERT INTO model_weights (feature, weight) VALUES (?, ?)", default_weights)
         cur.execute('''
             CREATE TABLE IF NOT EXISTS system_locks (
                 lock_name TEXT PRIMARY KEY,

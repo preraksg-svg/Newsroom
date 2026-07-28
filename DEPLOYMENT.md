@@ -1,44 +1,43 @@
-# Zapway Newsroom: continuous deployment
+# Zapway Newsroom: Continuous Deployment with Railway.app
 
-Zapway runs a dashboard plus long-running scraping and editorial workers. Deploy it as one
-always-on Docker service with persistent storage. A static host such as Netlify cannot run
-these workers.
+Zapway runs a dashboard plus long-running scraping and editorial workers. Deploy it as one always-on Docker service on Railway.app with persistent storage. Static hosts like Netlify or Vercel cannot run these background workers.
 
 ## Security before publishing
 
-Rotate the Groq key and Google app password that were previously committed in this project,
-then remove them from every Git commit before pushing a public repository. Store real values
-only in the host's encrypted environment-variable settings.
+Rotate any Groq keys or email app passwords that were previously committed in development, then remove them from Git history before pushing to a public repository. Store production credentials **only** in Railway's encrypted environment variables.
 
-## Deploy with Render
+## Deploy with Railway.app
 
-The repository includes `render.yaml`. Push the reviewed code to a private GitHub repository,
-then create a Render Blueprint from that repository. Render will read the Docker configuration,
-create the service, mount the persistent disk at `/app/db`, and prompt for the secret values.
+1. **Push Code:** Push your reviewed code to a GitHub repository (private recommended).
+2. **Create Railway Project:**
+   - Log in to [Railway.app](https://railway.app).
+   - Click **New Project** -> **Deploy from GitHub repo** and select your repository.
+3. **Configure Persistent Disk (SQLite):**
+   - In your newly created service on Railway, click on the **Settings** tab.
+   - Scroll down to **Volumes** and click **Add Volume**.
+   - Set the mount path to `/app/db`. This ensures your `newsroom.db` SQLite database persists across deployments and doesn't get wiped out.
+4. **Set Environment Variables:**
+   - Go to the **Variables** tab in Railway and add the following:
 
-Use an always-on paid instance. A sleeping/free instance cannot operate the newsroom 24/7;
-requests from uptime monitors do not make its worker process dependable.
+| Key | Value | Description |
+| --- | --- | --- |
+| `PORT` | *Automatically managed by Railway* | Do not manually set this; Railway binds the port dynamically. |
+| `DATABASE_URL` | `sqlite:////app/db/newsroom.db` | Absolute path pointing to the mounted persistent disk. |
+| `ZAPWAY_AUTO_START_WORKERS` | `true` | Tells the FastAPI process to launch ingestion and media workers inline. |
+| `GROQ_API_KEY` | `gsk_...` | Your rotated Groq API key. |
+| `ALERT_EMAIL` | `your_email@gmail.com` | Notification sender address. |
+| `ALERT_EMAIL_APP_PASSWORD` | `xxxx-xxxx-xxxx-xxxx` | Rotated Google App Password for SMTP alerts. |
+| `WP_API_URL` | `https://your-site.com/wp-json/wp-json/wp/v2/posts` | (Optional) WordPress API endpoint. |
+| `WP_USERNAME` | `admin` | (Optional) WordPress username. |
+| `WP_APP_PASSWORD` | `xxxx-xxxx-xxxx-xxxx` | (Optional) WordPress application password. |
 
-Set these encrypted environment variables in Render:
+Railway will automatically read the `Dockerfile` in the root of the project, build the multi-stage image (compiling the frontend and installing Python dependencies/Playwright browsers), and launch the unified server.
 
-| Key | Value |
-| --- | --- |
-| `GROQ_API_KEY` | Your rotated Groq API key |
-| `ALERT_EMAIL` | Your sender address |
-| `ALERT_EMAIL_APP_PASSWORD` | Your rotated Google app password |
-| `WP_API_URL` | Optional WordPress API URL |
-| `WP_USERNAME` | Optional WordPress account |
-| `WP_APP_PASSWORD` | Optional WordPress application password |
+## Verify the Deployment
 
-The blueprint supplies `PORT`, `ZAPWAY_AUTO_START_WORKERS`, and the SQLite `DATABASE_URL`.
-Do not supply a PostgreSQL URL: the current data layer uses SQLite directly.
+Once the service build is complete and the deployment becomes **Active**, click the public domain provided by Railway and check:
 
-## Verify
+* Dashboard home: `https://<your-railway-domain>/news`
+* Stats endpoint: `https://<your-railway-domain>/api/analytics`
 
-When the service becomes healthy, open its public URL and check:
-
-- `/api/analytics`
-- `/api/v1/diagnostics/ingestion-status`
-
-The dashboard request never starts scraping. Ingestion runs continuously in the service worker
-process, and the SQLite database persists on the mounted disk.
+The ingestion and media pipelines will run continuously in the background within the same container, persisting all curated articles and growth features on your Railway volume.
