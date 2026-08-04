@@ -33,11 +33,26 @@ def clean_incomplete_ending(text):
         words.pop()
     return " ".join(words)
 
-def generate_seo_metadata(title, content, news_type="EV"):
-    """Generate optimized meta title, description, and full keyword strategy."""
+def generate_seo_metadata(title, content, news_type="EV", existing_meta_title=None, existing_meta_desc=None):
+    """Generate optimized meta title, description, and full keyword strategy.
+
+    If the caller already has a good meta title/description (e.g. from the main
+    article-generation step), pass them via existing_meta_* to REUSE them and skip
+    a redundant LLM call. This is important on Groq's free tier where every extra
+    call per article eats the daily token budget.
+    """
     strategy = KeywordEngine.generate_keyword_strategy(title, content, news_type)
     primary = strategy.get("primary", "EV")
-    
+
+    # Reuse already-generated meta instead of calling the LLM again.
+    if existing_meta_title and existing_meta_desc:
+        return {
+            "meta_title": clean_incomplete_ending(str(existing_meta_title).strip()),
+            "meta_desc": clean_incomplete_ending(str(existing_meta_desc).strip()),
+            "keywords": primary,
+            "strategy": strategy
+        }
+
     # Try calling LLM-based meta tags generator if available
     from backend.llm import generate_meta_tags, get_groq_client
     if get_groq_client() is not None:

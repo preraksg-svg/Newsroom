@@ -310,8 +310,12 @@ class NewsroomOrchestrator:
                 print(f"[SCORING] REJECTED ({score_res['content_score']}). Skipping.")
                 return
 
-            # 13: Keyword + SEO Engine
-            seo_pkg = await asyncio.to_thread(generate_seo_metadata, content_pkg['title'], content_pkg['body'])
+            # 13: Keyword + SEO Engine. Reuse the meta already produced during
+            # article generation to avoid a redundant LLM call (free-tier budget).
+            seo_pkg = await asyncio.to_thread(
+                generate_seo_metadata, content_pkg['title'], content_pkg['body'],
+                "EV", content_pkg.get('meta_title'), content_pkg.get('meta_description')
+            )
             seo_faq = await asyncio.to_thread(generate_faq, content_pkg['body'], seo_pkg['keywords'])
             
             # 14-15: Variant Generation (Bandit Ready)

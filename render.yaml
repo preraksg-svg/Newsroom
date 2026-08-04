@@ -2,22 +2,45 @@ services:
   - type: web
     name: zapway-newsroom
     runtime: docker
-    plan: starter
+    plan: free
+    # Render injects $PORT dynamically — do NOT hardcode it, or the router/health
+    # check will target the wrong port. The Dockerfile already binds to $PORT.
     healthCheckPath: /api/analytics
     envVars:
-      - key: PORT
-        value: "8000"
       - key: ZAPWAY_AUTO_START_WORKERS
         value: "true"
+      # Free tier has 512MB RAM and no persistent disk. Skip headless-Chromium
+      # social scrapers (they OOM-kill the process) and use the lightweight
+      # API/RSS sources instead.
+      - key: ZAPWAY_DISABLE_BROWSER_SCRAPERS
+        value: "true"
+      # Keep AI article generation within Groq's free daily token budget:
+      # use the 8B model (5x the daily quota of 70B) and limit how many sources
+      # are polled per 30-min cycle so the pipeline doesn't flood the quota.
+      - key: ZAPWAY_PRIMARY_MODEL
+        value: "llama-3.1-8b-instant"
+      - key: ZAPWAY_MAX_SOURCES_PER_CYCLE
+        value: "40"
+      # Ephemeral SQLite: free tier has no disk, so the DB lives in the container
+      # and resets on each redeploy. The app auto-seeds sources and re-ingests
+      # news on startup, so it rebuilds itself. Upgrade to a paid plan + disk if
+      # you need curated/published state to survive redeploys.
       - key: DATABASE_URL
-        value: sqlite:////app/db/newsroom.db
+        value: sqlite:///newsroom.db
+      # Set these in the Render dashboard (Environment tab). Never commit real keys.
       - key: GROQ_API_KEY
         sync: false
       - key: ALERT_EMAIL
         sync: false
       - key: ALERT_EMAIL_APP_PASSWORD
         sync: false
-    disk:
-      name: newsroom-data
-      mountPath: /app/db
-      sizeGB: 1
+      - key: ALERT_RECIPIENT
+        sync: false
+      - key: NEWSROOM_URL
+        sync: false
+      # Zapway website login for the publisher (tap-to-publish). Required for
+      # publishing to work; set these in the Render dashboard.
+      - key: ZAPWAY_EMAIL
+        sync: false
+      - key: ZAPWAY_PASSWORD
+        sync: false

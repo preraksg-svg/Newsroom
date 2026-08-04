@@ -173,6 +173,16 @@ async def process_task_safe(worker_id, src, traceparent):
     results = []
     success = False
     
+    # On memory-constrained free hosting (e.g. Render free tier, 512MB) launching a
+    # headless Chromium per source will OOM-kill the whole process. Skip the
+    # browser-based social scrapers there and rely on the lightweight API/RSS sources.
+    if os.getenv("ZAPWAY_DISABLE_BROWSER_SCRAPERS", "false").lower() in {"1", "true", "yes"} \
+            and stype in {"twitter", "instagram", "facebook"}:
+        logger.info(f"[Worker {worker_id}] Skipping browser scraper '{stype}' for {domain} "
+                    f"(ZAPWAY_DISABLE_BROWSER_SCRAPERS enabled).")
+        log_source_fetch(source_id, 'skipped', 0)
+        return
+
     try:
         # Perform scraper call based on type with timeout
         if stype == "twitter":
@@ -290,8 +300,22 @@ async def ingestion_loop():
                 await asyncio.sleep(30)
                 continue
                 
+            # Cap sources processed per cycle to keep the volume of new articles
+            # within the free-tier LLM token budget. Sources are rotated so a
+            # different slice is polled each cycle. Set ZAPWAY_MAX_SOURCES_PER_CYCLE=0
+            # to disable the cap (paid/high-quota use).
+            try:
+                max_per_cycle = int(os.getenv("ZAPWAY_MAX_SOURCES_PER_CYCLE", "40"))
+            except ValueError:
+                max_per_cycle = 40
+            if max_per_cycle > 0 and len(eligible_sources) > max_per_cycle:
+                # Rotate the slice each cycle so every source is eventually polled.
+                offset = int(now / 1800) * max_per_cycle % len(eligible_sources)
+                rotated = eligible_sources[offset:] + eligible_sources[:offset]
+                eligible_sources = rotated[:max_per_cycle]
+
             logger.info(f"[DAEMON-RUN] Dispatched cycle starting with {len(eligible_sources)} active sources.")
-            
+
             # 3. Dynamic Parallel Processing via Workers
             semaphore = asyncio.Semaphore(5)
             

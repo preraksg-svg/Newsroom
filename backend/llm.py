@@ -36,14 +36,10 @@ def get_groq_client():
         return None
 
     api_key = os.getenv("GROQ_API_KEY")
-    if not api_key or "YOUR_GROQ_API_KEY" in api_key:
-        p1 = "gsk_"
-        p2 = "3F4fqm5eMPJmKR5z"
-        p3 = "l1bhWGdyb3FYADyj"
-        p4 = "74I0fZNst3lvA9Ff5YpK"
-        api_key = p1 + p2 + p3 + p4
-    if not api_key:
-        print("[LLM] WARNING: GROQ_API_KEY is missing or invalid. AI features will be disabled.")
+    if not api_key or "YOUR_GROQ_API_KEY" in api_key or "your_groq_api_key" in api_key:
+        print("[LLM] WARNING: GROQ_API_KEY is missing or invalid. "
+              "Set it as an environment variable (locally in .env, or in your host's "
+              "dashboard). AI features will fall back to local templates until it is set.")
         return None
     try:
         return Groq(api_key=api_key)
@@ -862,6 +858,11 @@ You must return the output as a valid JSON object.
     client = get_groq_client()
     if not client:
         return _rewrite_article_fallback(content, url=url, title=title)
+
+    # Cap the source text sent to the expensive 70B model. Uncapped inputs blow
+    # through Groq's free-tier daily token budget within a few articles; ~6000
+    # chars is plenty to rewrite a news item without truncating meaning.
+    content_capped = (content or "")[:6000]
     try:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
@@ -869,16 +870,36 @@ You must return the output as a valid JSON object.
             response_format={"type": "json_object"},
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"INPUT SOURCES:\n{content}"}
+                {"role": "user", "content": f"INPUT SOURCES:\n{content_capped}"}
             ]
         )
         if hasattr(response, 'usage') and response.usage:
             log_groq_usage(response.usage.total_tokens)
-        
+
         response_text = response.choices[0].message.content
         return json.loads(response_text)
     except Exception as e:
-        print(f"Rewriting error: {e}")
+        # On rate-limit, try the cheaper/higher-quota 8B model before dropping to
+        # the local template (which is the source of generic, low-quality output).
+        if "rate_limit" in str(e).lower() or "429" in str(e):
+            print("[LLM] 70B rate limited in rewrite_article. Falling back to 8b-instant.")
+            try:
+                response = client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    temperature=0.3,
+                    response_format={"type": "json_object"},
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": f"INPUT SOURCES:\n{content_capped}"}
+                    ]
+                )
+                if hasattr(response, 'usage') and response.usage:
+                    log_groq_usage(response.usage.total_tokens)
+                return json.loads(response.choices[0].message.content)
+            except Exception as e2:
+                print(f"Rewriting 8b fallback failed: {e2}")
+        else:
+            print(f"Rewriting error: {e}")
         return _rewrite_article_fallback(content, url=url, title=title)
 
 def rewrite_article_adaptive(content, rag_patterns, policy, predicted_score):

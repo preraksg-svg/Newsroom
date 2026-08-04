@@ -16,9 +16,12 @@ if hasattr(sys.stdout, 'reconfigure'):
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
-ZAPWAY_EMAIL = "prerak.sg@gmail.com"
-ZAPWAY_PASSWORD = "132325"
-ZAPWAY_INSERT_URL = "https://zapway.app/News/insert_news"
+# Publishing credentials come from environment variables. Set ZAPWAY_EMAIL and
+# ZAPWAY_PASSWORD in your .env (local) or the Render dashboard (production).
+# Never hardcode real credentials — this repo is public.
+ZAPWAY_EMAIL = os.getenv("ZAPWAY_EMAIL", "")
+ZAPWAY_PASSWORD = os.getenv("ZAPWAY_PASSWORD", "")
+ZAPWAY_INSERT_URL = os.getenv("ZAPWAY_INSERT_URL", "https://zapway.app/News/insert_news")
 
 
 async def _login(page):
@@ -173,12 +176,34 @@ async def publish_to_zapway(article: dict) -> dict:
     Logs into zapway.app and submits the article via the insert_news form.
     Clicks the '+ Section' button to insert multiple sections.
     """
+    if not ZAPWAY_EMAIL or not ZAPWAY_PASSWORD:
+        msg = ("Publishing credentials missing. Set ZAPWAY_EMAIL and "
+               "ZAPWAY_PASSWORD environment variables (in .env locally or the "
+               "Render dashboard in production).")
+        print(f"[PUBLISHER] ERROR: {msg}")
+        return {"success": False, "error": msg}
+
     async with async_playwright() as p:
+        # Memory-minimising launch flags so the publisher fits comfortably in a
+        # 512MB container (e.g. Render free tier) instead of OOM-crashing.
+        # --single-process removes the per-tab renderer process (the biggest
+        # memory saver); --disable-dev-shm-usage avoids the tiny /dev/shm in
+        # containers; the rest disable subsystems we don't need to fill a form.
         browser = await p.chromium.launch(
             headless=True,
             args=[
                 '--disable-blink-features=AutomationControlled',
                 '--no-sandbox',
+                '--single-process',
+                '--no-zygote',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--disable-extensions',
+                '--disable-background-networking',
+                '--disable-background-timer-throttling',
+                '--disable-renderer-backgrounding',
+                '--disable-features=TranslateUI,BackForwardCache',
+                '--js-flags=--max-old-space-size=256',
             ]
         )
         context = await browser.new_context(
@@ -187,10 +212,23 @@ async def publish_to_zapway(article: dict) -> dict:
                 'AppleWebKit/537.36 (KHTML, like Gecko) '
                 'Chrome/125.0.0.0 Safari/537.36'
             ),
-            viewport={'width': 1280, 'height': 900},
+            viewport={'width': 900, 'height': 700},
             locale='en-US',
         )
         page = await context.new_page()
+
+        # Block heavy resources we never need to submit a form (images, media,
+        # fonts). This cuts the browser's memory and network use dramatically
+        # while leaving HTML/CSS/JS — which the SPA needs — untouched.
+        async def _block_heavy(route):
+            if route.request.resource_type in ("image", "media", "font"):
+                await route.abort()
+            else:
+                await route.continue_()
+        try:
+            await page.route("**/*", _block_heavy)
+        except Exception as _re:
+            print(f"[PUBLISHER] Resource blocking unavailable: {_re}")
 
         try:
             print(f"[PUBLISHER] Opening {ZAPWAY_INSERT_URL}...")

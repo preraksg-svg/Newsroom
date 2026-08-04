@@ -1,8 +1,13 @@
 name: Keep Alive Zapway Newsroom
 
+# Backup keep-alive. PRIMARY keep-alive is UptimeRobot (5-min HTTP monitor) —
+# see DEPLOYMENT.md. GitHub Actions cron is best-effort: runs are frequently
+# delayed and the schedule is auto-disabled after 60 days of repo inactivity,
+# so do not rely on it alone to keep a free Render service awake.
+
 on:
   schedule:
-    - cron: '*/14 * * * *'
+    - cron: '*/10 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -10,4 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Render App
-        run: curl -s https://newsroom-1zapway-newsroom-cloud.onrender.com/api/news > /dev/null
+        env:
+          # Set repo variable RENDER_URL (or APP_URL) under Settings -> Secrets
+          # and variables -> Actions -> Variables to your live Render URL, e.g.
+          # https://zapway-newsroom.onrender.com
+          APP_URL: ${{ vars.APP_URL }}
+          RENDER_URL: ${{ vars.RENDER_URL }}
+        run: |
+          URL="${APP_URL:-${RENDER_URL}}"
+          if [ -z "$URL" ]; then echo "No APP_URL/RENDER_URL set; skipping."; exit 0; fi
+          echo "Pinging $URL/api/analytics"
+          curl -sS -m 60 --retry 3 --retry-delay 10 "$URL/api/analytics" -o /dev/null -w "HTTP %{http_code}\n" || true

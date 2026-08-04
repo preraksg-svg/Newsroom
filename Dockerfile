@@ -30,9 +30,13 @@ COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 # Copy backend application files
 COPY . .
 
-# Expose port and run the unified server (with auto-started background workers)
+# Expose port and run the unified server (with auto-started background workers).
+# Render injects its own $PORT at runtime, which overrides this default.
 ENV PORT=8000
 ENV ZAPWAY_AUTO_START_WORKERS=true
+# Make the app dir writable so the ephemeral SQLite DB / static assets can be
+# written at runtime regardless of the container user.
+RUN chmod -R a+rwX /app
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 CMD curl -fsS http://127.0.0.1:${PORT:-8000}/api/analytics || exit 1

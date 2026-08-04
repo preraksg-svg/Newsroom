@@ -1,43 +1,94 @@
-# Zapway Newsroom: Continuous Deployment with Railway.app
+# Zapway Newsroom — Free 24/7 Deployment (Render + UptimeRobot)
 
-Zapway runs a dashboard plus long-running scraping and editorial workers. Deploy it as one always-on Docker service on Railway.app with persistent storage. Static hosts like Netlify or Vercel cannot run these background workers.
+Zapway runs a dashboard plus always-on scraping and editorial workers in a single
+Docker container. This guide deploys it on **Render's free tier** and keeps it
+awake 24/7 (even when your laptop is off) using **UptimeRobot**.
 
-## Security before publishing
+## Free-tier tradeoffs (read this first)
 
-Rotate any Groq keys or email app passwords that were previously committed in development, then remove them from Git history before pushing to a public repository. Store production credentials **only** in Railway's encrypted environment variables.
+Render's free plan is genuinely free but has limits you must design around — this
+repo is already configured for them:
 
-## Deploy with Railway.app
+- **512 MB RAM.** Headless-Chromium social scrapers (Twitter/Instagram/Facebook)
+  would OOM-kill the process, so they are disabled via
+  `ZAPWAY_DISABLE_BROWSER_SCRAPERS=true`. News still flows from the lightweight
+  API/RSS sources (NewsAPI, GNews, NewsData, YouTube, Reddit, websites, feeds).
+- **No persistent disk.** The SQLite DB lives inside the container and **resets on
+  every redeploy/restart**. The app auto-seeds its sources and re-ingests news on
+  startup, so it rebuilds itself — but curated/published state does not survive a
+  redeploy. If you need durability, upgrade to a paid plan and add a disk mounted
+  at `/app/db` with `DATABASE_URL=sqlite:////app/db/newsroom.db`.
+- **Sleeps after ~15 min idle.** Fixed with UptimeRobot below.
 
-1. **Push Code:** Push your reviewed code to a GitHub repository (private recommended).
-2. **Create Railway Project:**
-   - Log in to [Railway.app](https://railway.app).
-   - Click **New Project** -> **Deploy from GitHub repo** and select your repository.
-3. **Configure Persistent Disk (SQLite):**
-   - In your newly created service on Railway, click on the **Settings** tab.
-   - Scroll down to **Volumes** and click **Add Volume**.
-   - Set the mount path to `/app/db`. This ensures your `newsroom.db` SQLite database persists across deployments and doesn't get wiped out.
-4. **Set Environment Variables:**
-   - Go to the **Variables** tab in Railway and add the following:
+## 0. Rotate your leaked Groq key FIRST
 
-| Key | Value | Description |
-| --- | --- | --- |
-| `PORT` | *Automatically managed by Railway* | Do not manually set this; Railway binds the port dynamically. |
-| `DATABASE_URL` | `sqlite:////app/db/newsroom.db` | Absolute path pointing to the mounted persistent disk. |
-| `ZAPWAY_AUTO_START_WORKERS` | `true` | Tells the FastAPI process to launch ingestion and media workers inline. |
-| `GROQ_API_KEY` | `gsk_...` | Your rotated Groq API key. |
-| `ALERT_EMAIL` | `your_email@gmail.com` | Notification sender address. |
-| `ALERT_EMAIL_APP_PASSWORD` | `xxxx-xxxx-xxxx-xxxx` | Rotated Google App Password for SMTP alerts. |
-| `WP_API_URL` | `https://your-site.com/wp-json/wp-json/wp/v2/posts` | (Optional) WordPress API endpoint. |
-| `WP_USERNAME` | `admin` | (Optional) WordPress username. |
-| `WP_APP_PASSWORD` | `xxxx-xxxx-xxxx-xxxx` | (Optional) WordPress application password. |
+This repo previously committed a real Groq API key in source (now removed) while
+public. **That key is compromised — rotate it before deploying:**
 
-Railway will automatically read the `Dockerfile` in the root of the project, build the multi-stage image (compiling the frontend and installing Python dependencies/Playwright browsers), and launch the unified server.
+1. Go to <https://console.groq.com/keys>, delete the old key, create a new one.
+2. Never put it in code. It goes only in Render's Environment tab (step 3).
 
-## Verify the Deployment
+## 1. Push code to GitHub
 
-Once the service build is complete and the deployment becomes **Active**, click the public domain provided by Railway and check:
+Commit your changes and push to `https://github.com/preraksg-svg/Newsroom` (or
+your fork).
 
-* Dashboard home: `https://<your-railway-domain>/news`
-* Stats endpoint: `https://<your-railway-domain>/api/analytics`
+## 2. Create the Render service
 
-The ingestion and media pipelines will run continuously in the background within the same container, persisting all curated articles and growth features on your Railway volume.
+1. Log in to <https://render.com> (free, no credit card).
+2. **New → Web Service → Build and deploy from a Git repository** → select the repo.
+3. Render auto-detects `render.yaml` (a Blueprint). Accept it. It sets:
+   runtime = Docker, plan = free, health check = `/api/analytics`.
+
+## 3. Set environment variables (Render → your service → Environment)
+
+| Key | Value |
+| --- | --- |
+| `GROQ_API_KEY` | your **rotated** `gsk_...` key |
+| `ALERT_EMAIL` | *(optional)* notification sender address |
+| `ALERT_EMAIL_APP_PASSWORD` | *(optional)* Google App Password for SMTP |
+| `ALERT_RECIPIENT` | *(optional)* email address to receive alerts / article readiness notifications |
+| `NEWSROOM_URL` | *(optional)* your public service URL: `https://<your-service>.onrender.com` |
+| `ZAPWAY_EMAIL` | *(for publishing)* your zapway.app login email |
+| `ZAPWAY_PASSWORD` | *(for publishing)* your zapway.app login password |
+
+`ZAPWAY_AUTO_START_WORKERS`, `ZAPWAY_DISABLE_BROWSER_SCRAPERS`,
+`ZAPWAY_PRIMARY_MODEL`, `ZAPWAY_MAX_SOURCES_PER_CYCLE`, and `DATABASE_URL`
+are already set by `render.yaml`. **Do not set `PORT`** — Render injects it.
+
+Click **Deploy**. First build takes several minutes (it compiles the frontend and
+installs Python deps). When the service is **Live**, open its URL:
+
+- Dashboard: `https://<your-service>.onrender.com/`
+- Stats API: `https://<your-service>.onrender.com/api/analytics`
+
+## 4. Keep it awake 24/7 with UptimeRobot (primary keep-alive)
+
+Render free services sleep after ~15 min of no traffic. UptimeRobot pings yours to
+keep it up:
+
+1. Sign up free at <https://uptimerobot.com>.
+2. **Add New Monitor**:
+   - Monitor Type: **HTTP(s)**
+   - Friendly Name: `Zapway Newsroom`
+   - URL: `https://<your-service>.onrender.com/api/analytics`
+   - Monitoring Interval: **5 minutes**
+3. Create it. UptimeRobot now hits the service every 5 minutes, so it never idles
+   long enough to sleep.
+
+> Note: free-tier sleep prevention keeps the container warm, but Render free
+> instances still get ~750 run-hours/month per account — one always-on service
+> fits within that.
+
+### Backup keep-alive (optional)
+
+`.github/workflows/keep-alive.yml` also pings the service on a cron. Set the repo
+variable `RENDER_URL` (Settings → Secrets and variables → Actions → Variables) to
+your live URL. Treat this as a backup only — GitHub cron is often delayed and is
+auto-disabled after 60 days of repo inactivity.
+
+## 5. Verify
+
+- `GET /api/analytics` returns JSON with `"success": true`.
+- After a few minutes the ingestion/AI workers populate new articles — check the
+  dashboard's News board.

@@ -181,36 +181,32 @@ async def run_microtask_a_with_retry(content, url=None, trace_id=None, title=Non
     else:
         traceparent = f"00-{trace_id}-{trace_id[:16]}-01"
     
-    system_prompt = """You are a faithful news paraphraser and editor for ZAPWAY. Your responsibility is to lightly paraphrase the raw source text, keeping its original headings and format as much as possible to maintain accuracy, with only minor word changes to prevent copyright.
+    system_prompt = """You are a senior EV journalist and editor for ZAPWAY. You rewrite raw source material into an original, well-structured, publication-ready news article in ZAPWAY's own editorial voice. You do NOT copy or lightly paraphrase — you re-report the facts in fresh, professional prose. At the same time you are strictly factual: you never invent facts and you never alter any figure.
 
 Your output must follow these rules strictly:
-1. TITLE: Keep the original article headline almost exactly. You may swap 1-2 words or fix a grammar issue, but DO NOT rewrite or reinvent it. The output title must be recognisably the same as the source title.
+1. TITLE: Write a strong, clear, SEO-friendly headline that accurately reflects the core news. Keep the key entity (company/policy/model) and the key fact. You may fully reword the phrasing — do NOT copy the source headline verbatim — but never change or exaggerate what actually happened.
 2. SECTION STRUCTURE & HEADINGS:
-   - If the source article already contains section headings, COPY those headings verbatim (word-for-word) into the JSON output. Do NOT invent new headings.
-   - If the source article has NO headings (i.e. is flat text/paragraphs), you must structure the content into exactly 4 logical sections in this exact order:
-     1. A brief topic-based heading tailored specifically to the core news story (e.g. "Tata Motors Subsidies & Benefits" or "Charging Infrastructure Expansion").
-     2. "Key Developments"
-     3. "Why It Matters for EV Drivers"
-     4. "ZAPWAY Relevance"
-   - Never output empty strings for headings.
-3. LIGHT PARAPHRASE ONLY: Swap at most 2-3 words per sentence with synonyms or minimally restructure. Do NOT rewrite sentences from scratch. Ensure the content stays exactly the same as the source but with minor word edits.
-4. DATA INTEGRITY: Keep ALL numbers, prices (e.g. 'Rs 27.90 lakh'), specs, model names, variant names, percentages, dates, and named entities EXACTLY as they appear in the source. Never round or translate them.
-5. LINGUISTIC CLOSURE: Every sentence must end with proper punctuation (., !, ?). No trailing conjunctions or incomplete sentences.
-6. NO INVENTED CONTENT: Do not add any information, context, or opinion not present in the source.
-7. PRESERVE LISTS, TABLES & IMAGES: If the source text contains bullet points, lists, tables (in markdown format, e.g. lines starting with * or structured as | cell |), or inline markdown images (e.g. ![alt](url)), you MUST preserve their exact structure, formatting, and inline placement in the paraphrased sections. Do NOT convert tables/lists into regular prose, and do NOT remove or relocate any inline images. Keep them exactly where they are in the text.
-8. STRIP METADATA HEADINGS: You MUST strip and ignore any headings or text from the source that represent publication dates (e.g. 'July 18, 2026' or '2026-07-18'), author names (e.g. 'By Jane Doe'), or publisher brand names (e.g. 'Autocar India'). They should NEVER be converted into article sections or headings.
+   - Organise the article into 3-5 sections with specific, informative H2 headings tailored to THIS story (e.g. "Ather's New Fast-Charging Rollout", "Pricing and Variants", "What It Means for Indian EV Buyers"). Never use vague headings like "Main Details" or "Overview".
+   - Prefer a flow like: a lead section stating what happened, one or two detail sections (specs / pricing / context), and a closing "Why It Matters for EV Buyers" or "ZAPWAY Take" section.
+   - Never output empty headings.
+3. GENUINE REWRITE: Re-report every fact in your own words with proper journalistic flow — restructure sentences, combine or split ideas, add clear transitions. The result must read as original writing, NOT a synonym-swapped copy of the source. Aim for roughly 300-550 words of body content when the source supports it; do not pad thin sources.
+4. DATA INTEGRITY (ABSOLUTE): Keep ALL numbers, prices (e.g. 'Rs 27.90 lakh'), specs, ranges, percentages, dates, model names, variant names, and named entities EXACTLY as they appear in the source. Never round, convert, translate, or guess a figure.
+5. NO INVENTED CONTENT: Do not add facts, quotes, specs, or claims that are not supported by the source. If the source is thin, write a shorter accurate article rather than fabricating. You MAY add brief, clearly general EV-market context ("India's EV two-wheeler segment has grown rapidly") only when it is common knowledge and not a specific unverified claim.
+6. LINGUISTIC CLOSURE: Every sentence must be complete and end with proper punctuation. No trailing conjunctions, no "...", no cut-off sentences.
+7. PRESERVE INLINE IMAGES, LISTS & TABLES: If the source contains inline markdown images (![alt](url)), bullet lists, or markdown tables (| cell |), keep them in the appropriate section with their exact structure and URLs. Do not drop image URLs. You may reword list items into cleaner phrasing but keep every factual data point.
+8. STRIP METADATA: Ignore and never turn into headings any publication dates, author bylines ('By Jane Doe'), or publisher brand names ('Autocar India').
 
 JSON Structure to return — fill every field exactly as described:
 {
-  "title": "...",            // Near-identical to source headline. Max 2 word changes.
-  "meta_title": "...",        // SEO meta title: source headline + site name suffix, max 60 chars.
-  "meta_description": "...",  // 1-2 sentence summary of the article, max 155 chars, no ellipsis.
-  "keywords": ["k1", "k2"],   // 3-5 key EV-related terms from the article.
-  "ai_summary": "",           // MUST be empty string. No AI core summary or key points.
+  "title": "...",            // Original, strong, accurate headline. Not a copy of the source.
+  "meta_title": "...",        // Compelling SEO meta title, ~55-65 chars, includes primary keyword. Complete sentence, no ellipsis.
+  "meta_description": "...",  // Clear, clickable summary, ~140-155 chars, includes primary keyword. Complete sentence, no ellipsis.
+  "keywords": ["k1", "k2"],   // 4-6 specific EV-related terms from the article.
+  "ai_summary": "",           // MUST be empty string.
   "sections": [
     {
-      "heading": "...",  // Section heading name as described in SECTION STRUCTURE.
-      "content": "..."   // Lightly paraphrased paragraph(s) from that section.
+      "heading": "...",  // Specific, informative H2 as described above.
+      "content": "..."   // Original, well-written paragraph(s) for that section. Preserve any inline images/lists/tables.
     }
   ],
   "images": [{"url": "", "alt": ""}],
@@ -260,8 +256,8 @@ JSON Structure to return — fill every field exactly as described:
     content_for_prompt = clean_content[:8000]
     
     # Include original title in user prompt as an explicit anchor
-    title_anchor = f"ORIGINAL TITLE: {title}\n\n" if title else ""
-    user_prompt = f"{title_anchor}SOURCE ARTICLE TO PARAPHRASE:\n{content_for_prompt}\n\nIMPORTANT: Your output title must be nearly identical to the ORIGINAL TITLE above. Your section headings must be copied verbatim from the source text above."
+    title_anchor = f"SOURCE TITLE (for reference — rewrite it, don't copy it): {title}\n\n" if title else ""
+    user_prompt = f"{title_anchor}SOURCE MATERIAL TO RE-REPORT:\n{content_for_prompt}\n\nIMPORTANT: Rewrite this into an original ZAPWAY article with your own headline, your own specific section headings, and freshly written prose. Preserve every fact, figure, price, name, and inline image exactly. Do NOT copy sentences or headings verbatim from the source."
     
     if not client:
         print(f"[TRACE:{traceparent}] Groq client unavailable. Using fallback generation.")
@@ -293,7 +289,16 @@ JSON Structure to return — fill every field exactly as described:
                         continue
                 raise e
 
-    model_name = "llama-3.3-70b-versatile"
+    # Model selection is env-configurable. On Groq's FREE tier the 8B model has
+    # 5x the daily token quota (500k vs 100k for 70B), so it is the default
+    # primary — this is what makes continuous generation sustainable for free.
+    # Set ZAPWAY_PRIMARY_MODEL=llama-3.3-70b-versatile to prefer higher quality
+    # if you have paid/Dev-tier quota.
+    primary_model = os.getenv("ZAPWAY_PRIMARY_MODEL", "llama-3.1-8b-instant")
+    secondary_model = ("llama-3.3-70b-versatile"
+                       if primary_model == "llama-3.1-8b-instant"
+                       else "llama-3.1-8b-instant")
+    model_name = primary_model
     try:
         start_time = time.time()
         print(f"[TRACE:{traceparent}] Dispatching Micro-Task A generation with {model_name}...")
@@ -309,8 +314,8 @@ JSON Structure to return — fill every field exactly as described:
                 response_format={"type": "json_object"}
             ))
         except Exception as primary_err:
-            print(f"[TRACE:{traceparent}] Primary model {model_name} failed: {primary_err}. Trying secondary model llama-3.1-8b-instant...")
-            model_name = "llama-3.1-8b-instant"
+            print(f"[TRACE:{traceparent}] Primary model {model_name} failed: {primary_err}. Trying secondary model {secondary_model}...")
+            model_name = secondary_model
             response = await loop.run_in_executor(None, lambda: call_with_backoff(
                 model=model_name,
                 messages=[
@@ -328,7 +333,9 @@ JSON Structure to return — fill every field exactly as described:
         
         # Iterative validation and self-correction loop
         attempt = 1
-        max_attempts = 4
+        # Each self-correction is another full-article LLM call. Keep this low to
+        # conserve the free-tier daily token budget (was 4).
+        max_attempts = 2
         current_payload = payload
         
         # Extract cover image from inline ![alt](url) markers in sections,
@@ -344,6 +351,17 @@ JSON Structure to return — fill every field exactly as described:
                 if match:
                     cover_url = match.group(1)
                     break
+            # Fallback: if no inline image is embedded in the article, fetch a
+            # cover image from the original source page (og:image / first article
+            # image) so every story has a photo instead of none.
+            if not cover_url and url:
+                try:
+                    from zapway_publisher import fetch_all_image_urls
+                    src_imgs = fetch_all_image_urls(url)
+                    if src_imgs:
+                        cover_url = src_imgs[0]
+                except Exception as fe:
+                    print(f"[IMAGE FETCH] Source-image fallback failed: {fe}")
             if cover_url:
                 current_payload["images"] = [{"url": cover_url, "alt": current_payload.get("title", "")}]
         except Exception as img_e:
@@ -415,8 +433,14 @@ Output the entire, corrected JSON object."""
                         response_format={"type": "json_object"}
                     ))
                 else:
-                    raise retry_err
-            
+                    # The initial generation already produced valid AI content;
+                    # a self-correction call failing (e.g. rate limit) must NOT
+                    # discard it and drop to the low-quality template. Return the
+                    # last good AI payload instead.
+                    print(f"[TRACE:{traceparent}] Self-correction unavailable ({retry_err}). "
+                          f"Returning last valid AI payload instead of template fallback.")
+                    return current_payload
+
             if hasattr(response_retry, 'usage') and response_retry.usage:
                 log_groq_usage(response_retry.usage.total_tokens)
                 
@@ -426,5 +450,11 @@ Output the entire, corrected JSON object."""
             
     except Exception as e:
         print(f"[TRACE:{traceparent}][CRITICAL] Failed to execute generation task A: {e}")
+        # If we already have valid AI-generated content from the initial call,
+        # return it rather than discarding it for the low-quality template.
+        _cp = locals().get("current_payload")
+        if isinstance(_cp, dict) and _cp.get("sections"):
+            print(f"[TRACE:{traceparent}] Returning last valid AI payload despite error.")
+            return _cp
         from backend.llm import _rewrite_article_fallback
         return _rewrite_article_fallback(content, url=url, title=title)

@@ -8,18 +8,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def send_alert_email(subject_or_title, body_or_id=None):
-    sender_email = os.getenv("ALERT_EMAIL") 
-    sender_password = os.getenv("ALERT_EMAIL_APP_PASSWORD") 
-    
-    # We send to all requested variants to ensure delivery and match requirements
-    receiver_emails = [
-        "prerak@cloudwebsoln.com",
-        "prerak.sg@gmail.com",
-        "prerak.sg@gamil.com"
-    ]
+    sender_email = os.getenv("ALERT_EMAIL")
+    sender_password = os.getenv("ALERT_EMAIL_APP_PASSWORD")
+
+    # Recipients are configurable via ALERT_RECIPIENT (comma-separated). If unset,
+    # the alert is sent to the sender address itself (email yourself).
+    recipients_raw = os.getenv("ALERT_RECIPIENT", "") or sender_email or ""
+    receiver_emails = [e.strip() for e in recipients_raw.split(",") if e.strip()]
 
     if not sender_email or not sender_password:
-        print("Email alerts not configured in .env. Skipping email.")
+        print("Email alerts not configured. Set ALERT_EMAIL and ALERT_EMAIL_APP_PASSWORD. Skipping email.")
+        return
+    if not receiver_emails:
+        print("No ALERT_RECIPIENT configured. Skipping email.")
         return
 
     # Check if this is a system alert or a new article notification
@@ -28,7 +29,7 @@ def send_alert_email(subject_or_title, body_or_id=None):
         body = body_or_id
     else:  # It's an article title & optional article_id
         article_id = body_or_id
-        newsroom_url = os.getenv("NEWSROOM_URL", "https://newsroom-1zapway-newsroom-cloud.onrender.com")
+        newsroom_url = os.getenv("NEWSROOM_URL", "").rstrip("/") or "https://your-service.onrender.com"
         if article_id:
             link_url = f"{newsroom_url}/article/{article_id}"
         else:
