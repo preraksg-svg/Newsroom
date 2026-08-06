@@ -338,7 +338,21 @@ class NewsroomOrchestrator:
             from backend.llm import clean_headline_garbage
             title_clean = clean_headline_garbage(title_clean)
             title_clean = re.sub(r'^(Update|update|UPDATE)\s*:\s*', '', title_clean.strip())
+
+            # Headlines/headings should not end in a sentence period (the linguistic
+            # closure validator can add one). Strip a single trailing '.' (keep '...').
+            def _strip_trailing_period(s):
+                s = (s or "").strip()
+                if s.endswith('.') and not s.endswith('..'):
+                    s = s[:-1].rstrip()
+                return s
+
+            title_clean = _strip_trailing_period(title_clean)
             content_pkg['title'] = title_clean
+            seo_pkg['meta_title'] = _strip_trailing_period(seo_pkg.get('meta_title', ''))
+            for _sec in content_pkg.get('sections', []) or []:
+                if isinstance(_sec, dict) and _sec.get('heading'):
+                    _sec['heading'] = _strip_trailing_period(_sec['heading'])
 
             res = create_draft(
                 url=signal['url'],
