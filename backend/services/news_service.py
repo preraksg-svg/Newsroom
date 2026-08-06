@@ -159,7 +159,6 @@ class NewsService:
             queries.update_story(article_id, db_key, value)
 
         if is_already_published:
-            import asyncio
             try:
                 loop = asyncio.get_running_loop()
                 loop.create_task(NewsService.handle_action("publish_article", article_id))
@@ -250,7 +249,6 @@ class NewsService:
             queries.update_story(article_id, "published_date", now_str)
 
             # ── Auto-publish to zapway.app via Playwright ──────────────────
-            import asyncio
             import threading
 
             # Reset log for this article

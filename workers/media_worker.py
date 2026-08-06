@@ -19,21 +19,24 @@ logging.basicConfig(level=logging.INFO, format='[MEDIA-WORKER] %(asctime)s - %(l
 logger = logging.getLogger("media_worker")
 
 def get_redis_client():
-    """Dynamically try to import and connect to local Redis. Fallback to mock if down."""
-    try:
-        import redis
-        r = redis.Redis(host='localhost', port=6379, db=0, socket_timeout=2)
-        return r
-    except Exception:
-        class MockRedis:
-            def __init__(self):
-                self.store = {}
-            def set(self, key, value, ex=None):
-                self.store[key] = value
-                return True
-            def get(self, key):
-                return self.store.get(key)
-        return MockRedis()
+    """Return an in-memory mock Redis for heartbeats.
+
+    IMPORTANT: do NOT return a real redis.Redis client here. When the `redis`
+    package is installed but no Redis server is running (the normal case on free
+    hosting), the first `redis_client.set()` in record_heartbeat() blocks on a
+    socket connect and the media worker hangs forever at startup — so audio,
+    social, and thumbnail tasks never get processed. Force the mock, matching the
+    ingestion worker.
+    """
+    class MockRedis:
+        def __init__(self):
+            self.store = {}
+        def set(self, key, value, ex=None):
+            self.store[key] = value
+            return True
+        def get(self, key):
+            return self.store.get(key)
+    return MockRedis()
 
 redis_client = get_redis_client()
 
