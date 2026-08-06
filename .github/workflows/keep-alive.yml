@@ -1,13 +1,14 @@
 name: Keep Alive Zapway Newsroom
 
-# Backup keep-alive. PRIMARY keep-alive is UptimeRobot (5-min HTTP monitor) —
-# see DEPLOYMENT.md. GitHub Actions cron is best-effort: runs are frequently
-# delayed and the schedule is auto-disabled after 60 days of repo inactivity,
-# so do not rely on it alone to keep a free Render service awake.
+# Redundant/backup keep-alive. PRIMARY keep-alive is UptimeRobot (5-min HTTP
+# monitor). This GitHub Actions cron is a second, independent pinger so a single
+# keep-alive outage can't let the free Render service sleep. Note: GitHub cron is
+# best-effort (runs can be delayed) and the schedule auto-disables after 60 days
+# of repo inactivity, so it is a backup to UptimeRobot, not a replacement.
 
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -16,13 +17,12 @@ jobs:
     steps:
       - name: Ping Render App
         env:
-          # Set repo variable RENDER_URL (or APP_URL) under Settings -> Secrets
-          # and variables -> Actions -> Variables to your live Render URL, e.g.
-          # https://zapway-newsroom.onrender.com
+          # Override the live URL by setting repo variable APP_URL (or RENDER_URL)
+          # under Settings -> Secrets and variables -> Actions -> Variables.
+          # Falls back to the known production URL below if neither is set.
           APP_URL: ${{ vars.APP_URL }}
           RENDER_URL: ${{ vars.RENDER_URL }}
         run: |
-          URL="${APP_URL:-${RENDER_URL}}"
-          if [ -z "$URL" ]; then echo "No APP_URL/RENDER_URL set; skipping."; exit 0; fi
+          URL="${APP_URL:-${RENDER_URL:-https://newsroom-1zapway-newsroom-cloud.onrender.com}}"
           echo "Pinging $URL/api/analytics"
-          curl -sS -m 60 --retry 3 --retry-delay 10 "$URL/api/analytics" -o /dev/null -w "HTTP %{http_code}\n" || true
+          curl -sS -m 90 --retry 4 --retry-delay 15 "$URL/api/analytics" -o /dev/null -w "HTTP %{http_code}\n" || true
