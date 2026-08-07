@@ -381,10 +381,12 @@ export default function ArticleView() {
       actualUrl = url.url || url.src || ''
     }
     if (!actualUrl || typeof actualUrl !== 'string') return ''
-    if (actualUrl.startsWith('http://')) {
-      return actualUrl.replace('http://', 'https://')
+    if (actualUrl.startsWith('data:')) return actualUrl
+    // Route external images through the backend proxy so hotlink-protected news
+    // CDNs, mixed-content (http on an https page), and CORS don't block them.
+    if (actualUrl.startsWith('http://') || actualUrl.startsWith('https://')) {
+      return `${API_BASE}/api/proxy?url=${encodeURIComponent(actualUrl)}`
     }
-    if (actualUrl.startsWith('https://') || actualUrl.startsWith('data:')) return actualUrl
     return `${API_BASE}${actualUrl}`
   }
   const renderFormattedContent = (text) => {
@@ -392,6 +394,10 @@ export default function ArticleView() {
     const lines = text.split('\n')
     const blocks = []
     let currentList = null
+    let currentTable = null
+    const isTableRow = (t) => t.includes('|') && (t.startsWith('|') || (t.match(/\|/g) || []).length >= 2)
+    const isTableSeparator = (t) => t.includes('-') && /^\|?[\s:|-]+\|?$/.test(t)
+    const flushTable = () => { if (currentTable && currentTable.length) blocks.push({ type: 'table', rows: currentTable }); currentTable = null }
 
     lines.forEach((line) => {
       const trimmed = line.trim()
@@ -402,10 +408,19 @@ export default function ArticleView() {
           blocks.push({ type: 'list', items: currentList })
           currentList = null
         }
+        flushTable()
         blocks.push({ type: 'image', url: imgMatch[2], alt: imgMatch[1] })
+      } else if (isTableRow(trimmed)) {
+        if (currentList) { blocks.push({ type: 'list', items: currentList }); currentList = null }
+        if (!isTableSeparator(trimmed)) {
+          const cells = trimmed.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim())
+          if (!currentTable) currentTable = []
+          currentTable.push(cells)
+        }
       } else {
         const bulletMatch = trimmed.match(/^([\*\-\u2022•]|\d+\.)\s+(.*)$/)
         if (bulletMatch) {
+          flushTable()
           if (!currentList) {
             currentList = []
           }
@@ -416,12 +431,14 @@ export default function ArticleView() {
             currentList = null
           }
           if (trimmed) {
+            flushTable()
             blocks.push({ type: 'p', text: line })
           }
         }
       }
     });
 
+    flushTable()
     if (currentList) {
       blocks.push({ type: 'list', items: currentList })
     }
@@ -436,7 +453,32 @@ export default function ArticleView() {
           </ul>
         )
       }
-      
+
+      if (block.type === 'table') {
+        const head = block.rows[0] || []
+        const body = block.rows.slice(1)
+        return (
+          <div key={idx} style={{ overflowX: 'auto', margin: '16px 0' }}>
+            <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.9rem' }}>
+              {head.length > 0 && (
+                <thead>
+                  <tr>{head.map((c, i) => (
+                    <th key={i} style={{ border: '1px solid var(--color-border)', padding: '8px 12px', textAlign: 'left', background: 'rgba(255,255,255,0.06)', color: '#fff' }}>{c}</th>
+                  ))}</tr>
+                </thead>
+              )}
+              <tbody>
+                {body.map((row, ri) => (
+                  <tr key={ri}>{row.map((c, ci) => (
+                    <td key={ci} style={{ border: '1px solid var(--color-border)', padding: '8px 12px', color: 'var(--text-secondary)' }}>{c}</td>
+                  ))}</tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      }
+
       if (block.type === 'image') {
         return (
           <div key={idx} style={{ margin: '20px 0', textAlign: 'center' }}>
@@ -592,6 +634,21 @@ export default function ArticleView() {
           ) : (
             <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '24px' }}>{story.title}</h1>
           )}
+
+          {/* COVER IMAGE — the article's main photo (proxied so hotlinked CDN
+              images actually load; hidden gracefully if the URL is broken). */}
+          {(() => {
+            const first = images && images.length > 0 ? images[0] : null
+            const cover = first ? (typeof first === 'object' ? (first.url || first.src) : first) : ''
+            return cover ? (
+              <img
+                src={normalizeUrl(cover)}
+                alt={story.title || ''}
+                onError={(e) => { e.target.style.display = 'none' }}
+                style={{ width: '100%', maxHeight: '420px', objectFit: 'cover', borderRadius: '8px', marginBottom: '24px', border: '1px solid var(--color-border)' }}
+              />
+            ) : null
+          })()}
 
           {/* HEADLINE VARIANTS SELECTOR */}
           {headlineVariants.length > 0 && (
