@@ -245,8 +245,11 @@ class NewsService:
 
         elif action == "publish_article":
             now_str = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-            queries.update_story(article_id, "status", "Published")
-            queries.update_story(article_id, "published_date", now_str)
+            # Mark as "Publishing" (in-progress) — do NOT mark Published until the
+            # Playwright publish actually succeeds, so a failed publish never
+            # falsely shows as Published and can be retried.
+            queries.update_story(article_id, "status", "Publishing")
+            queries.update_story(article_id, "error_message", "")
 
             # ── Auto-publish to zapway.app via Playwright ──────────────────
             import threading
@@ -271,10 +274,20 @@ class NewsService:
                     result = loop.run_until_complete(publish_to_zapway(article_data))
                     loop.close()
                     if result.get("success"):
+                        # Only NOW mark it truly published.
+                        queries.update_story(article_id, "status", "Published")
+                        queries.update_story(article_id, "published_date", now_str)
+                        if result.get("final_url"):
+                            queries.update_story(article_id, "wp_url", result.get("final_url"))
                         _log("done", f"✅ Successfully published to zapway.app!", "success")
                     else:
+                        # Revert to Draft so the failure is visible and retryable.
+                        queries.update_story(article_id, "status", "Draft")
+                        queries.update_story(article_id, "error_message", str(result.get("error"))[:500])
                         _log("error", f"❌ Failed: {result.get('error')}", "error")
                 except Exception as e:
+                    queries.update_story(article_id, "status", "Draft")
+                    queries.update_story(article_id, "error_message", str(e)[:500])
                     _log("error", f"❌ Exception: {str(e)}", "error")
 
             # Build article dict with all fields needed by the publisher
@@ -317,7 +330,7 @@ class NewsService:
             t.start()
             print(f"[PUBLISHER] Background publish thread started for article {article_id}")
 
-            return {"status": "Published", "published_at": now_str}
+            return {"status": "Publishing", "published_at": now_str, "message": "Publishing in progress — status updates to Published on success."}
 
 
         elif action == "calculate_score":
