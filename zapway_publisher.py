@@ -515,9 +515,15 @@ async def publish_to_zapway(article: dict) -> dict:
                 # Extract bullets from content
                 cleaned_body, bullets = extract_bullets_from_content(sec_content)
 
-                # Append source attribution to the last section's body text
+                # Append source attribution (name + original link) to the last
+                # section — credibility signal that also helps AEO/GEO, which
+                # reward clearly-cited, verifiable sources.
                 if idx == len(sections_list) - 1:
-                    cleaned_body = f'{cleaned_body}\n\nSource: "{source_name}"'
+                    src_url = article.get("url", "") or ""
+                    if src_url.startswith("http"):
+                        cleaned_body = f'{cleaned_body}\n\nSource: {source_name} ({src_url})'
+                    else:
+                        cleaned_body = f'{cleaned_body}\n\nSource: {source_name}'
 
                 # Fill body content
                 try:

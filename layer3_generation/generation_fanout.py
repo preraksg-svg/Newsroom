@@ -195,6 +195,11 @@ Your output must follow these rules strictly:
 6. LINGUISTIC CLOSURE: Every sentence must be complete and end with proper punctuation. No trailing conjunctions, no "...", no cut-off sentences.
 7. PRESERVE INLINE IMAGES, LISTS & TABLES: If the source contains inline markdown images (![alt](url)), bullet lists, or markdown tables (| cell |), keep them in the appropriate section with their exact structure and URLs. Do not drop image URLs. You may reword list items into cleaner phrasing but keep every factual data point.
 8. STRIP METADATA: Ignore and never turn into headings any publication dates, author bylines ('By Jane Doe'), or publisher brand names ('Autocar India').
+9. SEO / AEO / GEO OPTIMISATION (rank in search AND get cited by AI answer engines):
+   - Place the primary keyword in the title, in the first sentence, and in at least one H2 heading — naturally, never stuffed.
+   - LEAD ANSWER: the opening sentence of the first section must fully answer "what happened" in ONE self-contained sentence (who, what, the key number, when, where in India). Answer engines and AI models quote such sentences directly, so it must stand alone without prior context.
+   - AUTHORITY & CREDIBILITY (E-E-A-T): use specific, verifiable entities and figures — exact company names, model names, prices, dates, percentages. Concrete, checkable data is what makes ZAPWAY content authoritative and citable by generative engines. Write in a factual, third-person newsroom voice; no hype, no marketing fluff, no first/second person.
+   - STRUCTURE FOR ANSWERS: keep paragraphs short and each H2 section focused on one clear sub-topic, so the content maps cleanly to featured snippets and AI-generated answers.
 
 JSON Structure to return — fill every field exactly as described:
 {
