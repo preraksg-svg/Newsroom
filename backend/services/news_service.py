@@ -264,31 +264,40 @@ class NewsService:
                 print(f"[PUBLISHER] {msg}")
 
             def _run_playwright_publisher(article_data):
-                """Run Playwright publisher in a background thread with its own event loop."""
-                try:
-                    _log("browser", "Launching headless browser...")
-                    from zapway_publisher import publish_to_zapway
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    _log("navigate", "Navigating to zapway.app/News/insert_news...")
-                    result = loop.run_until_complete(publish_to_zapway(article_data))
-                    loop.close()
-                    if result.get("success"):
-                        # Only NOW mark it truly published.
-                        queries.update_story(article_id, "status", "Published")
-                        queries.update_story(article_id, "published_date", now_str)
-                        if result.get("final_url"):
-                            queries.update_story(article_id, "wp_url", result.get("final_url"))
-                        _log("done", f"✅ Successfully published to zapway.app!", "success")
-                    else:
-                        # Revert to Draft so the failure is visible and retryable.
-                        queries.update_story(article_id, "status", "Draft")
-                        queries.update_story(article_id, "error_message", str(result.get("error"))[:500])
-                        _log("error", f"❌ Failed: {result.get('error')}", "error")
-                except Exception as e:
+                """Run Playwright publisher in a background thread with its own event
+                loop. Retries once on failure to absorb transient slow-render /
+                network hiccups on the constrained free-tier browser."""
+                from zapway_publisher import publish_to_zapway
+                result = None
+                max_attempts = 2
+                for attempt in range(1, max_attempts + 1):
+                    try:
+                        _log("browser", f"Launching headless browser (attempt {attempt}/{max_attempts})...")
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        _log("navigate", "Navigating to zapway.app/News/insert_news...")
+                        result = loop.run_until_complete(publish_to_zapway(article_data))
+                        loop.close()
+                    except Exception as e:
+                        result = {"success": False, "error": str(e)}
+                    if result and result.get("success"):
+                        break
+                    if attempt < max_attempts:
+                        _log("retry", f"Attempt {attempt} failed ({str(result.get('error'))[:70]}). Retrying...", "running")
+
+                if result and result.get("success"):
+                    # Only NOW mark it truly published.
+                    queries.update_story(article_id, "status", "Published")
+                    queries.update_story(article_id, "published_date", now_str)
+                    if result.get("final_url"):
+                        queries.update_story(article_id, "wp_url", result.get("final_url"))
+                    _log("done", f"✅ Successfully published to zapway.app!", "success")
+                else:
+                    # Revert to Draft so the failure is visible and retryable.
+                    err = str(result.get("error")) if result else "Unknown error"
                     queries.update_story(article_id, "status", "Draft")
-                    queries.update_story(article_id, "error_message", str(e)[:500])
-                    _log("error", f"❌ Exception: {str(e)}", "error")
+                    queries.update_story(article_id, "error_message", err[:500])
+                    _log("error", f"❌ Failed after {max_attempts} attempts: {err}", "error")
 
             # Build article dict with all fields needed by the publisher
             import json as _json

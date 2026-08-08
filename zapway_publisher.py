@@ -27,7 +27,10 @@ ZAPWAY_INSERT_URL = os.getenv("ZAPWAY_INSERT_URL", "https://zapway.app/News/inse
 async def _login(page):
     """Log in using confirmed field IDs: #email and #password."""
     print("[PUBLISHER] Filling login credentials...")
-    await page.wait_for_selector("#email", timeout=10000)
+    # Generous timeout: the low-memory (single-process) browser renders the SPA
+    # slowly on a 512MB host under load, so 10s was not enough and publishes
+    # failed with a selector timeout.
+    await page.wait_for_selector("#email", timeout=45000, state="visible")
     await page.fill("#email", ZAPWAY_EMAIL)
     await page.fill("#password", ZAPWAY_PASSWORD)
 
@@ -43,14 +46,14 @@ async def _login(page):
             continue
 
     try:
-        await page.wait_for_load_state("load", timeout=20000)
+        await page.wait_for_load_state("load", timeout=30000)
     except Exception:
         pass
     try:
-        await page.wait_for_selector('input[placeholder*="headline"], input[placeholder*="Headline"]', timeout=15000)
+        await page.wait_for_selector('input[placeholder*="headline"], input[placeholder*="Headline"]', timeout=45000)
     except Exception:
         pass
-    await asyncio.sleep(1)
+    await asyncio.sleep(1.5)
     print(f"[PUBLISHER] Post-login URL: {page.url}")
 
 
@@ -233,6 +236,19 @@ async def publish_to_zapway(article: dict) -> dict:
         try:
             print(f"[PUBLISHER] Opening {ZAPWAY_INSERT_URL}...")
             await page.goto(ZAPWAY_INSERT_URL, wait_until="load", timeout=60000)
+            # The page is a JS SPA — the form renders AFTER 'load', so wait for the
+            # SPA to actually paint either the login form or the article form
+            # before deciding what to do (fixes selector-timeout publish failures).
+            try:
+                await page.wait_for_load_state("networkidle", timeout=30000)
+            except Exception:
+                pass
+            try:
+                await page.wait_for_selector(
+                    '#email, input[placeholder*="headline"], input[placeholder*="Headline"]',
+                    timeout=45000, state="visible")
+            except Exception:
+                pass
             await asyncio.sleep(1)
 
             # -- Step 1: Login -----------------------------------------------
@@ -241,6 +257,12 @@ async def publish_to_zapway(article: dict) -> dict:
                 await _login(page)
                 if "insert_news" not in page.url:
                     await page.goto(ZAPWAY_INSERT_URL, wait_until="load", timeout=60000)
+                    try:
+                        await page.wait_for_selector(
+                            'input[placeholder*="headline"], input[placeholder*="Headline"]',
+                            timeout=45000, state="visible")
+                    except Exception:
+                        pass
                     await asyncio.sleep(1)
 
             # -- Step 2: Prepare article data ---------------------------------
