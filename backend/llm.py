@@ -85,17 +85,34 @@ _EV_PHRASES = [
 _EV_TOKENS = [r"\bev\b", r"\bevs\b", r"\bhev\b", r"\bphev\b", r"\bbev\b"]
 
 
+def _ev_signal_count(text):
+    if not text:
+        return 0
+    text = text.lower()
+    n = sum(text.count(p) for p in _EV_PHRASES)
+    for tok in _EV_TOKENS:
+        n += len(re.findall(tok, text))
+    return n
+
+
 def is_ev_focused(title, content):
-    """Deterministic gate: True only if the text is genuinely about electric
-    vehicles. Rejects off-topic content (e.g. solar panels, generic renewable
-    energy, tenders) that merely mentions batteries/charging/clean energy.
+    """Deterministic gate: True only if the text is genuinely ABOUT electric
+    vehicles — not merely mentioning them in passing.
+
+    Rejects (a) off-topic energy news (solar/renewables/tenders that only mention
+    batteries/charging), and (b) petrol/ICE vehicle news (SUV/bike comparisons,
+    'exhaust note' lists, motorsport) that name-drops "EV" once. The EV signal
+    must be in the HEADLINE, or appear multiple times in the body.
     """
-    text = f"{title or ''} {content or ''}".lower()
-    if any(p in text for p in _EV_PHRASES):
+    title_l = (title or "").lower()
+    # Strongest signal: the headline itself is about EVs.
+    if any(p in title_l for p in _EV_PHRASES):
         return True
-    if any(re.search(tok, text) for tok in _EV_TOKENS):
+    if any(re.search(tok, title_l) for tok in _EV_TOKENS):
         return True
-    return False
+    # Otherwise the body must be substantively about EVs (>= 3 signals), so a
+    # single passing "EV" mention in an ICE/off-topic article does not qualify.
+    return _ev_signal_count(content) >= 3
 
 
 def filter_article(title, content):
