@@ -306,8 +306,30 @@ class NewsroomOrchestrator:
                 sections=content_pkg['sections']
             )
             
-            if score_res['decision'] == "REJECT" and score_res['content_score'] < 50:
-                print(f"[SCORING] REJECTED ({score_res['content_score']}). Skipping.")
+            # Hard quality floor — reject thin / single-line / under-structured
+            # articles outright so low-quality news never becomes a draft.
+            body_words = len((content_pkg.get('body') or '').split())
+            sec_list = content_pkg.get('sections') or []
+            num_sections = len(sec_list) if isinstance(sec_list, list) else 0
+            MIN_BODY_WORDS = 150
+            MIN_SECTIONS = 2
+
+            reject_reason = None
+            if body_words < MIN_BODY_WORDS:
+                reject_reason = f"too short ({body_words} words < {MIN_BODY_WORDS})"
+            elif num_sections < MIN_SECTIONS:
+                reject_reason = f"too few sections ({num_sections} < {MIN_SECTIONS})"
+            elif score_res['decision'] == "REJECT":
+                reject_reason = f"low quality score ({score_res['content_score']} < 60)"
+
+            if reject_reason:
+                print(f"[SCORING] REJECTED — {reject_reason}. Skipping signal.")
+                try:
+                    with get_db() as conn:
+                        conn.execute("UPDATE scraped_raw SET clustered = 2 WHERE id = ?", (signal['id'],))
+                        conn.commit()
+                except Exception as _re:
+                    print(f"[SCORING] Could not mark signal rejected: {_re}")
                 return
 
             # 13: Keyword + SEO Engine. Reuse the meta already produced during
