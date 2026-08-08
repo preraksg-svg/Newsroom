@@ -292,6 +292,22 @@ class NewsService:
                     if result.get("final_url"):
                         queries.update_story(article_id, "wp_url", result.get("final_url"))
                     _log("done", f"✅ Successfully published to zapway.app!", "success")
+
+                    # Auto-share to X/Twitter (no-op if X creds not configured).
+                    try:
+                        from x_publisher import post_to_x, build_caption
+                        share_url = result.get("final_url") or article_data.get("url") or ""
+                        caption = build_caption(
+                            article_data.get("title", ""),
+                            article_data.get("meta_description", ""),
+                        )
+                        x_res = post_to_x(caption, url=share_url)
+                        if x_res.get("success"):
+                            _log("x", "✅ Shared to X/Twitter", "success")
+                        elif not x_res.get("skipped"):
+                            _log("x", f"⚠️ X share failed: {x_res.get('error')}", "running")
+                    except Exception as xe:
+                        _log("x", f"⚠️ X share error: {xe}", "running")
                 else:
                     # Revert to Draft so the failure is visible and retryable.
                     err = str(result.get("error")) if result else "Unknown error"
