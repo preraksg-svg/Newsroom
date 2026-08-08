@@ -221,8 +221,11 @@ async def process_task_safe(worker_id, src, traceparent):
             except (ValueError, TypeError):
                 pass
 
-            from backend.llm import is_india_relevant
+            from backend.llm import is_india_relevant, is_ev_focused
             if not is_india_relevant(r.get('title', ''), r.get('content_raw', '')):
+                continue
+            # Strictly EV: drop off-topic (solar, renewables, tenders) at intake.
+            if not is_ev_focused(r.get('title', ''), r.get('content_raw', '')):
                 continue
 
             url_hash = hashlib.md5(r['url'].encode()).hexdigest()

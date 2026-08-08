@@ -280,6 +280,17 @@ class NewsroomOrchestrator:
         mode = "FAST" if priority > 80 else "NORMAL"
         print(f"[MODE] Selected: {mode} (Priority: {priority})")
 
+        # 8.4: Deterministic EV-focus gate — reject off-topic content (solar,
+        # renewable energy, tenders) BEFORE spending LLM tokens on it. Zapway is
+        # strictly an India-EV newsroom.
+        from backend.llm import is_ev_focused
+        if not is_ev_focused(signal.get('title', ''), signal.get('content', '')):
+            print(f"[FILTER] Rejected (not EV-focused / off-topic): {signal.get('title', '')[:60]}")
+            with get_db() as conn:
+                conn.execute("UPDATE scraped_raw SET clustered = 2 WHERE id = ?", (signal['id'],))
+                conn.commit()
+            return
+
         # 8.5: LLM Noise Filtering (Moved from ingestion layer to ensure fast intake)
         from backend.llm import filter_article
         filter_res = await asyncio.to_thread(filter_article, signal.get('title', ''), signal.get('content', ''))

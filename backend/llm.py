@@ -61,6 +61,43 @@ def is_india_relevant(title, content):
     ]
     return any(kw in text for kw in india_keywords)
 
+
+# Strong, EV-specific signals. "battery"/"charging"/"clean energy" are deliberately
+# EXCLUDED because solar/renewable-energy stories use them too. An article must
+# contain at least one of these to count as genuinely about electric vehicles.
+_EV_PHRASES = [
+    "electric vehicle", "electric car", "electric suv", "electric sedan",
+    "electric scooter", "electric motorcycle", "electric bike", "electric moped",
+    "electric two-wheeler", "electric two wheeler", "electric three-wheeler",
+    "electric three wheeler", "electric truck", "electric bus", "electric van",
+    "electric rickshaw", "electric mobility", "e-scooter", "e-bike", "e-rickshaw",
+    "e-mobility", "e-two wheeler", "ev charging", "ev charger", "charging station",
+    "charging infrastructure", "fast charger", "battery electric", "ev battery",
+    "ev market", "ev policy", "ev maker", "ev startup", "ev sales", "ev launch",
+    "ev adoption", "ev sector", "ev segment", "ev fleet", "ev subsidy",
+    "fame-ii", "fame ii", "fame-iii", "fame iii", "fame scheme",
+    "ola electric", "ather", "nexon ev", "punch ev", "tiago ev", "tata ev",
+    "mahindra electric", "xuv400", "tvs iqube", "bajaj chetak", "hero vida",
+    "vida v1", "revolt", "mg zs ev", "windsor ev", "comet ev", "byd",
+    "ola s1", "chetak electric", "kia ev", "hyundai ioniq", "battery swapping",
+]
+# Word-boundary tokens (so "development"/"level"/"every" don't false-match "ev").
+_EV_TOKENS = [r"\bev\b", r"\bevs\b", r"\bhev\b", r"\bphev\b", r"\bbev\b"]
+
+
+def is_ev_focused(title, content):
+    """Deterministic gate: True only if the text is genuinely about electric
+    vehicles. Rejects off-topic content (e.g. solar panels, generic renewable
+    energy, tenders) that merely mentions batteries/charging/clean energy.
+    """
+    text = f"{title or ''} {content or ''}".lower()
+    if any(p in text for p in _EV_PHRASES):
+        return True
+    if any(re.search(tok, text) for tok in _EV_TOKENS):
+        return True
+    return False
+
+
 def filter_article(title, content):
     """Returns dict with 'relevant' boolean and 'reason' using Llama 3 8B."""
     t_lower = (title or "").lower()
