@@ -149,6 +149,55 @@ def fetch_main_image_url(url: str) -> str:
     return urls[0] if urls else ""
 
 
+def flatten_markdown_tables(content: str) -> str:
+    """Convert markdown table blocks into readable bullet lines so they publish
+    as clean text instead of raw '| a | b |' pipes on zapway.app.
+
+    "| Feature | Nexon EV | Punch EV |" / "| Battery | 45 kWh | 35 kWh |" becomes
+    "* Battery — Nexon EV: 45 kWh, Punch EV: 35 kWh".
+    """
+    if not content or "|" not in content:
+        return content
+
+    def is_row(t):
+        t = t.strip()
+        return t.startswith("|") or t.count("|") >= 2
+
+    def is_sep(t):
+        t = t.strip()
+        return "-" in t and re.match(r"^\|?[\s:|-]+\|?$", t) is not None
+
+    out, table_buf = [], []
+
+    def flush():
+        if not table_buf:
+            return
+        rows = [[c.strip() for c in r.strip().strip("|").split("|")] for r in table_buf]
+        header = rows[0] if rows else []
+        for row in rows[1:]:
+            if len(row) >= 2:
+                label = row[0]
+                parts = []
+                for i in range(1, len(row)):
+                    h = header[i] if i < len(header) else ""
+                    parts.append(f"{h}: {row[i]}" if h else row[i])
+                out.append(f"* {label} — " + ", ".join(parts))
+            elif row and row[0]:
+                out.append("* " + " ".join(row))
+        table_buf.clear()
+
+    for line in content.split("\n"):
+        if is_row(line):
+            if is_sep(line):
+                continue
+            table_buf.append(line)
+        else:
+            flush()
+            out.append(line)
+    flush()
+    return "\n".join(out)
+
+
 def extract_bullets_from_content(content: str):
     """
     Parses section content and extracts lines that represent bullet points.
@@ -156,7 +205,10 @@ def extract_bullets_from_content(content: str):
     """
     if not content:
         return "", []
-    
+
+    # Convert any markdown tables to bullet lines first so they publish cleanly.
+    content = flatten_markdown_tables(content)
+
     lines = content.split("\n")
     bullet_list = []
     cleaned_lines = []
