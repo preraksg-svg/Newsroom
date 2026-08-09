@@ -635,19 +635,37 @@ export default function ArticleView() {
             <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '24px' }}>{story.title}</h1>
           )}
 
-          {/* COVER IMAGE — the article's main photo (proxied so hotlinked CDN
-              images actually load; hidden gracefully if the URL is broken). */}
+          {/* IMAGES — main photo + gallery of any additional source images
+              (proxied so hotlinked CDN images load; broken URLs hide gracefully). */}
           {(() => {
-            const first = images && images.length > 0 ? images[0] : null
-            const cover = first ? (typeof first === 'object' ? (first.url || first.src) : first) : ''
-            return cover ? (
-              <img
-                src={normalizeUrl(cover)}
-                alt={story.title || ''}
-                onError={(e) => { e.target.style.display = 'none' }}
-                style={{ width: '100%', maxHeight: '420px', objectFit: 'cover', borderRadius: '8px', marginBottom: '24px', border: '1px solid var(--color-border)' }}
-              />
-            ) : null
+            const urls = (images || [])
+              .map(im => (typeof im === 'object' ? (im.url || im.src) : im))
+              .filter(u => u && typeof u === 'string')
+            if (urls.length === 0) return null
+            return (
+              <div style={{ marginBottom: '24px' }}>
+                <img
+                  src={normalizeUrl(urls[0])}
+                  alt={story.title || ''}
+                  onError={(e) => { e.target.style.display = 'none' }}
+                  style={{ width: '100%', maxHeight: '420px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--color-border)' }}
+                />
+                {urls.length > 1 && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px', marginTop: '8px' }}>
+                    {urls.slice(1).map((u, i) => (
+                      <img
+                        key={i}
+                        src={normalizeUrl(u)}
+                        alt={`${story.title || ''} image ${i + 2}`}
+                        loading="lazy"
+                        onError={(e) => { e.target.style.display = 'none' }}
+                        style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--color-border)' }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
           })()}
 
           {/* HEADLINE VARIANTS SELECTOR */}

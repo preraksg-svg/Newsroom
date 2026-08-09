@@ -115,6 +115,35 @@ def is_ev_focused(title, content):
     return _ev_signal_count(content) >= 3
 
 
+# Two-wheeler PRODUCT signals (electric scooter/bike/motorcycle stories). Note:
+# charging, policy, battery and car terms are deliberately NOT here — those stay
+# relevant even when a two-wheeler is mentioned in passing.
+_TWO_WHEELER_TERMS = [
+    "scooter", "scooters", "e-scooter", "e scooter", "motorcycle", "motorbike",
+    "moped", "two-wheeler", "two wheeler", "two-wheelers", "2-wheeler", "2 wheeler",
+    "2w segment", "e-bike", "e bike", "electric bike",
+]
+# Terms that keep an article relevant (cars, charging, policy, battery, industry).
+_CAR_INFRA_TERMS = [
+    "car", "cars", "sedan", "suv", "hatchback", "mpv", "four-wheeler", "4-wheeler",
+    "passenger vehicle", "charging", "charger", "policy", "subsidy", "fame",
+    "gigafactory", "battery plant", "sales", "market", "tender", "manufacturing",
+    "nexon", "punch", "creta", "windsor", "curvv", "harrier", "byd", "tata motors",
+    "mahindra", "hyundai", "kia", "mg motor", "vinfast",
+]
+
+
+def is_two_wheeler_story(title, content):
+    """True if the article is primarily about an electric TWO-WHEELER product
+    (scooter/motorcycle/e-bike launch or review). Charging, policy, battery and
+    car news stay relevant even when a two-wheeler is mentioned in passing.
+    """
+    text = f"{title or ''} {content or ''}".lower()
+    tw = sum(text.count(t) for t in _TWO_WHEELER_TERMS)
+    car_infra = sum(text.count(t) for t in _CAR_INFRA_TERMS)
+    return tw >= 2 and tw > car_infra
+
+
 def filter_article(title, content):
     """Returns dict with 'relevant' boolean and 'reason' using Llama 3 8B."""
     t_lower = (title or "").lower()

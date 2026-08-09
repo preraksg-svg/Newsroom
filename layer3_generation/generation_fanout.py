@@ -256,7 +256,22 @@ JSON Structure to return — fill every field exactly as described:
     clean_content = _re.sub(r'[ \t]{2,}', ' ', clean_content)        # collapse spaces
     clean_content = _re.sub(r'\n{3,}', '\n\n', clean_content)        # collapse blank lines
     clean_content = clean_content.strip()
-    
+
+    # Strip scraped navigation-menu junk (e.g. "Cars * Bikes * news * reviews *
+    # compare"): lines that are runs of short menu items separated by * / • / >.
+    # (Uses those separators, not '|', so markdown tables are preserved.)
+    def _looks_like_nav(line):
+        l = line.strip()
+        seps = l.count(' * ') + l.count(' • ') + l.count(' › ') + l.count(' > ') + l.count(' » ')
+        if seps < 3:
+            return False
+        segs = _re.split(r'\s+[\*•›>»]\s+', l)
+        if not segs:
+            return False
+        avg_words = sum(len(s.split()) for s in segs) / len(segs)
+        return avg_words <= 3  # short menu items, not real sentences
+    clean_content = "\n".join(ln for ln in clean_content.split("\n") if not _looks_like_nav(ln)).strip()
+
     # Truncate to avoid Groq 413 Payload Too Large errors
     content_for_prompt = clean_content[:8000]
     
@@ -343,34 +358,38 @@ JSON Structure to return — fill every field exactly as described:
         max_attempts = 2
         current_payload = payload
         
-        # Extract cover image from inline ![alt](url) markers in sections,
-        # instead of re-scraping the source which causes duplicate images.
-        # Images are already embedded inline in sections — images[] is used
-        # only as the single cover/thumbnail for SEO og:image etc.
+        # Collect MULTIPLE images (the source often has several): every inline
+        # image embedded in the article, plus images from the original source
+        # page. All are stored in images[] so the UI can show them, not just one.
         try:
             import re as _img_re
-            cover_url = None
+            collected = []
+            seen = set()
+
+            def _add(u, alt=""):
+                if u and u.startswith("http") and u not in seen:
+                    seen.add(u)
+                    collected.append({"url": u, "alt": alt or current_payload.get("title", "")})
+
+            # 1. inline markdown images the model kept in the sections (most relevant)
             for sec in (current_payload.get("sections") or []):
                 sec_content = sec.get("content", "") if isinstance(sec, dict) else str(sec)
-                match = _img_re.search(r'!\[.*?\]\((https?://[^\)]+)\)', str(sec_content))
-                if match:
-                    cover_url = match.group(1)
-                    break
-            # Fallback: if no inline image is embedded in the article, fetch a
-            # cover image from the original source page (og:image / first article
-            # image) so every story has a photo instead of none.
-            if not cover_url and url:
+                for m in _img_re.finditer(r'!\[(.*?)\]\((https?://[^\)]+)\)', str(sec_content)):
+                    _add(m.group(2), m.group(1))
+
+            # 2. images from the original source page (og:image + article <img>s)
+            if url:
                 try:
                     from zapway_publisher import fetch_all_image_urls
-                    src_imgs = fetch_all_image_urls(url)
-                    if src_imgs:
-                        cover_url = src_imgs[0]
+                    for u in (fetch_all_image_urls(url) or []):
+                        _add(u)
                 except Exception as fe:
-                    print(f"[IMAGE FETCH] Source-image fallback failed: {fe}")
-            if cover_url:
-                current_payload["images"] = [{"url": cover_url, "alt": current_payload.get("title", "")}]
+                    print(f"[IMAGE FETCH] Source-image fetch failed: {fe}")
+
+            if collected:
+                current_payload["images"] = collected[:6]  # cap to keep it tidy
         except Exception as img_e:
-            print(f"[IMAGE FETCH] Warning: Failed to extract cover image from sections: {img_e}")
+            print(f"[IMAGE FETCH] Warning: Failed to collect images: {img_e}")
 
         
         while attempt <= max_attempts:

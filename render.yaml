@@ -19,8 +19,13 @@ services:
       # are polled per 30-min cycle so the pipeline doesn't flood the quota.
       - key: ZAPWAY_PRIMARY_MODEL
         value: "llama-3.1-8b-instant"
+      # Poll more sources per cycle for higher news volume. Off-topic / two-wheeler
+      # / low-quality signals are rejected BEFORE generation, so they cost no tokens.
       - key: ZAPWAY_MAX_SOURCES_PER_CYCLE
-        value: "40"
+        value: "120"
+      # Focus on EV cars/charging/policy — drop electric two-wheeler product news.
+      - key: ZAPWAY_EXCLUDE_TWO_WHEELERS
+        value: "true"
       # Ephemeral SQLite: free tier has no disk, so the DB lives in the container
       # and resets on each redeploy. The app auto-seeds sources and re-ingests
       # news on startup, so it rebuilds itself. Upgrade to a paid plan + disk if

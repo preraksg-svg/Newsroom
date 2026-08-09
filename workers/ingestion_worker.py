@@ -221,11 +221,15 @@ async def process_task_safe(worker_id, src, traceparent):
             except (ValueError, TypeError):
                 pass
 
-            from backend.llm import is_india_relevant, is_ev_focused
+            from backend.llm import is_india_relevant, is_ev_focused, is_two_wheeler_story
             if not is_india_relevant(r.get('title', ''), r.get('content_raw', '')):
                 continue
             # Strictly EV: drop off-topic (solar, renewables, tenders) at intake.
             if not is_ev_focused(r.get('title', ''), r.get('content_raw', '')):
+                continue
+            # Focus on EV cars/charging/policy — drop electric two-wheeler product news.
+            if os.getenv("ZAPWAY_EXCLUDE_TWO_WHEELERS", "true").lower() in {"1", "true", "yes"} \
+                    and is_two_wheeler_story(r.get('title', ''), r.get('content_raw', '')):
                 continue
 
             url_hash = hashlib.md5(r['url'].encode()).hexdigest()

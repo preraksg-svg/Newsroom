@@ -4,6 +4,7 @@ if hasattr(sys.stdout, 'reconfigure'):
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8')
 
+import os
 import asyncio
 import time
 import json
@@ -280,12 +281,21 @@ class NewsroomOrchestrator:
         mode = "FAST" if priority > 80 else "NORMAL"
         print(f"[MODE] Selected: {mode} (Priority: {priority})")
 
-        # 8.4: Deterministic EV-focus gate — reject off-topic content (solar,
-        # renewable energy, tenders) BEFORE spending LLM tokens on it. Zapway is
-        # strictly an India-EV newsroom.
-        from backend.llm import is_ev_focused
-        if not is_ev_focused(signal.get('title', ''), signal.get('content', '')):
-            print(f"[FILTER] Rejected (not EV-focused / off-topic): {signal.get('title', '')[:60]}")
+        # 8.4: Deterministic relevance gate — reject off-topic content (solar,
+        # renewable energy, tenders) and, optionally, electric two-wheeler product
+        # news BEFORE spending LLM tokens on it. Zapway focuses on EV cars,
+        # charging, policy and battery news.
+        from backend.llm import is_ev_focused, is_two_wheeler_story
+        _title = signal.get('title', '')
+        _content = signal.get('content', '')
+        _reject = None
+        if not is_ev_focused(_title, _content):
+            _reject = "not EV-focused / off-topic"
+        elif os.getenv("ZAPWAY_EXCLUDE_TWO_WHEELERS", "true").lower() in {"1", "true", "yes"} \
+                and is_two_wheeler_story(_title, _content):
+            _reject = "electric two-wheeler product news"
+        if _reject:
+            print(f"[FILTER] Rejected ({_reject}): {_title[:60]}")
             with get_db() as conn:
                 conn.execute("UPDATE scraped_raw SET clustered = 2 WHERE id = ?", (signal['id'],))
                 conn.commit()
