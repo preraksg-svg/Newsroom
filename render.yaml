@@ -38,6 +38,12 @@ services:
         sync: false
       - key: NEWSROOM_URL
         sync: false
+      # Email over HTTPS (Render free tier blocks SMTP). Sign up at resend.com,
+      # set RESEND_API_KEY. Leave blank to fall back to Gmail SMTP (local only).
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM
+        sync: false
       # Zapway website login for the publisher (tap-to-publish). Required for
       # publishing to work; set these in the Render dashboard.
       - key: ZAPWAY_EMAIL

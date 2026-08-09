@@ -7,6 +7,34 @@ from dotenv import load_dotenv
 # Ensure environment variables are loaded
 load_dotenv()
 
+
+def _send_via_resend(subject, body, recipients):
+    """Send email over HTTPS via the Resend API. Returns a result dict, or None
+    if Resend is not configured. Use this on hosts that block outbound SMTP
+    (e.g. Render's free tier), since it goes over port 443, not 587.
+    Setup: sign up at https://resend.com, create an API key, set RESEND_API_KEY.
+    Set RESEND_FROM to a verified sender (defaults to onboarding@resend.dev,
+    which can only deliver to your own Resend-account email).
+    """
+    api_key = os.getenv("RESEND_API_KEY")
+    if not api_key:
+        return None
+    sender = os.getenv("RESEND_FROM", "Zapway Newsroom <onboarding@resend.dev>")
+    try:
+        import requests
+        resp = requests.post(
+            "https://api.resend.com/emails",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={"from": sender, "to": recipients, "subject": subject, "text": body},
+            timeout=20,
+        )
+        if resp.status_code in (200, 201):
+            print(f"Email sent via Resend to {recipients}")
+            return {"success": True, "sent_to": recipients, "via": "resend"}
+        return {"success": False, "error": f"Resend API {resp.status_code}: {resp.text[:200]}"}
+    except Exception as e:
+        return {"success": False, "error": f"Resend error: {e}"}
+
 def send_alert_email(subject_or_title, body_or_id=None):
     sender_email = os.getenv("ALERT_EMAIL")
     sender_password = os.getenv("ALERT_EMAIL_APP_PASSWORD")
@@ -47,9 +75,17 @@ def send_alert_email(subject_or_title, body_or_id=None):
             f"Zapway Editorial Agent"
         )
 
+    # Prefer the HTTP email API when configured — it works on hosts that block
+    # outbound SMTP (Render free tier). Falls through to SMTP for local dev.
+    resend_result = _send_via_resend(subject, body, receiver_emails)
+    if resend_result is not None:
+        return resend_result
+
     sent_to = []
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        # Timeout so a blocked SMTP port (common on cloud hosts like Render free)
+        # fails fast instead of hanging the request/worker.
+        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=20)
         server.starttls()
         server.login(sender_email, sender_password)
 
