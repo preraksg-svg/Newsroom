@@ -26,6 +26,17 @@ services:
       # so it costs no tokens.)
       - key: ZAPWAY_MAX_SOURCES_PER_CYCLE
         value: "70"
+      # Keep scraper concurrency low so the in-process API stays responsive on
+      # the shared-CPU free tier.
+      - key: ZAPWAY_SCRAPE_CONCURRENCY
+        value: "2"
+      # Free persistent DB (survives redeploys/recycles): snapshots SQLite to a
+      # GitHub Release asset. Set GITHUB_TOKEN (contents:write) to enable; leave
+      # blank for ephemeral mode. GITHUB_REPO defaults to preraksg-svg/Newsroom.
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GITHUB_REPO
+        sync: false
       # Focus on EV cars/charging/policy — drop electric two-wheeler product news.
       - key: ZAPWAY_EXCLUDE_TWO_WHEELERS
         value: "true"

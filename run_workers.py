@@ -79,7 +79,16 @@ async def main():
     diagnostics_task = asyncio.create_task(diagnostics_loop())
     
     tasks = [ingestion_task, ai_task, media_task, cleanup_task, diagnostics_task]
-    
+
+    # Periodic DB snapshot to GitHub (free persistence). No-op without GITHUB_TOKEN.
+    try:
+        from db_persistence import backup_loop, enabled as _persist_enabled
+        if _persist_enabled():
+            print("[INIT] Initializing DB persistence backup task...")
+            tasks.append(asyncio.create_task(backup_loop()))
+    except Exception as _be:
+        print(f"[INIT] DB backup task skipped: {_be}")
+
     print("[INIT] All tasks created. Entering gather loop...")
     
     try:

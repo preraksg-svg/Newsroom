@@ -16,6 +16,20 @@ from bandit_engine import initialize_bandit_engine
 from ab_testing import initialize_ab_testing
 from thumbnail_ab_testing import initialize_thumbnail_ab_testing
 
+# Restore the persisted DB snapshot (free GitHub-backed persistence) BEFORE any
+# DB access, so accumulated news survives redeploys/instance recycles. No-op
+# unless GITHUB_TOKEN is set.
+try:
+    import sys as _sys, os as _os
+    _root = _os.path.abspath(_os.path.join(_os.path.dirname(__file__), ".."))
+    if _root not in _sys.path:
+        _sys.path.insert(0, _root)
+    from db_persistence import restore_db, enabled as _persist_enabled
+    if _persist_enabled():
+        restore_db()
+except Exception as _pe:
+    print(f"[BACKEND] DB restore skipped: {_pe}")
+
 # Initialize database schema before importing route modules that depend on services.
 init_db()
 

@@ -323,13 +323,22 @@ async def ingestion_loop():
 
             logger.info(f"[DAEMON-RUN] Dispatched cycle starting with {len(eligible_sources)} active sources.")
 
-            # 3. Dynamic Parallel Processing via Workers
-            semaphore = asyncio.Semaphore(5)
-            
+            # 3. Dynamic Parallel Processing via Workers. Keep concurrency LOW on
+            # the shared-CPU free tier: the workers run in the SAME process as the
+            # API, so too many parallel scrapes starve the web server and make
+            # article pages time out. Configurable via ZAPWAY_SCRAPE_CONCURRENCY.
+            try:
+                _conc = max(1, int(os.getenv("ZAPWAY_SCRAPE_CONCURRENCY", "2")))
+            except ValueError:
+                _conc = 2
+            semaphore = asyncio.Semaphore(_conc)
+
             async def worker_wrapper(worker_idx, src_obj):
                 async with semaphore:
                     await process_task_safe(worker_idx, src_obj, traceparent)
-            
+                    # Yield to the event loop so API requests aren't starved.
+                    await asyncio.sleep(0.25)
+
             tasks = [worker_wrapper(idx % 5, src) for idx, src in enumerate(eligible_sources)]
             await asyncio.gather(*tasks, return_exceptions=True)
             
