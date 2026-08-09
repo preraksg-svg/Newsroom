@@ -18,10 +18,10 @@ def send_alert_email(subject_or_title, body_or_id=None):
 
     if not sender_email or not sender_password:
         print("Email alerts not configured. Set ALERT_EMAIL and ALERT_EMAIL_APP_PASSWORD. Skipping email.")
-        return
+        return {"success": False, "error": "ALERT_EMAIL / ALERT_EMAIL_APP_PASSWORD not set on the server."}
     if not receiver_emails:
         print("No ALERT_RECIPIENT configured. Skipping email.")
-        return
+        return {"success": False, "error": "No ALERT_RECIPIENT (or ALERT_EMAIL) configured."}
 
     # Check if this is a system alert or a new article notification
     if body_or_id and len(body_or_id) > 50:  # It's a text body (e.g. system alert)
@@ -47,11 +47,12 @@ def send_alert_email(subject_or_title, body_or_id=None):
             f"Zapway Editorial Agent"
         )
 
+    sent_to = []
     try:
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
         server.login(sender_email, sender_password)
-        
+
         for receiver in receiver_emails:
             try:
                 msg = MIMEMultipart()
@@ -59,17 +60,20 @@ def send_alert_email(subject_or_title, body_or_id=None):
                 msg['To'] = receiver
                 msg['Subject'] = subject
                 msg.attach(MIMEText(body, 'plain'))
-                
+
                 # Add headers to decrease spam score
                 msg['X-Priority'] = '3'
                 msg['X-MSMail-Priority'] = 'Normal'
-                
+
                 server.send_message(msg)
                 print(f"Alert email sent successfully to {receiver}!")
+                sent_to.append(receiver)
             except Exception as item_err:
                 print(f"Failed to send to {receiver}: {item_err}")
-                
+
         server.quit()
+        return {"success": len(sent_to) > 0, "sent_to": sent_to}
     except Exception as e:
         print(f"Failed to initialize SMTP server or login: {e}")
+        return {"success": False, "error": f"SMTP error: {e}"}
 

@@ -138,6 +138,28 @@ def get_groq():
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+@router.get("/test-email")
+def test_email():
+    """Diagnostic: send a test alert email to confirm email notifications work
+    on the live server. Visit /api/test-email to trigger it."""
+    import os
+    try:
+        from email_utils import send_alert_email
+        recipient = os.getenv("ALERT_RECIPIENT") or os.getenv("ALERT_EMAIL") or "(not configured)"
+        res = send_alert_email(
+            "Zapway Test Email — notifications are working",
+            "This is a test message from your Zapway Newsroom. If you received this, "
+            "you will get an email whenever a new article is drafted, with a link to "
+            "review and publish it from your phone or laptop. (This body is intentionally "
+            "long so it is sent as a full system alert.)"
+        )
+        if res and res.get("success"):
+            return {"success": True, "message": f"Test email sent to {', '.join(res.get('sent_to', [recipient]))}. Check your inbox (and spam)."}
+        return {"success": False, "error": (res or {}).get("error", "Unknown error"), "recipient": recipient}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 @router.get("/sources")
 def get_sources():
     try:
