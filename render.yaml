@@ -19,10 +19,13 @@ services:
       # are polled per 30-min cycle so the pipeline doesn't flood the quota.
       - key: ZAPWAY_PRIMARY_MODEL
         value: "llama-3.1-8b-instant"
-      # Poll more sources per cycle for higher news volume. Off-topic / two-wheeler
-      # / low-quality signals are rejected BEFORE generation, so they cost no tokens.
+      # Poll more sources per cycle for higher news volume, but keep it moderate:
+      # on the 512MB free tier, too many concurrent scrapes starve the API and
+      # make large-article pages intermittently time out. 70 balances volume vs
+      # responsiveness. (Off-topic/2W/low-quality is rejected before generation,
+      # so it costs no tokens.)
       - key: ZAPWAY_MAX_SOURCES_PER_CYCLE
-        value: "120"
+        value: "70"
       # Focus on EV cars/charging/policy — drop electric two-wheeler product news.
       - key: ZAPWAY_EXCLUDE_TWO_WHEELERS
         value: "true"
