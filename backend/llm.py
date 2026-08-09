@@ -670,21 +670,31 @@ def _rewrite_article_fallback(content, url=None, title=None):
         except Exception:
             pass
 
-    # Construct complete sentences for SEO metadata to avoid trailing dots or cut-off sentences
-    seo_title = f"{topic} EV News & Market Analysis | ZAPWAY"
+    # Build SEO metadata from the ACTUAL headline and content so it is specific
+    # per article — never the old generic "{topic} EV News & Market Analysis".
     from seo_engine import clean_incomplete_ending
+
+    base_title = clean_headline_garbage(headline).strip()
+    if len(base_title) <= 52:
+        seo_title = f"{base_title} | ZAPWAY"
+    else:
+        seo_title = truncate_word_safe(base_title, 60)
     seo_title = clean_incomplete_ending(seo_title)
 
-    if topic and topic != "Global":
-        seo_desc = f"Latest electric vehicle news and charging updates for {topic}. Read key smart mobility developments on ZAPWAY."
-    else:
-        seo_desc = f"Latest electric vehicle news and charging infrastructure updates. Read key smart mobility developments on ZAPWAY."
+    # Meta description: the article's own opening summary, trimmed to ~155 chars.
+    desc_src = re.sub(r'\s+', ' ', (ai_summary_text or headline)).strip()
+    seo_desc = clean_incomplete_ending(truncate_word_safe(desc_src, 155) if len(desc_src) > 155 else desc_src)
+
+    # Keywords: specific terms pulled from the headline (not a fixed generic list).
+    _stop = {"the", "and", "for", "with", "new", "india", "indian", "ev", "evs", "electric"}
+    _kw = [w for w in re.findall(r"\b[A-Za-z0-9.\-]{3,}\b", headline) if w.lower() not in _stop]
+    keywords = list(dict.fromkeys(([topic] if topic and topic != "Global" else []) + _kw[:5] + ["Electric Vehicles"]))[:6]
 
     result = {
         "title": headline,
         "meta_title": seo_title,
         "meta_description": seo_desc,
-        "keywords": ["EV Charging", f"{topic} EV", "Electric Vehicles", "EV Infrastructure"],
+        "keywords": keywords,
         "sections": sections,
         "ai_summary": ai_summary_text,
         "images": fallback_images,

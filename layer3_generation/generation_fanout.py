@@ -204,8 +204,8 @@ Your output must follow these rules strictly:
 JSON Structure to return — fill every field exactly as described:
 {
   "title": "...",            // Original, strong, accurate headline. Not a copy of the source.
-  "meta_title": "...",        // Compelling SEO meta title, ~55-65 chars, includes primary keyword. Complete sentence, no ellipsis.
-  "meta_description": "...",  // Clear, clickable summary, ~140-155 chars, includes primary keyword. Complete sentence, no ellipsis.
+  "meta_title": "...",        // UNIQUE, specific SEO title ~55-65 chars. MUST name the actual company/model/policy and the key fact or number from THIS story (e.g. "Tata Nexon EV 45 Gets 489 km Range at Rs 16.99 Lakh"). Never a generic template like "EV News & Market Analysis". No ellipsis.
+  "meta_description": "...",  // UNIQUE, specific summary ~140-155 chars stating what actually happened (who, what, the key number) and why it matters — like a search-result snippet. Must differ from every other article. No generic filler ("Latest EV news…"), no ellipsis.
   "keywords": ["k1", "k2"],   // 4-6 specific EV-related terms from the article.
   "ai_summary": "",           // MUST be empty string.
   "sections": [
