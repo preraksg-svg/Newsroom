@@ -234,9 +234,26 @@ body {
   transition: flex 0.3s ease;
 }
 
-/* If split-view is open next to it, scale to 50% on desktop */
+/* Split-review mode (desktop): hide the right sidebar so the source/logs panel
+   gets real width instead of being squeezed to ~540px, and let the article and
+   panel share the space evenly. */
+.terminal-body:has(.split-view-panel) .terminal-sidebar {
+  display: none;
+}
 .terminal-body:has(.split-view-panel) .terminal-content:not(.split-view-panel) {
-  flex: 0 0 50%;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
+  padding: 40px;
+}
+.split-view-panel {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.split-view-panel iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 
 
