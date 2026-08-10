@@ -314,6 +314,12 @@ export default function ArticleView() {
     }
   })
 
+  // Persist image removals immediately so deleted images are never published.
+  const deleteImageMutation = useMutation({
+    mutationFn: (imagesJson) => NewsService.updateArticle(id, { ...editedStory, images: imagesJson }),
+    onSuccess: () => refetch(),
+  })
+
   const { data: rawSource } = useQuery({
     queryKey: ['raw-source', id],
     queryFn: () => NewsService.getRawSource(id),
@@ -373,6 +379,34 @@ export default function ArticleView() {
     newSections[index][field] = value
     setEditedStory(prev => ({ ...prev, sections: JSON.stringify(newSections) }))
   }
+
+  const imageUrlOf = (im) => (typeof im === 'object' ? (im && (im.url || im.src)) : im)
+  const imageUrls = (images || []).map(imageUrlOf).filter(u => u && typeof u === 'string')
+
+  // Remove an image from the article and save, so it is NOT uploaded on publish.
+  const deleteImage = (url) => {
+    const next = (safeParse(editedStory.images, []) || []).filter(im => imageUrlOf(im) !== url)
+    const json = JSON.stringify(next)
+    setEditedStory(prev => ({ ...prev, images: json }))
+    deleteImageMutation.mutate(json)
+  }
+
+  const renderDeletableImage = (url, style) => (
+    <div style={{ position: 'relative', marginBottom: '14px' }}>
+      <img
+        src={normalizeUrl(url)}
+        alt={story?.title || ''}
+        loading="lazy"
+        onError={(e) => { e.target.closest('div').style.display = 'none' }}
+        style={style}
+      />
+      <button
+        title="Remove image (it will not be published)"
+        onClick={() => deleteImage(url)}
+        style={{ position: 'absolute', top: '8px', right: '8px', width: '30px', height: '30px', borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.7)', color: '#fff', cursor: 'pointer', fontSize: '15px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+      >✕</button>
+    </div>
+  )
 
   const normalizeUrl = (url) => {
     if (!url) return ''
@@ -635,38 +669,13 @@ export default function ArticleView() {
             <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '24px' }}>{story.title}</h1>
           )}
 
-          {/* IMAGES — main photo + gallery of any additional source images
-              (proxied so hotlinked CDN images load; broken URLs hide gracefully). */}
-          {(() => {
-            const urls = (images || [])
-              .map(im => (typeof im === 'object' ? (im.url || im.src) : im))
-              .filter(u => u && typeof u === 'string')
-            if (urls.length === 0) return null
-            return (
-              <div style={{ marginBottom: '24px' }}>
-                <img
-                  src={normalizeUrl(urls[0])}
-                  alt={story.title || ''}
-                  onError={(e) => { e.target.style.display = 'none' }}
-                  style={{ width: '100%', maxHeight: '420px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--color-border)' }}
-                />
-                {urls.length > 1 && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px', marginTop: '8px' }}>
-                    {urls.slice(1).map((u, i) => (
-                      <img
-                        key={i}
-                        src={normalizeUrl(u)}
-                        alt={`${story.title || ''} image ${i + 2}`}
-                        loading="lazy"
-                        onError={(e) => { e.target.style.display = 'none' }}
-                        style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--color-border)' }}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })()}
+          {/* LEAD IMAGE — the article's main photo. Deletable: the ✕ removes it
+              so it is not uploaded on publish. Remaining images are shown inline
+              with each section below, mirroring the original article layout. */}
+          {imageUrls.length > 0 && renderDeletableImage(imageUrls[0], {
+            width: '100%', maxHeight: '420px', objectFit: 'cover',
+            borderRadius: '8px', border: '1px solid var(--color-border)'
+          })}
 
           {/* HEADLINE VARIANTS SELECTOR */}
           {headlineVariants.length > 0 && (
@@ -703,6 +712,11 @@ export default function ArticleView() {
 
               return (
                 <div key={i} style={{ marginBottom: '32px' }}>
+                  {/* Section image (deletable) — placed inline like the original article */}
+                  {imageUrls[i + 1] && renderDeletableImage(imageUrls[i + 1], {
+                    width: '100%', maxHeight: '360px', objectFit: 'cover',
+                    borderRadius: '8px', border: '1px solid var(--color-border)'
+                  })}
                   {isEditMode ? (
                     <>
                       <input 
@@ -765,6 +779,18 @@ export default function ArticleView() {
               ) : (
                 <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No content available.</p>
               )}
+            </div>
+          )}
+
+          {/* Any remaining images beyond the sections — shown as a gallery,
+              each deletable so it is not published. */}
+          {imageUrls.length > sections.length + 1 && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '10px', marginBottom: '24px' }}>
+              {imageUrls.slice(sections.length + 1).map((u, i) => (
+                <div key={i}>
+                  {renderDeletableImage(u, { width: '100%', height: '110px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--color-border)' })}
+                </div>
+              ))}
             </div>
           )}
 

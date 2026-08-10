@@ -454,9 +454,10 @@ async def publish_to_zapway(article: dict, dry_run: bool = False) -> dict:
                 main_image_url = ""
                 if len(stored_images) > 0:
                     main_image_url = stored_images[0]
-                    
-                if not main_image_url:
-                    main_image_url = fetch_main_image_url(article.get("url", ""))
+
+                # NOTE: do NOT re-fetch a source image when stored_images is empty —
+                # that would re-add an image the editor deliberately deleted. Publish
+                # only the curated images[].
 
                 if main_image_url:
                     img_el = page.locator('input[placeholder="images/hero.jpg"]').first
