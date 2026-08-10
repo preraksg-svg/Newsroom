@@ -177,15 +177,32 @@ def compute_readability(content: str, sections: list = None) -> dict:
 
     # Paragraph breaks (good formatting)
     para_count = content.count('\n\n') + content.count('<p>') + 1
-    format_score = min(15, para_count * 3)
+    format_score = min(10, para_count * 3)
 
-    raw = sentence_score + structure_score + length_score + format_score
+    # Data specificity — concrete EV figures (prices, ranges, specs, %, years)
+    # signal a substantive report rather than vague filler.
+    c_lower = content.lower()
+    data_hits = (
+        len(re.findall(r'(?:rs\.?|₹)\s?\d', c_lower))
+        + len(re.findall(r'\b\d+(?:\.\d+)?\s?(?:km|kwh|kw|bhp|nm|lakh|crore|%|percent|seconds?|minutes?|hours?)\b', c_lower))
+        + len(re.findall(r'\b(?:19|20)\d{2}\b', content))
+    )
+    specificity_score = min(15, data_hits * 3)
+
+    # Lexical diversity — penalise repetitive / templated text.
+    long_words = [w.lower() for w in words if len(w) > 3]
+    diversity = (len(set(long_words)) / len(long_words)) if long_words else 1.0
+    diversity_factor = 0.7 + 0.3 * min(1.0, diversity / 0.5)  # 0.85 at 0.25, 1.0 at >=0.5
+
+    raw = (sentence_score + structure_score + length_score + format_score + specificity_score) * diversity_factor
     return {
-        "score": min(100, raw),
+        "score": min(100, int(raw)),
         "avg_sentence_length": round(avg_sentence_len, 1),
         "word_count": word_count,
         "section_count": section_count,
-        "paragraph_count": para_count
+        "paragraph_count": para_count,
+        "specificity_score": specificity_score,
+        "diversity": round(diversity, 2),
     }
 
 
