@@ -226,10 +226,15 @@ def extract_bullets_from_content(content: str):
     return cleaned_content, bullet_list
 
 
-async def publish_to_zapway(article: dict) -> dict:
+async def publish_to_zapway(article: dict, dry_run: bool = False) -> dict:
     """
     Logs into zapway.app and submits the article via the insert_news form.
     Clicks the '+ Section' button to insert multiple sections.
+
+    If dry_run=True, everything is filled but the final "Publish Story" click is
+    skipped; instead the filled form field values are read back and returned under
+    "filled" so all formats (title, sections, bullets, images, source) can be
+    verified WITHOUT creating a live post.
     """
     if not ZAPWAY_EMAIL or not ZAPWAY_PASSWORD:
         msg = ("Publishing credentials missing. Set ZAPWAY_EMAIL and "
@@ -239,18 +244,16 @@ async def publish_to_zapway(article: dict) -> dict:
         return {"success": False, "error": msg}
 
     async with async_playwright() as p:
-        # Memory-minimising launch flags so the publisher fits comfortably in a
-        # 512MB container (e.g. Render free tier) instead of OOM-crashing.
-        # --single-process removes the per-tab renderer process (the biggest
-        # memory saver); --disable-dev-shm-usage avoids the tiny /dev/shm in
-        # containers; the rest disable subsystems we don't need to fill a form.
+        # Memory-minimising launch flags so the publisher fits in a 512MB
+        # container (Render free) without OOM. NOTE: --single-process/--no-zygote
+        # were REMOVED — they crash Chromium on the heavy zapway.app SPA
+        # ("Target closed"). Resource blocking (images/media/fonts), a small
+        # viewport, and the V8 heap cap keep memory low without them.
         browser = await p.chromium.launch(
             headless=True,
             args=[
                 '--disable-blink-features=AutomationControlled',
                 '--no-sandbox',
-                '--single-process',
-                '--no-zygote',
                 '--disable-dev-shm-usage',
                 '--disable-gpu',
                 '--disable-extensions',
@@ -569,6 +572,41 @@ async def publish_to_zapway(article: dict) -> dict:
                         except Exception as bullet_err:
                             print(f"[PUBLISHER] ERROR filling bullet #{b_idx} in section #{idx}: {bullet_err}")
 
+
+            # -- Dry run: read back what was filled, then stop (no submit) ----
+            if dry_run:
+                async def _vals(selector):
+                    out = []
+                    loc = page.locator(selector)
+                    for i in range(await loc.count()):
+                        try:
+                            v = await loc.nth(i).input_value()
+                            if v and v.strip():
+                                out.append(v.strip())
+                        except Exception:
+                            pass
+                    return out
+                async def _texts(selector):
+                    out = []
+                    loc = page.locator(selector)
+                    for i in range(await loc.count()):
+                        try:
+                            v = await loc.nth(i).input_value()
+                        except Exception:
+                            v = ""
+                        if v and v.strip():
+                            out.append(v.strip())
+                    return out
+                filled = {
+                    "headline": await _vals('input[placeholder*="headline"], input[placeholder*="Headline"]'),
+                    "section_headings": await _vals('input[placeholder*="Overview, Key Findings"]'),
+                    "section_bodies": await _texts('textarea[placeholder*="Section body text"]'),
+                    "bullets": await _vals('.na-bullet-row input'),
+                    "main_image": await _vals('input[placeholder="images/hero.jpg"]'),
+                    "section_images": await _vals('input[placeholder*="images/news/photo.jpg"]'),
+                }
+                print(f"[PUBLISHER][DRY-RUN] Filled: { {k: (len(v) if isinstance(v,list) else v) for k,v in filled.items()} }")
+                return {"success": True, "dry_run": True, "filled": filled}
 
             # -- Step 4: Click the "Publish Story" submit button -------------
             print("[PUBLISHER] Submitting form...")
