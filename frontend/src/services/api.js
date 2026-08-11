@@ -43,16 +43,11 @@ export const NewsService = {
 }
 
 export const AnalyticsService = {
-  getStats: () => fetchApi('/api/analytics'),
-  getGroq: () => fetchApi('/api/groq-usage'),
-  getGrowth: () => fetchApi('/api/growth'),
-  getSEO: () => fetchApi('/api/seo'),
-  getExperiments: () => fetchApi('/api/experiments')
+  getGroq: () => fetchApi('/api/groq-usage')
 }
 
 export const IntelligenceService = {
   getSources: () => fetchApi('/api/sources'),
-  getSocial: (id) => fetchApi(`/api/social/${id}`),
   orchestrate: () => fetchApi('/api/orchestrate', { method: 'POST' }),
   getNextFetch: () => fetchApi('/api/next-fetch')
 }
