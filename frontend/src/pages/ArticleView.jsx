@@ -460,6 +460,20 @@ export default function ArticleView() {
     }
     return `${API_BASE}${actualUrl}`
   }
+  // Strip inline markdown emphasis (**bold**, *italic*, `code`), non-image links
+  // and leading heading hashes so the preview never shows stray '*'/'#'. Bullet
+  // markers, inline images ![](), and table pipes are preserved.
+  const stripInlineMd = (t) => {
+    if (!t) return ''
+    return String(t)
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      .replace(/__(.+?)__/g, '$1')
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/(^|[^*\w])\*(?!\s)([^*\n]+?)(?<!\s)\*(?![*\w])/g, '$1$2')
+      .replace(/(^|[^_\w])_(?!\s)([^_\n]+?)(?<!\s)_(?![_\w])/g, '$1$2')
+      .replace(/(^|[^!])\[([^\]]+)\]\([^)]+\)/g, '$1$2')
+      .replace(/^\s{0,3}#{1,6}\s+/, '')
+  }
   const renderFormattedContent = (text, sectionIndex = null) => {
     if (!text) return null
     const lines = text.split('\n')
@@ -519,7 +533,7 @@ export default function ArticleView() {
         return (
           <ul key={idx} style={{ margin: '8px 0 8px 24px', paddingLeft: '0', listStyleType: 'disc' }}>
             {block.items.map((item, liIdx) => (
-              <li key={liIdx} style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>{item}</li>
+              <li key={liIdx} style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>{stripInlineMd(item)}</li>
             ))}
           </ul>
         )
@@ -534,14 +548,14 @@ export default function ArticleView() {
               {head.length > 0 && (
                 <thead>
                   <tr>{head.map((c, i) => (
-                    <th key={i} style={{ border: '1px solid var(--color-border)', padding: '8px 12px', textAlign: 'left', background: 'rgba(255,255,255,0.06)', color: '#fff' }}>{c}</th>
+                    <th key={i} style={{ border: '1px solid var(--color-border)', padding: '8px 12px', textAlign: 'left', background: 'rgba(255,255,255,0.06)', color: '#fff' }}>{stripInlineMd(c)}</th>
                   ))}</tr>
                 </thead>
               )}
               <tbody>
                 {body.map((row, ri) => (
                   <tr key={ri}>{row.map((c, ci) => (
-                    <td key={ci} style={{ border: '1px solid var(--color-border)', padding: '8px 12px', color: 'var(--text-secondary)' }}>{c}</td>
+                    <td key={ci} style={{ border: '1px solid var(--color-border)', padding: '8px 12px', color: 'var(--text-secondary)' }}>{stripInlineMd(c)}</td>
                   ))}</tr>
                 ))}
               </tbody>
@@ -587,7 +601,7 @@ export default function ArticleView() {
         )
       }
 
-      return <p key={idx} style={{ margin: '0 0 12px 0', whiteSpace: 'pre-wrap' }}>{textVal}</p>
+      return <p key={idx} style={{ margin: '0 0 12px 0', whiteSpace: 'pre-wrap' }}>{stripInlineMd(textVal)}</p>
     })
   }
 
@@ -790,7 +804,7 @@ export default function ArticleView() {
                     </>
                   ) : (
                     <>
-                      {(s.heading || s.title) && <h3 style={{ marginBottom: '12px', color: 'var(--text-primary)' }}>{s.heading || s.title}</h3>}
+                      {(s.heading || s.title) && <h3 style={{ marginBottom: '12px', color: 'var(--text-primary)' }}>{stripInlineMd(s.heading || s.title)}</h3>}
                       {Array.isArray(rawContent) ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           {rawContent.map((item, idx) => {

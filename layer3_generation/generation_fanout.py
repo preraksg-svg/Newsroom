@@ -255,6 +255,14 @@ JSON Structure to return — fill every field exactly as described:
     clean_content = _re.sub(r'&[a-z]+;', ' ', clean_content)         # strip HTML entities
     clean_content = _re.sub(r'[ \t]{2,}', ' ', clean_content)        # collapse spaces
     clean_content = _re.sub(r'\n{3,}', '\n\n', clean_content)        # collapse blank lines
+    # Normalize inline markdown emphasis/headings (**bold**, *italic*, ##) so the
+    # stored content never carries stray '*'/'#' into the preview or the website.
+    # Bullets, inline images and table pipes are preserved.
+    try:
+        from text_format import strip_inline_markdown as _strip_md
+        clean_content = _strip_md(clean_content)
+    except Exception:
+        pass
     clean_content = clean_content.strip()
 
     # Strip scraped navigation-menu junk (e.g. "Cars * Bikes * news * reviews *

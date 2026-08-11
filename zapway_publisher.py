@@ -9,6 +9,7 @@ import json
 import re
 import os
 from playwright.async_api import async_playwright
+from text_format import strip_inline_markdown
 
 # Force UTF-8 output to avoid Windows cp1252 codec errors with emoji/unicode
 if hasattr(sys.stdout, 'reconfigure'):
@@ -218,10 +219,20 @@ def extract_bullets_from_content(content: str):
         # Match standard markdown bullets (*, -, •, or digits followed by dot)
         match = re.match(r"^([\*\-\u2022]|(?:\d+\.))\s+(.*)$", stripped)
         if match:
-            bullet_list.append(match.group(2).strip())
+            # Remove any inline markdown emphasis so no stray '*'/'**' reaches
+            # the website's bullet fields.
+            btext = strip_inline_markdown(match.group(2).strip())
+            # A genuine bullet is a short list item. If the model prefixed a full
+            # paragraph with '*'/'-', it is NOT a bullet \u2014 keep it in the body so
+            # paragraphs are not shoved into tiny bullet fields.
+            if len(btext) > 200:
+                cleaned_lines.append(btext)
+            elif btext:
+                bullet_list.append(btext)
         else:
-            cleaned_lines.append(line)
-            
+            # Strip inline emphasis/headings from ordinary body lines too.
+            cleaned_lines.append(strip_inline_markdown(line))
+
     cleaned_content = "\n".join(cleaned_lines).strip()
     return cleaned_content, bullet_list
 

@@ -119,9 +119,6 @@ export default function Sidebar() {
 
   const menuItems = [
     { label: 'News Board', icon: '📋', path: '/news' },
-    { label: 'Source Learning', icon: '🧠', path: '/sources' },
-    { label: 'Groq Usage', icon: '⚡', path: '/groq' },
-    { label: 'Recycle Bin', icon: '♻️', path: '/recycle-bin' },
   ]
 
   return (
