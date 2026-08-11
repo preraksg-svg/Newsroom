@@ -345,10 +345,16 @@ async def ingestion_loop():
             # Reset loops retry parameters on successful execution cycle
             attempt = 0
             
-            # Sleep for 30 minutes (1800 seconds) before the next cycle
+            # Sleep before the next cycle. Default 15 min for more news volume
+            # (configurable via ZAPWAY_INGEST_INTERVAL_MIN). Lower = more news but
+            # more load on the free tier.
+            try:
+                _interval_min = max(5, int(os.getenv("ZAPWAY_INGEST_INTERVAL_MIN", "15")))
+            except ValueError:
+                _interval_min = 15
             jitter = random.uniform(-30.0, 30.0)
-            sleep_sec = 1800.0 + jitter
-            logger.info(f"[CYCLE-END] Completed ingestion pass. Sleeping for {sleep_sec:.2f}s (30 min) before next cycle...")
+            sleep_sec = _interval_min * 60.0 + jitter
+            logger.info(f"[CYCLE-END] Completed ingestion pass. Sleeping {sleep_sec:.0f}s (~{_interval_min} min) before next cycle...")
             await asyncio.sleep(sleep_sec)
             
         except Exception as global_err:

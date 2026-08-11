@@ -314,9 +314,9 @@ export default function ArticleView() {
     }
   })
 
-  // Persist image removals immediately so deleted images are never published.
-  const deleteImageMutation = useMutation({
-    mutationFn: (imagesJson) => NewsService.updateArticle(id, { ...editedStory, images: imagesJson }),
+  // Persist edits (e.g. image removals) immediately so they take effect on publish.
+  const savePatchMutation = useMutation({
+    mutationFn: (fullStory) => NewsService.updateArticle(id, fullStory),
     onSuccess: () => refetch(),
   })
 
@@ -383,13 +383,39 @@ export default function ArticleView() {
   const imageUrlOf = (im) => (typeof im === 'object' ? (im && (im.url || im.src)) : im)
   const imageUrls = (images || []).map(imageUrlOf).filter(u => u && typeof u === 'string')
 
-  // Remove an image from the article and save, so it is NOT uploaded on publish.
+  // Remove an image from images[] and save, so it is NOT uploaded on publish.
   const deleteImage = (url) => {
     const next = (safeParse(editedStory.images, []) || []).filter(im => imageUrlOf(im) !== url)
-    const json = JSON.stringify(next)
-    setEditedStory(prev => ({ ...prev, images: json }))
-    deleteImageMutation.mutate(json)
+    const updated = { ...editedStory, images: JSON.stringify(next) }
+    setEditedStory(updated)
+    savePatchMutation.mutate(updated)
   }
+
+  // Remove an inline image (![](url)) from the section content AND from images[]
+  // so it's gone for good (not shown in the gallery, not published), then save.
+  const deleteInlineImage = (sectionIndex, url) => {
+    const secs = safeParse(editedStory.sections, [])
+    if (Array.isArray(secs) && secs[sectionIndex]) {
+      const esc = String(url).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const re = new RegExp('!\\[[^\\]]*\\]\\(' + esc + '\\)\\s*', 'g')
+      secs[sectionIndex] = { ...secs[sectionIndex], content: String(secs[sectionIndex].content || '').replace(re, '') }
+    }
+    const nextImgs = (safeParse(editedStory.images, []) || []).filter(im => imageUrlOf(im) !== url)
+    const updated = { ...editedStory, sections: JSON.stringify(secs), images: JSON.stringify(nextImgs) }
+    setEditedStory(updated)
+    savePatchMutation.mutate(updated)
+  }
+
+  // URLs already shown inline within section content (so we don't also show them
+  // in the distributed gallery — avoids duplicates).
+  const inlineImageUrls = new Set()
+  sections.forEach(s => {
+    const c = typeof s.content === 'string' ? s.content : ''
+    const re = /!\[[^\]]*\]\((https?:\/\/[^)]+)\)/g
+    let m
+    while ((m = re.exec(c)) !== null) inlineImageUrls.add(m[1])
+  })
+  const galleryUrls = imageUrls.filter(u => !inlineImageUrls.has(u))
 
   const renderDeletableImage = (url, style) => (
     <div style={{ position: 'relative', marginBottom: '14px' }}>
@@ -423,7 +449,7 @@ export default function ArticleView() {
     }
     return `${API_BASE}${actualUrl}`
   }
-  const renderFormattedContent = (text) => {
+  const renderFormattedContent = (text, sectionIndex = null) => {
     if (!text) return null
     const lines = text.split('\n')
     const blocks = []
@@ -515,12 +541,20 @@ export default function ArticleView() {
 
       if (block.type === 'image') {
         return (
-          <div key={idx} style={{ margin: '20px 0', textAlign: 'center' }}>
-            <img 
-              src={normalizeUrl(block.url)} 
-              alt={block.alt} 
-              style={{ maxWidth: '100%', maxHeight: '450px', borderRadius: '8px', border: '1px solid var(--color-border)', boxShadow: 'var(--glow-cyan)' }} 
+          <div key={idx} style={{ margin: '20px 0', textAlign: 'center', position: 'relative' }}>
+            <img
+              src={normalizeUrl(block.url)}
+              alt={block.alt}
+              onError={(e) => { e.target.style.display = 'none' }}
+              style={{ maxWidth: '100%', maxHeight: '450px', borderRadius: '8px', border: '1px solid var(--color-border)', boxShadow: 'var(--glow-cyan)' }}
             />
+            {sectionIndex != null && (
+              <button
+                title="Remove image (it will not be published)"
+                onClick={() => deleteInlineImage(sectionIndex, block.url)}
+                style={{ position: 'absolute', top: '8px', right: '8px', width: '30px', height: '30px', borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.7)', color: '#fff', cursor: 'pointer', fontSize: '15px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+              >✕</button>
+            )}
             {block.alt && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px' }}>{block.alt}</div>}
           </div>
         )
@@ -672,7 +706,7 @@ export default function ArticleView() {
           {/* LEAD IMAGE — the article's main photo. Deletable: the ✕ removes it
               so it is not uploaded on publish. Remaining images are shown inline
               with each section below, mirroring the original article layout. */}
-          {imageUrls.length > 0 && renderDeletableImage(imageUrls[0], {
+          {galleryUrls.length > 0 && renderDeletableImage(galleryUrls[0], {
             width: '100%', maxHeight: '420px', objectFit: 'cover',
             borderRadius: '8px', border: '1px solid var(--color-border)'
           })}
@@ -713,7 +747,7 @@ export default function ArticleView() {
               return (
                 <div key={i} style={{ marginBottom: '32px' }}>
                   {/* Section image (deletable) — placed inline like the original article */}
-                  {imageUrls[i + 1] && renderDeletableImage(imageUrls[i + 1], {
+                  {galleryUrls[i + 1] && renderDeletableImage(galleryUrls[i + 1], {
                     width: '100%', maxHeight: '360px', objectFit: 'cover',
                     borderRadius: '8px', border: '1px solid var(--color-border)'
                   })}
@@ -758,7 +792,7 @@ export default function ArticleView() {
                         </div>
                       ) : (
                         <div style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.6' }}>
-                          {renderFormattedContent(textValue)}
+                          {renderFormattedContent(textValue, i)}
                         </div>
                       )}
                     </>
@@ -784,9 +818,9 @@ export default function ArticleView() {
 
           {/* Any remaining images beyond the sections — shown as a gallery,
               each deletable so it is not published. */}
-          {imageUrls.length > sections.length + 1 && (
+          {galleryUrls.length > sections.length + 1 && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '10px', marginBottom: '24px' }}>
-              {imageUrls.slice(sections.length + 1).map((u, i) => (
+              {galleryUrls.slice(sections.length + 1).map((u, i) => (
                 <div key={i}>
                   {renderDeletableImage(u, { width: '100%', height: '110px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--color-border)' })}
                 </div>

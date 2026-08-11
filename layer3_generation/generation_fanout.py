@@ -189,7 +189,7 @@ Your output must follow these rules strictly:
    - Organise the article into 3-5 sections with specific, informative H2 headings tailored to THIS story (e.g. "Ather's New Fast-Charging Rollout", "Pricing and Variants", "What It Means for Indian EV Buyers"). Never use vague headings like "Main Details" or "Overview".
    - Prefer a flow like: a lead section stating what happened, one or two detail sections (specs / pricing / context), and a closing "Why It Matters for EV Buyers" or "ZAPWAY Take" section.
    - Never output empty headings.
-3. GENUINE REWRITE: Re-report every fact in your own words with proper journalistic flow — restructure sentences, combine or split ideas, add clear transitions. The result must read as original writing, NOT a synonym-swapped copy of the source. Aim for roughly 300-550 words of body content when the source supports it; do not pad thin sources.
+3. GENUINE REWRITE — KEEP THE FULL STORY: Re-report every fact in your own words with proper journalistic flow — restructure sentences, combine or split ideas, add clear transitions. The result must read as original writing, NOT a synonym-swapped copy of the source. CRITICAL: do NOT shorten or summarise the article. Cover EVERY detail, point, spec, quote and figure from the source at comparable length — if the source is long, your article must be long too (match its depth, typically 500-1000+ words). Never condense a detailed source into a few short paragraphs. Only a genuinely thin source may yield a short article.
 4. DATA INTEGRITY (ABSOLUTE): Keep ALL numbers, prices (e.g. 'Rs 27.90 lakh'), specs, ranges, percentages, dates, model names, variant names, and named entities EXACTLY as they appear in the source. Never round, convert, translate, or guess a figure.
 5. NO INVENTED CONTENT: Do not add facts, quotes, specs, or claims that are not supported by the source. If the source is thin, write a shorter accurate article rather than fabricating. You MAY add brief, clearly general EV-market context ("India's EV two-wheeler segment has grown rapidly") only when it is common knowledge and not a specific unverified claim.
 6. LINGUISTIC CLOSURE: Every sentence must be complete and end with proper punctuation. No trailing conjunctions, no "...", no cut-off sentences.
@@ -272,13 +272,37 @@ JSON Structure to return — fill every field exactly as described:
         return avg_words <= 3  # short menu items, not real sentences
     clean_content = "\n".join(ln for ln in clean_content.split("\n") if not _looks_like_nav(ln)).strip()
 
-    # Truncate to avoid Groq 413 Payload Too Large errors
-    content_for_prompt = clean_content[:8000]
-    
+    # Cap input to avoid Groq 413, but keep it generous so long sources aren't
+    # truncated (which would shorten the article).
+    content_for_prompt = clean_content[:12000]
+
+    # Protect EXACT image positions through the rewrite: swap each inline image
+    # for a stable [[ZIMGn]] token the model keeps (it tends to drop ![](url)),
+    # then restore the tokens in the generated sections afterwards. This keeps
+    # each photo in the same place it appears in the original article.
+    _img_token_map = {}
+    def _img_to_token(m):
+        key = f"[[ZIMG{len(_img_token_map) + 1}]]"
+        _img_token_map[key] = m.group(0)
+        return f"\n{key}\n"
+    content_for_prompt = _re.sub(r'!\[[^\]]*\]\((https?://[^\)]+)\)', _img_to_token, content_for_prompt)
+
+    def _restore_image_tokens(payload):
+        if _img_token_map and isinstance(payload, dict):
+            for sec in payload.get("sections", []) or []:
+                if isinstance(sec, dict) and isinstance(sec.get("content"), str):
+                    for key, md in _img_token_map.items():
+                        sec["content"] = sec["content"].replace(key, md)
+        return payload
+
     # Include original title in user prompt as an explicit anchor
+    img_note = ("\n\nThe text contains [[ZIMG1]], [[ZIMG2]] ... image markers. "
+                "Keep EVERY such marker verbatim and in the SAME position within "
+                "the same section as it appears in the source — do not remove, "
+                "rename, reorder, or move them.") if _img_token_map else ""
     title_anchor = f"SOURCE TITLE (for reference — rewrite it, don't copy it): {title}\n\n" if title else ""
-    user_prompt = f"{title_anchor}SOURCE MATERIAL TO RE-REPORT:\n{content_for_prompt}\n\nIMPORTANT: Rewrite this into an original ZAPWAY article with your own headline, your own specific section headings, and freshly written prose. Preserve every fact, figure, price, name, and inline image exactly. Do NOT copy sentences or headings verbatim from the source."
-    
+    user_prompt = f"{title_anchor}SOURCE MATERIAL TO RE-REPORT:\n{content_for_prompt}\n\nIMPORTANT: Rewrite this into an original ZAPWAY article with your own headline, your own specific section headings, and freshly written prose. Preserve every fact, figure, price, name, and inline image exactly. Do NOT copy sentences or headings verbatim from the source.{img_note}"
+
     if not client:
         print(f"[TRACE:{traceparent}] Groq client unavailable. Using fallback generation.")
         from backend.llm import _rewrite_article_fallback
@@ -356,8 +380,8 @@ JSON Structure to return — fill every field exactly as described:
         # Each self-correction is another full-article LLM call. Keep this low to
         # conserve the free-tier daily token budget (was 4).
         max_attempts = 2
-        current_payload = payload
-        
+        current_payload = _restore_image_tokens(payload)
+
         # Collect MULTIPLE images (the source often has several): every inline
         # image embedded in the article, plus images from the original source
         # page. All are stored in images[] so the UI can show them, not just one.
@@ -468,7 +492,7 @@ Output the entire, corrected JSON object."""
             if hasattr(response_retry, 'usage') and response_retry.usage:
                 log_groq_usage(response_retry.usage.total_tokens)
                 
-            current_payload = json.loads(response_retry.choices[0].message.content)
+            current_payload = _restore_image_tokens(json.loads(response_retry.choices[0].message.content))
             print(f"[TRACE:{traceparent}] Self-correction attempt {attempt} completed in {time.time() - correction_start:.2f}s.")
             attempt += 1
             

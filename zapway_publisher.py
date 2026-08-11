@@ -496,6 +496,12 @@ async def publish_to_zapway(article: dict, dry_run: bool = False) -> dict:
                 sec_heading = sec.get("heading", "")
                 sec_content = sec.get("content", "")
 
+                # Prefer the image that appears INLINE in this section (its exact
+                # position in the original article). Strip the image markdown from
+                # the body so it is not published as literal "![](url)" text.
+                _sec_inline_imgs = re.findall(r'!\[[^\]]*\]\((https?://[^)]+)\)', sec_content)
+                sec_content = re.sub(r'!\[[^\]]*\]\((https?://[^)]+)\)', '', sec_content).strip()
+
                 # If not the first section, click '+ Section' to add fields
                 if idx > 0:
                     add_btn = page.get_by_text("+ Section")
@@ -537,14 +543,17 @@ async def publish_to_zapway(article: dict, dry_run: bool = False) -> dict:
                 except Exception as e:
                     print(f"[PUBLISHER] ERROR filling section #{idx} body: {e}")
 
-                # Fill section image field if there are multiple images
-                if len(stored_images) > idx:
+                # Fill this section's image: prefer the image that was inline in
+                # this section (exact original position); else fall back to the
+                # positionally-aligned stored image.
+                _sec_image = _sec_inline_imgs[0] if _sec_inline_imgs else (stored_images[idx] if len(stored_images) > idx else "")
+                if _sec_image:
                     try:
                         sec_img_el = page.locator('.na-sec').nth(idx).locator('input[placeholder*="images/news/photo.jpg"]')
                         if await sec_img_el.count() > 0:
                             await sec_img_el.first.scroll_into_view_if_needed()
-                            await sec_img_el.first.fill(stored_images[idx])
-                            print(f"[PUBLISHER] Filled section #{idx} image: {stored_images[idx]}")
+                            await sec_img_el.first.fill(_sec_image)
+                            print(f"[PUBLISHER] Filled section #{idx} image: {_sec_image}")
                     except Exception as sec_img_err:
                         print(f"[PUBLISHER] WARNING: Could not fill section #{idx} image: {sec_img_err}")
 

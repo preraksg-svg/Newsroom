@@ -14,7 +14,7 @@ async def ai_processing_loop():
     while True:
         try:
             # Fetch unclustered signals
-            signals = orchestrator.get_latest_raw_signals(limit=5)
+            signals = orchestrator.get_latest_raw_signals(limit=8)
             
             if not signals:
                 logger.info("No pending signals for AI processing. Sleeping...")
