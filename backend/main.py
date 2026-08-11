@@ -12,9 +12,6 @@ from fastapi.staticfiles import StaticFiles
 from backend.db.queries import init_db
 from backend.headline_engine import initialize_headline_engine
 from backend.thumbnail_engine import initialize_thumbnail_engine
-from bandit_engine import initialize_bandit_engine
-from ab_testing import initialize_ab_testing
-from thumbnail_ab_testing import initialize_thumbnail_ab_testing
 
 # Restore the persisted DB snapshot (free GitHub-backed persistence) BEFORE any
 # DB access, so accumulated news survives redeploys/instance recycles. No-op
@@ -103,9 +100,6 @@ except Exception as cle:
 
 initialize_headline_engine()
 initialize_thumbnail_engine()
-initialize_bandit_engine()
-initialize_ab_testing()
-initialize_thumbnail_ab_testing()
 
 
 from backend.routes.api_routes import router

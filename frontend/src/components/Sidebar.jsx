@@ -119,12 +119,7 @@ export default function Sidebar() {
 
   const menuItems = [
     { label: 'News Board', icon: '📋', path: '/news' },
-    { label: 'Analytics', icon: '📊', path: '/analytics' },
     { label: 'Source Learning', icon: '🧠', path: '/sources' },
-    { label: 'Growth Engine', icon: '📈', path: '/growth' },
-    { label: 'SEO Strategy', icon: '🌐', path: '/seo' },
-    { label: 'Social Bundle', icon: '📱', path: '/social' },
-    { label: 'A/B Experiments', icon: '🔬', path: '/experiments' },
     { label: 'Groq Usage', icon: '⚡', path: '/groq' },
     { label: 'Recycle Bin', icon: '♻️', path: '/recycle-bin' },
   ]

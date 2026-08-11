@@ -122,14 +122,6 @@ async def handle_action(payload: Dict[str, Any] = Body(...)):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-@router.get("/analytics")
-def get_analytics():
-    try:
-        data = AnalyticsService.get_global_stats()
-        return {"success": True, "data": data}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
 @router.get("/groq-usage")
 def get_groq():
     try:
@@ -407,38 +399,6 @@ def restore_article(id: str):
     try:
         NewsService.restore_article(id)
         return {"success": True}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-@router.get("/growth")
-def get_growth():
-    try:
-        data = AnalyticsService.get_growth()
-        return {"success": True, "data": data}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-@router.get("/seo")
-def get_seo():
-    try:
-        data = NewsService.get_seo_overview()
-        return {"success": True, "data": data}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-@router.get("/experiments")
-def get_experiments():
-    try:
-        data = NewsService.get_experiments()
-        return {"success": True, "data": data}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-@router.get("/social/{id}")
-def get_social_bundle(id: str):
-    try:
-        data = NewsService.get_social_bundle(id)
-        return {"success": True, "data": data}
     except Exception as e:
         return {"success": False, "error": str(e)}
 

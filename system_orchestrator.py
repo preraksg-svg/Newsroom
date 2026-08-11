@@ -18,10 +18,7 @@ from content_scoring import compute_content_score
 from seo_engine import generate_seo_metadata, generate_faq
 from keyword_engine import KeywordEngine
 from backend.social_engine import generate_viral_bundle, schedule_social_campaign
-from growth_engine import init_growth_metrics
-from bandit_engine import initialize_bandit_engine, trigger_bandit_sync
 from backend.thumbnail_engine import generate_thumbnail_prompts
-from thumbnail_ab_testing import initialize_thumbnail_ab_testing, create_thumbnail_test
 from learning_engine import initialize_learning_engine
 from scraper_manager import dispatcher_loop
 
@@ -36,8 +33,6 @@ class NewsroomOrchestrator:
         print(f"[OBSERVABILITY][W3C-TRACE] traceparent: {self.traceparent}")
         init_db()
         initialize_learning_engine()
-        initialize_bandit_engine()
-        initialize_thumbnail_ab_testing()
 
     async def run_full_pipeline(self):
         """Execute the 22-step strict order pipeline."""
@@ -184,10 +179,6 @@ class NewsroomOrchestrator:
                 processed_count += 1
             
             print(f"[PIPELINE] Processed {processed_count} signals.")
-            
-            # 22: Daily Maintenance
-            print("[STEP 22] Executing Maintenance...")
-            trigger_bandit_sync()
             
             # VALIDATION LOG
             with get_db() as conn:
@@ -360,10 +351,7 @@ class NewsroomOrchestrator:
                 "EV", content_pkg.get('meta_title'), content_pkg.get('meta_description')
             )
             seo_faq = await asyncio.to_thread(generate_faq, content_pkg['body'], seo_pkg['keywords'])
-            
-            # 14-15: Variant Generation (Bandit Ready)
-            h_variants = await asyncio.to_thread(generate_headline_variations, content_pkg['title'], content_pkg['body'])
-            
+
             # 16-18: Publication & DB Storage
             # Resolve actual source/publisher name from sources database
             publisher_name = signal.get('source_id') or signal.get('source_type', 'Zapway')
@@ -424,8 +412,6 @@ class NewsroomOrchestrator:
             # Layer 3 tasks (Images, Audio, Social) are now ONLY on-demand.
             # No automatic generation here.
             
-            # 20-21: Learning System Init
-            init_growth_metrics(story_id)
             print(f"[PIPELINE][SUCCESS] Story {story_id} generated and saved to DB (Layer 2 Complete).")
             
             # Send Email Notification

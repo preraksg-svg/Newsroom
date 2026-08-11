@@ -2,11 +2,8 @@ import asyncio
 import logging
 import os
 from backend.db.queries import init_db
-from bandit_engine import initialize_bandit_engine
 from learning_engine import initialize_learning_engine
 from training_engine import initialize_training_engine
-from ab_testing import initialize_ab_testing
-from thumbnail_ab_testing import initialize_thumbnail_ab_testing
 from workers.ingestion_worker import ingestion_loop
 from workers.ai_worker import ai_processing_loop
 from workers.media_worker import media_worker_loop
@@ -47,9 +44,6 @@ async def main():
 
     initialize_learning_engine()
     initialize_training_engine()
-    initialize_bandit_engine()
-    initialize_ab_testing()
-    initialize_thumbnail_ab_testing()
     
     print("[INIT] Initializing Ingestion task...")
     ingestion_task = asyncio.create_task(ingestion_loop())

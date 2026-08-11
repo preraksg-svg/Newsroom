@@ -970,18 +970,6 @@ export default function ArticleView() {
                  {actionLoading === 'regenerate_headlines' ? <RefreshCw className="animate-spin" /> : <Zap size={16} />}
                  REGEN HEADLINES
                </button>
-               <button className="btn full" onClick={() => actionMutation.mutate({ action: 'generate_thumbnails' })} disabled={actionLoading === 'generate_thumbnails'}>
-                 {actionLoading === 'generate_thumbnails' ? <RefreshCw className="animate-spin" /> : <ImageIcon size={16} />}
-                 GEN THUMBNAILS
-               </button>
-               <button className="btn full" onClick={() => actionMutation.mutate({ action: 'generate_audio' })} disabled={actionLoading === 'generate_audio'}>
-                 {actionLoading === 'generate_audio' ? <RefreshCw className="animate-spin" /> : <Music size={16} />}
-                 GEN AUDIO
-               </button>
-               <button className="btn full" onClick={() => actionMutation.mutate({ action: 'generate_social' })} disabled={actionLoading === 'generate_social'}>
-                 {actionLoading === 'generate_social' ? <RefreshCw className="animate-spin" /> : <Share2 size={16} />}
-                 GEN SOCIAL
-               </button>
                <button className="btn full" style={{ borderColor: 'var(--c-magenta)', color: 'var(--c-magenta)' }} onClick={() => actionMutation.mutate({ action: 'reject_article' })} disabled={actionLoading === 'reject_article'}>
                  <Trash2 size={16} /> REJECT
                </button>

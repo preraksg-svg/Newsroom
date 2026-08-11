@@ -6,10 +6,7 @@ import Sidebar from './components/Sidebar'
 // Pages
 import NewsBoard from './pages/NewsBoard'
 import ArticleView from './pages/ArticleView'
-import { 
-  SourceLearningView, AnalyticsView, GroqUsageView,
-  GrowthEngineView, SEOMatrixView, SocialBundleView, ExperimentsView
-} from './pages/IntelligencePages'
+import { SourceLearningView, GroqUsageView } from './pages/IntelligencePages'
 
 export default function App() {
   return (
@@ -23,12 +20,7 @@ export default function App() {
             <Route path="/news" element={<NewsBoard />} />
             <Route path="/article/:id" element={<ArticleView />} />
             <Route path="/sources" element={<SourceLearningView />} />
-            <Route path="/analytics" element={<AnalyticsView />} />
             <Route path="/groq" element={<GroqUsageView />} />
-            <Route path="/growth" element={<GrowthEngineView />} />
-            <Route path="/seo" element={<SEOMatrixView />} />
-            <Route path="/social" element={<SocialBundleView />} />
-            <Route path="/experiments" element={<ExperimentsView />} />
             <Route path="/recycle-bin" element={<NewsBoard isRecycleBin={true} />} />
           </Routes>
         </main>
