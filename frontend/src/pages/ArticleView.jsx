@@ -406,6 +406,17 @@ export default function ArticleView() {
     savePatchMutation.mutate(updated)
   }
 
+  // Remove an entire section (heading + content + its inline images) and save,
+  // so it is not published.
+  const deleteSection = (index) => {
+    const secs = safeParse(editedStory.sections, [])
+    if (!Array.isArray(secs)) return
+    const next = secs.filter((_, i) => i !== index)
+    const updated = { ...editedStory, sections: JSON.stringify(next) }
+    setEditedStory(updated)
+    savePatchMutation.mutate(updated)
+  }
+
   // URLs already shown inline within section content (so we don't also show them
   // in the distributed gallery — avoids duplicates).
   const inlineImageUrls = new Set()
@@ -758,7 +769,12 @@ export default function ArticleView() {
               }
 
               return (
-                <div key={i} style={{ marginBottom: '32px' }}>
+                <div key={i} style={{ marginBottom: '32px', position: 'relative', paddingRight: '40px' }}>
+                  <button
+                    title="Delete this whole section (it will not be published)"
+                    onClick={() => deleteSection(i)}
+                    style={{ position: 'absolute', top: '0', right: '0', width: '30px', height: '30px', borderRadius: '50%', border: '1px solid var(--color-border)', background: 'rgba(255,60,60,0.15)', color: '#ff6b6b', cursor: 'pointer', fontSize: '15px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+                  >✕</button>
                   {isEditMode ? (
                     <>
                       <input 
