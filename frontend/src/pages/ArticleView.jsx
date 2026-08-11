@@ -703,13 +703,26 @@ export default function ArticleView() {
             <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '24px' }}>{story.title}</h1>
           )}
 
-          {/* LEAD IMAGE — the article's main photo. Deletable: the ✕ removes it
-              so it is not uploaded on publish. Remaining images are shown inline
-              with each section below, mirroring the original article layout. */}
-          {galleryUrls.length > 0 && renderDeletableImage(galleryUrls[0], {
-            width: '100%', maxHeight: '420px', objectFit: 'cover',
-            borderRadius: '8px', border: '1px solid var(--color-border)'
-          })}
+          {/* IMAGES not already placed inline within a section (extras) are shown
+              here as a lead photo + gallery. Each is deletable; deleting one does
+              NOT shift others into sections (images are keyed by URL, not index). */}
+          {galleryUrls.length > 0 && (
+            <div style={{ marginBottom: '24px' }}>
+              {renderDeletableImage(galleryUrls[0], {
+                width: '100%', maxHeight: '420px', objectFit: 'cover',
+                borderRadius: '8px', border: '1px solid var(--color-border)'
+              })}
+              {galleryUrls.length > 1 && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '10px' }}>
+                  {galleryUrls.slice(1).map((u) => (
+                    <div key={u}>
+                      {renderDeletableImage(u, { width: '100%', height: '110px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--color-border)' })}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* HEADLINE VARIANTS SELECTOR */}
           {headlineVariants.length > 0 && (
@@ -746,11 +759,6 @@ export default function ArticleView() {
 
               return (
                 <div key={i} style={{ marginBottom: '32px' }}>
-                  {/* Section image (deletable) — placed inline like the original article */}
-                  {galleryUrls[i + 1] && renderDeletableImage(galleryUrls[i + 1], {
-                    width: '100%', maxHeight: '360px', objectFit: 'cover',
-                    borderRadius: '8px', border: '1px solid var(--color-border)'
-                  })}
                   {isEditMode ? (
                     <>
                       <input 
@@ -813,18 +821,6 @@ export default function ArticleView() {
               ) : (
                 <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No content available.</p>
               )}
-            </div>
-          )}
-
-          {/* Any remaining images beyond the sections — shown as a gallery,
-              each deletable so it is not published. */}
-          {galleryUrls.length > sections.length + 1 && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '10px', marginBottom: '24px' }}>
-              {galleryUrls.slice(sections.length + 1).map((u, i) => (
-                <div key={i}>
-                  {renderDeletableImage(u, { width: '100%', height: '110px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--color-border)' })}
-                </div>
-              ))}
             </div>
           )}
 
