@@ -158,17 +158,30 @@ ASSETS_DIR = os.path.join(FRONTEND_DIST, "assets")
 if os.path.exists(ASSETS_DIR):
     app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
 
+# index.html must never be cached by the browser: it references the hashed JS/CSS
+# bundles (e.g. index-<hash>.js). If a stale index.html is served after a deploy,
+# the browser keeps loading the OLD bundle and the UI looks unchanged. The hashed
+# asset files under /assets are content-addressed, so they are safe to cache.
+_NO_CACHE_HEADERS = {
+    "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+    "Pragma": "no-cache",
+    "Expires": "0",
+}
+
 @app.get("/{full_path:path}")
 async def serve_frontend(full_path: str):
     # Check if a specific file exists in the root of dist (e.g. favicon, manifest)
     file_path = os.path.join(FRONTEND_DIST, full_path)
     if full_path != "" and os.path.exists(file_path) and os.path.isfile(file_path):
+        # Never cache index.html (would pin the browser to an old bundle).
+        if os.path.basename(file_path) == "index.html":
+            return FileResponse(file_path, headers=_NO_CACHE_HEADERS)
         return FileResponse(file_path)
-    
+
     # Fallback to index.html for all other paths (SPA)
     index_path = os.path.join(FRONTEND_DIST, "index.html")
     if os.path.exists(index_path):
-        return FileResponse(index_path)
+        return FileResponse(index_path, headers=_NO_CACHE_HEADERS)
     return {"error": "Frontend build not found. Run 'npm run build' in the frontend directory."}
 
 if __name__ == "__main__":
