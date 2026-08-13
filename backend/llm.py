@@ -10,6 +10,13 @@ def clean_headline_garbage(title):
         return title
     # Clean publisher suffixes: e.g. " - Autocar India", " | CleanTechnica", " — Livemint"
     cleaned = re.sub(r'\s+[\-\|\|\—\–\/]\s+([A-Za-z0-9\.\s]+)$', '', title)
+    # Also strip a trailing source DOMAIN even when there is no space before the
+    # separator, e.g. "...electric bus company- Moneycontrol.com" -> "...company".
+    # Anchored on a real TLD so ordinary hyphenated words (e-scooter, well-known)
+    # are never touched.
+    cleaned = re.sub(
+        r'\s*[\-\|\—\–\/]\s*[A-Za-z0-9][A-Za-z0-9\.\s&]*\.(?:com|in|net|org|co|news|io)\s*$',
+        '', cleaned, flags=re.IGNORECASE)
     # Clean date patterns at the end of headlines
     cleaned = re.sub(r'\s+[\-\|\|\—\–\/]\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4}|[A-Za-z]+\s+\d{1,2},?\s+\d{4}|\d{4}-\d{2}-\d{2})$', '', cleaned)
     cleaned = re.sub(r'\s*\(?\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\)?$', '', cleaned, flags=re.I)
