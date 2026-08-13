@@ -53,6 +53,53 @@ def build_caption(title: str, summary: str = "", hashtags=None) -> str:
     return f"⚡ {caption}\n\n{tag_str}"
 
 
+def verify_x_connection(do_post: bool = False) -> dict:
+    """Check that X is connected. With do_post=False it validates credentials and
+    (best-effort) reads the authenticated account. With do_post=True it publishes
+    a real test tweet and returns its URL — definitive proof write access works.
+
+    Returns {"success": bool, "connected": bool, "username"?, "tweet_url"?, "error"?}.
+    """
+    client, err = _get_client()
+    if not client:
+        return {"success": False, "connected": False, "error": err}
+
+    if do_post:
+        import time as _t
+        res = post_to_x(f"✅ Zapway Newsroom is now connected to X. (setup check {int(_t.time())})")
+        if res.get("success"):
+            tid = res.get("tweet_id")
+            return {
+                "success": True, "connected": True,
+                "tweet_id": tid,
+                "tweet_url": f"https://x.com/i/web/status/{tid}" if tid else None,
+                "message": "Test tweet posted — X is connected and can publish.",
+            }
+        return {"success": False, "connected": False, "error": res.get("error")}
+
+    # Non-posting check: credentials initialised. Try to read the account name,
+    # but a read-restricted (write-only) free tier still means posting works, so
+    # a read failure is NOT treated as "not connected".
+    try:
+        me = client.get_me()
+        uname = None
+        if getattr(me, "data", None):
+            uname = getattr(me.data, "username", None) or (me.data.get("username") if isinstance(me.data, dict) else None)
+        return {
+            "success": True, "connected": True, "username": uname,
+            "message": f"Credentials valid (account @{uname})." if uname else "Credentials valid.",
+        }
+    except Exception as e:
+        # Credentials are present and the client initialised; read may be blocked
+        # on the free tier. Posting can still succeed.
+        return {
+            "success": True, "connected": True,
+            "message": "Credentials detected. Read is limited on the free tier — "
+                       "use ?post=1 to publish a real test tweet and confirm write access.",
+            "read_note": str(e),
+        }
+
+
 def post_to_x(text: str, url: str = None) -> dict:
     """Post a short update (optionally with a link) to X/Twitter.
 

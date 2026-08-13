@@ -69,3 +69,16 @@ services:
         sync: false
       - key: ZAPWAY_PASSWORD
         sync: false
+
+      # X (Twitter) auto-share after a story publishes. Create a free app at
+      # https://developer.x.com with OAuth 1.0a "Read and Write" permission and
+      # paste the four keys below. Leave unset to disable X sharing (safe no-op).
+      # Verify with /api/test-x (validate) or /api/test-x?post=1 (real tweet).
+      - key: X_API_KEY
+        sync: false
+      - key: X_API_SECRET
+        sync: false
+      - key: X_ACCESS_TOKEN
+        sync: false
+      - key: X_ACCESS_TOKEN_SECRET
+        sync: false

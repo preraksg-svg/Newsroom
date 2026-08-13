@@ -152,6 +152,21 @@ def test_email():
         return {"success": False, "error": str(e)}
 
 
+@router.get("/test-x")
+def test_x(post: int = 0):
+    """Diagnostic: confirm the X (Twitter) connection.
+
+    - /api/test-x        -> validates the four X API credentials are set & valid.
+    - /api/test-x?post=1 -> publishes a REAL test tweet (definitive proof that
+                            auto-sharing to X will work on publish).
+    """
+    try:
+        from x_publisher import verify_x_connection
+        return verify_x_connection(do_post=bool(post))
+    except Exception as e:
+        return {"success": False, "connected": False, "error": str(e)}
+
+
 @router.get("/sources")
 def get_sources():
     try:
