@@ -398,106 +398,7 @@ class NewsService:
         queries.update_story(article_id, "status", "Draft")
         return True
 
-    @staticmethod
-    def get_seo_overview():
-        stories = queries.fetch_seo_overview()
-        keyword_items = []
-        for s in stories:
-            # Assuming keywords is a comma-separated string or JSON list
-            raw_kws = s.get('keywords')
-            if not raw_kws: continue
-            
-            if isinstance(raw_kws, str):
-                try:
-                    kw_list = json.loads(raw_kws)
-                except:
-                    kw_list = [k.strip() for k in raw_kws.split(',')]
-            else:
-                kw_list = raw_kws
-                
-            for i, kw in enumerate(kw_list):
-                keyword_items.append({
-                    "keyword": kw,
-                    "rank": 3 + i, # Mock rank data
-                    "traffic": 1200 - (i * 100), # Mock traffic data
-                    "article_id": s['id']
-                })
-                
-        return {
-            "keywords": keyword_items,
-            "timeline": [30, 45, 60, 40, 70, 90, 80]
-        }
-
-    @staticmethod
-    def get_experiments():
-        data = queries.fetch_experiment_data()
-        formatted = []
-        for item in data:
-            variants = json.loads(item['headline_variants']) if item['headline_variants'] else []
-            # Map variants to expected structure: { text: string, ctr: number }
-            variant_objs = [{"text": v, "ctr": 2.5 + (i * 0.5)} for i, v in enumerate(variants)]
-            formatted.append({
-                "article_id": item['id'],
-                "title": item['title'],
-                "variants": variant_objs,
-                "winner": variants[0] if variants else None
-            })
-        return formatted
-
-    @staticmethod
-    def get_social_bundle(article_id):
-        article = queries.fetch_story_by_id(article_id)
-        if not article: raise Exception("Article not found")
-        
-        # 1. Try primary social_bundle column
-        bundle_raw = article.get('social_bundle')
-        bundle = {}
-        if bundle_raw:
-            try:
-                bundle = json.loads(bundle_raw) if isinstance(bundle_raw, str) else bundle_raw
-            except:
-                bundle = {}
-
-        # 2. Fallback to nested ai_summary.social_bundle if empty
-        if not bundle or (not bundle.get('tweet') and not bundle.get('linkedin')):
-            summary_raw = article.get('ai_summary')
-            if summary_raw:
-                try:
-                    summary = json.loads(summary_raw) if isinstance(summary_raw, str) else summary_raw
-                    if "social_bundle" in summary:
-                        bundle = summary["social_bundle"]
-                except:
-                    pass
-
-        # 3. Normalize structure for frontend (tweet.text, linkedin.body)
-        if not isinstance(bundle, dict): bundle = {}
-        
-        # Handle string-based or legacy fields
-        tweet = bundle.get("tweet") or {}
-        if isinstance(tweet, str): tweet = {"text": tweet}
-        
-        linkedin = bundle.get("linkedin") or {}
-        if isinstance(linkedin, str): linkedin = {"body": linkedin}
-
-        return {
-            "tweet": {"text": tweet.get("text", "")},
-            "linkedin": {"body": linkedin.get("body", "")}
-        }
-
 class AnalyticsService:
-    @staticmethod
-    def get_global_stats():
-        top_articles = queries.fetch_analytics()
-        total_views = sum([a.get('traffic_total') or 0 for a in top_articles])
-        avg_ctr = sum([a.get('ctr_avg') or 0 for a in top_articles]) / len(top_articles) if top_articles else 0
-        return {
-            "top_articles": top_articles,
-            "total_views": total_views,
-            "avg_ctr": avg_ctr,
-            "timeline": [120, 450, 320, 580, 890, 1100, 950],
-            "time_series": [120, 450, 320, 580, 890, 1100, 950]
-        }
-
     @staticmethod
     def get_groq_usage():
         used = queries.fetch_groq_usage()
@@ -507,11 +408,6 @@ class AnalyticsService:
             "limit": limit,
             "percentage": (used / limit) * 100 if limit > 0 else 0
         }
-
-    @staticmethod
-    def get_growth():
-        signals = queries.fetch_growth_overview()
-        return {"top_signals": signals}
 
 class IntelligenceService:
     @staticmethod

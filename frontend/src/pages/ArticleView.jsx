@@ -471,7 +471,7 @@ export default function ArticleView() {
       .replace(/`([^`]+)`/g, '$1')
       .replace(/(^|[^*\w])\*(?!\s)([^*\n]+?)(?<!\s)\*(?![*\w])/g, '$1$2')
       .replace(/(^|[^_\w])_(?!\s)([^_\n]+?)(?<!\s)_(?![_\w])/g, '$1$2')
-      .replace(/(^|[^!])\[([^\]]+)\]\([^)]+\)/g, '$1$2')
+      .replace(/(^|[^!])\[([^\]]+)\]\(([^)]+)\)/g, '$1$2 ($3)')
       .replace(/^\s{0,3}#{1,6}\s+/, '')
   }
   const renderFormattedContent = (text, sectionIndex = null) => {

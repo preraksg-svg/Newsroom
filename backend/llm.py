@@ -14,8 +14,11 @@ def clean_headline_garbage(title):
     # separator, e.g. "...electric bus company- Moneycontrol.com" -> "...company".
     # Anchored on a real TLD so ordinary hyphenated words (e-scooter, well-known)
     # are never touched.
+    # NOTE: the source token here is a SINGLE domain-like token (no spaces), so a
+    # normal multi-word headline that merely ends in a ".io"/".in" word cannot be
+    # truncated — only a real trailing "Source.com"-style attribution is removed.
     cleaned = re.sub(
-        r'\s*[\-\|\—\–\/]\s*[A-Za-z0-9][A-Za-z0-9\.\s&]*\.(?:com|in|net|org|co|news|io)\s*$',
+        r'\s*[\-\|\—\–\/]\s*[A-Za-z0-9][A-Za-z0-9.&-]*\.(?:com|in|net|org|co|news|io)\s*$',
         '', cleaned, flags=re.IGNORECASE)
     # Clean date patterns at the end of headlines
     cleaned = re.sub(r'\s+[\-\|\|\—\–\/]\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4}|[A-Za-z]+\s+\d{1,2},?\s+\d{4}|\d{4}-\d{2}-\d{2})$', '', cleaned)

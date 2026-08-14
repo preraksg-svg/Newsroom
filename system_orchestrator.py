@@ -13,7 +13,6 @@ import hashlib
 from datetime import datetime
 from backend.db.queries import get_db, create_draft, init_db
 from backend.llm import rewrite_article, generate_ai_summary
-from backend.headline_engine import generate_headline_variations, pick_best_headline
 from content_scoring import compute_content_score
 from seo_engine import generate_seo_metadata, generate_faq
 from keyword_engine import KeywordEngine

@@ -13,7 +13,7 @@ from text_format import strip_inline_markdown as s
     ("a `code` token", "a code token"),
     ("### Key Highlights", "Key Highlights"),
     ("## Heading", "Heading"),
-    ("A [link text](https://x.com) inline.", "A link text inline."),
+    ("A [link text](https://x.com) inline.", "A link text (https://x.com) inline."),
     ("* **Feature**: value with *stars*", "* Feature: value with stars"),
 ])
 def test_emphasis_and_headings_stripped(raw, expected):

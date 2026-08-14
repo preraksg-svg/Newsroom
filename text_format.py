@@ -28,8 +28,9 @@ _CODE = re.compile(r"`([^`]+)`")
 _ITAL_STAR = re.compile(r"(?<![\*\w])\*(?!\s)([^*\n]+?)(?<!\s)\*(?![\*\w])")
 # _italic_ — same idea for underscores, without eating snake_case words.
 _ITAL_UND = re.compile(r"(?<![_\w])_(?!\s)([^_\n]+?)(?<!\s)_(?![_\w])")
-# [text](url) markdown link that is NOT an image (no leading '!') -> keep text
-_LINK = re.compile(r"(?<!\!)\[([^\]]+)\]\([^)]+\)")
+# [text](url) markdown link that is NOT an image (no leading '!'). Keep BOTH the
+# text and the URL as "text (url)" so the link target is never silently lost.
+_LINK = re.compile(r"(?<!\!)\[([^\]]+)\]\(([^)]+)\)")
 # Leading heading hashes on a line: "### Title" -> "Title"
 _HEADING = re.compile(r"^\s{0,3}#{1,6}\s+")
 
@@ -44,7 +45,7 @@ def strip_inline_markdown(text: str) -> str:
     text = _CODE.sub(r"\1", text)
     text = _ITAL_STAR.sub(r"\1", text)
     text = _ITAL_UND.sub(r"\1", text)
-    text = _LINK.sub(r"\1", text)
+    text = _LINK.sub(r"\1 (\2)", text)
     # Strip heading hashes line-by-line so the heading text survives as a plain line.
     lines = [_HEADING.sub("", ln) for ln in text.split("\n")]
     return "\n".join(lines)

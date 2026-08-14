@@ -153,16 +153,23 @@ def test_email():
 
 
 @router.get("/test-x")
-def test_x(post: int = 0):
-    """Diagnostic: confirm the X (Twitter) connection.
-
-    - /api/test-x        -> validates the four X API credentials are set & valid.
-    - /api/test-x?post=1 -> publishes a REAL test tweet (definitive proof that
-                            auto-sharing to X will work on publish).
-    """
+def test_x():
+    """Diagnostic (safe): validate the four X API credentials are set & valid.
+    No tweet is sent. To publish a real confirmation tweet, POST to /api/test-x."""
     try:
         from x_publisher import verify_x_connection
-        return verify_x_connection(do_post=bool(post))
+        return verify_x_connection(do_post=False)
+    except Exception as e:
+        return {"success": False, "connected": False, "error": str(e)}
+
+
+@router.post("/test-x")
+def test_x_post():
+    """Publish a REAL test tweet — definitive proof X write access works.
+    POST-only, so a crawler, link prefetch, or plain GET can never trigger a tweet."""
+    try:
+        from x_publisher import verify_x_connection
+        return verify_x_connection(do_post=True)
     except Exception as e:
         return {"success": False, "connected": False, "error": str(e)}
 

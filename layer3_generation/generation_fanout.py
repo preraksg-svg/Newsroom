@@ -261,8 +261,10 @@ JSON Structure to return — fill every field exactly as described:
     try:
         from text_format import strip_inline_markdown as _strip_md
         clean_content = _strip_md(clean_content)
-    except Exception:
-        pass
+    except Exception as _md_err:
+        # Do NOT fail generation, but make a broken import/normalizer visible so
+        # the "stray *" bug can't silently regress.
+        print(f"[GENERATION][WARN] markdown normalization skipped: {_md_err}")
     clean_content = clean_content.strip()
 
     # Strip scraped navigation-menu junk (e.g. "Cars * Bikes * news * reviews *

@@ -572,27 +572,6 @@ def log_source_fetch(source_id, status, count, error=None):
 
 # --- ANALYTICS QUERIES ---
 
-def fetch_analytics(story_id=None):
-    with get_db() as conn:
-        cur = conn.cursor()
-        if story_id:
-            cur.execute("SELECT * FROM growth_metrics WHERE story_id = ?", (story_id,))
-            row = cur.fetchone()
-            return dict(row) if row else None
-        else:
-            cur.execute("""
-                SELECT 
-                    s.id, 
-                    s.title, 
-                    COALESCE(g.traffic_total, 0) AS traffic_total, 
-                    COALESCE(g.ctr_avg, 0) AS ctr_avg, 
-                    COALESCE(g.engagement_rate, 0) AS engagement_rate 
-                FROM stories s 
-                LEFT JOIN growth_metrics g ON s.id = g.story_id 
-                ORDER BY g.traffic_total DESC LIMIT 20
-            """)
-            return [dict(r) for r in cur.fetchall()]
-
 def log_groq_usage(tokens):
     today_str = datetime.now(timezone.utc).strftime('%Y-%m-%d')
     with get_db() as conn:
@@ -641,39 +620,6 @@ def update_yt_memory(channel_id, video_id):
         cur = conn.cursor()
         cur.execute("INSERT OR REPLACE INTO yt_memory (channel_id, last_video_id, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)", (channel_id, video_id))
         conn.commit()
-
-# --- DASHBOARD SPECIFIC ---
-
-def fetch_growth_overview():
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT 
-                s.id, 
-                s.title, 
-                COALESCE(g.growth_score, 0) AS growth_score,
-                COALESCE(g.traffic_total, 0) AS traffic_total, 
-                COALESCE(g.ctr_avg, 0) AS ctr_avg, 
-                COALESCE(g.shares_total, 0) AS shares_total, 
-                COALESCE(g.engagement_rate, 0) AS engagement_rate 
-            FROM stories s 
-            LEFT JOIN growth_metrics g ON s.id = g.story_id 
-            WHERE s.status = 'Published'
-            ORDER BY g.traffic_total DESC
-        """)
-        return [dict(r) for r in cur.fetchall()]
-
-def fetch_seo_overview():
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT id, title, meta_title, meta_desc, keywords, seo_strategy FROM stories WHERE status IN ('Published', 'Draft')")
-        return [dict(r) for r in cur.fetchall()]
-
-def fetch_experiment_data():
-    with get_db() as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT id, title, headline_variants, social_bundle FROM stories WHERE status IN ('Published', 'Draft') AND headline_variants IS NOT NULL")
-        return [dict(r) for r in cur.fetchall()]
 
 # --- TASK MANAGEMENT ---
 
