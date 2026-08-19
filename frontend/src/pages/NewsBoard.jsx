@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { Trash2, ExternalLink, Calendar, Star, AlertCircle, RefreshCw, RotateCcw } from 'lucide-react'
 import { useStore } from '../store'
-import { NewsService } from '../services/api'
+import { NewsService, IntelligenceService } from '../services/api'
 import { Loader, EmptyState, ErrorState } from '../components/StatusStates'
 
 function ArticleCard({ item, onClick, onReject, onRestore, onAction, isRecycleBin }) {
@@ -218,7 +218,7 @@ export default function NewsBoard({ isRecycleBin }) {
   // Start pipeline automatically if empty and not orchestrating
   useEffect(() => {
     if (totalItems === 0 && !isOrchestrating && !isRecycleBin && !isLoading) {
-      NewsService.performAction('orchestrate', '').catch(() => {})
+      IntelligenceService.orchestrate().catch(() => {})
     }
   }, [totalItems, isOrchestrating, isRecycleBin, isLoading])
 
@@ -243,7 +243,7 @@ export default function NewsBoard({ isRecycleBin }) {
                 // Invalidate query to trigger loading spinner
                 queryClient.setQueryData(['news', isRecycleBin, searchQuery, statusFilter], null)
                 refetch()
-                await NewsService.performAction('orchestrate', '')
+                await IntelligenceService.orchestrate()
               } catch (e) {}
             }}
           >

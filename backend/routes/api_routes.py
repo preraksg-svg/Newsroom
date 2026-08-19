@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, Body, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Query, Body, BackgroundTasks, Header
 from fastapi.responses import Response
 from typing import Optional, Dict, Any
 import aiohttp
@@ -164,9 +164,17 @@ def test_x():
 
 
 @router.post("/test-x")
-def test_x_post():
+def test_x_post(x_test_secret: str = Header(default="")):
     """Publish a REAL test tweet — definitive proof X write access works.
-    POST-only, so a crawler, link prefetch, or plain GET can never trigger a tweet."""
+    POST-only AND secret-gated: the caller must send an `X-Test-Secret` header
+    matching the X_TEST_SECRET env var. This blocks anonymous discovery and
+    cross-site form CSRF (HTML forms cannot set custom headers), so no third
+    party can trigger a tweet from the connected account. Fails closed: if
+    X_TEST_SECRET is unset on the server, the endpoint refuses to post."""
+    import os
+    expected = os.getenv("X_TEST_SECRET", "")
+    if not expected or x_test_secret != expected:
+        raise HTTPException(status_code=403, detail="Missing or invalid X-Test-Secret header.")
     try:
         from x_publisher import verify_x_connection
         return verify_x_connection(do_post=True)

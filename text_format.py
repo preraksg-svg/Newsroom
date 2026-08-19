@@ -30,7 +30,9 @@ _ITAL_STAR = re.compile(r"(?<![\*\w])\*(?!\s)([^*\n]+?)(?<!\s)\*(?![\*\w])")
 _ITAL_UND = re.compile(r"(?<![_\w])_(?!\s)([^_\n]+?)(?<!\s)_(?![_\w])")
 # [text](url) markdown link that is NOT an image (no leading '!'). Keep BOTH the
 # text and the URL as "text (url)" so the link target is never silently lost.
-_LINK = re.compile(r"(?<!\!)\[([^\]]+)\]\(([^)]+)\)")
+# The URL group allows one level of balanced parens so Wikipedia-style targets
+# like ".../Kanban_(development)" are captured whole, not truncated at the first ')'.
+_LINK = re.compile(r"(?<!\!)\[([^\]]+)\]\(((?:[^()]|\([^()]*\))+)\)")
 # Leading heading hashes on a line: "### Title" -> "Title"
 _HEADING = re.compile(r"^\s{0,3}#{1,6}\s+")
 
